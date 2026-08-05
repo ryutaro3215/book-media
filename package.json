@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/subset-fonts.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "biome check .",
@@ -30,6 +30,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@biomejs/biome": "2.5.7",
+    "subset-font": "^2.5.0",
     "typescript": "^6.0.3"
   }
 }

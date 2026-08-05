@@ -9,6 +9,7 @@
 import type { GetStaticPaths } from "astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
+import SEO from "../../components/SEO.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import ArticleListItem from "../../components/ArticleListItem.astro";
 import { SITE } from "../../config";
@@ -54,7 +55,13 @@ const description =
   `${group.name}の記事${group.articles.length}本。${selectorNames.join("、")}が選んだ、${group.name}の本を紹介しています。`;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout headSlot>
+  <SEO
+    slot="head"
+    title={title}
+    description={description}
+    canonical={Astro.url.pathname}
+  />
   <SiteHeader />
 
   <main class="mx-auto max-w-body px-5 pt-14">

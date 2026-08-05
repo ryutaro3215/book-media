@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SiteHeader from "../components/SiteHeader.astro";
+import SEO from "../components/SEO.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import { SITE } from "../config";
 
@@ -9,10 +10,15 @@ import { SITE } from "../config";
 // サーバーも外部検索サービスも使わない。
 ---
 
-<BaseLayout
-  title={`検索 | ${SITE.name}`}
-  description="テーマ・選者・書名で記事を検索します。"
->
+{/* 検索結果ページはインデックスさせない（低品質ページとして扱われるため） */}
+<BaseLayout headSlot>
+  <SEO
+    slot="head"
+    title="検索"
+    description="テーマ・選者・書名で記事を検索します。"
+    canonical="/search/"
+    noindex
+  />
   <SiteHeader />
 
   <main class="mx-auto max-w-body px-5 pt-14">
@@ -33,7 +39,7 @@ import { SITE } from "../config";
     <form
       action="/search"
       role="search"
-      class="mb-10 flex h-11 items-center gap-2 rounded-full border border-rule bg-cover-placeholder px-4"
+      class="mb-10 flex h-11 items-center gap-2 rounded-full border border-rule bg-canvas px-4"
     >
       <svg
         width="16"
@@ -56,7 +62,7 @@ import { SITE } from "../config";
         type="search"
         name="q"
         placeholder="テーマ・選者・書名で検索"
-        class="w-full min-w-0 flex-auto border-0 bg-transparent font-sans text-[15px] text-ink outline-none placeholder:text-muted"
+        class="w-full min-w-0 flex-auto border-0 bg-transparent font-sans text-[15px] text-ink focus:outline-none placeholder:text-muted"
       />
     </form>
 
