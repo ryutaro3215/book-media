@@ -19,6 +19,26 @@ const bookSchema = z.object({
   isbn: z.string().regex(/^\d{13}$/, "isbn は13桁の数字のみ（ハイフン不可）"),
   /** 選書理由。draft のあいだは `TODO: …` のままでよい */
   reason: z.string().min(1),
+  /**
+   * **この本があまり知られていない理由**（任意）。
+   *
+   * 書くとその本に「知る人ぞ知る本」の印が付き、`/hidden` に集まる。
+   * 書かなければ何も起きない。
+   *
+   * ## なぜ任意で、なぜ1記事に1冊なのか
+   * 以前は全冊に「知られていない理由」を必須にしていたが、
+   * 1本目の記事が定番書ばかりで**書けずに詰まった**ため撤回した経緯がある。
+   * 全冊に課すと書ける記事が極端に狭まる。
+   *
+   * 一方で「良い本を広めたい、埋もれた本を発掘したい」という動機は
+   * このメディアの出発点であり、記事に落ちる経路が必要だった。
+   * **記事は定番でよい。そのうち1冊だけ印を付ける**なら、負担はほぼゼロで、
+   * 印が溜まれば分野を横断した資産（`/hidden`）になる。
+   *
+   * 「知られていない」の判定は**選者本人の主観**でよい。
+   * 「この5冊のうち、いちばん知られていないのはどれですか」には必ず答えられる。
+   */
+  whyBuried: z.string().min(1).optional(),
 });
 
 /**
@@ -120,6 +140,14 @@ const interviews = defineCollection({
             code: z.ZodIssueCode.custom,
             path: ["books", i, "reason"],
             message: `${i + 1}冊目の選書理由が未記入です（TODO: のまま）`,
+          });
+        }
+        // 印を付けたなら理由は必須。付けないのは自由
+        if (book.whyBuried && isPlaceholder(book.whyBuried)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["books", i, "whyBuried"],
+            message: `${i + 1}冊目の「なぜ知られていないか」が未記入です（TODO: のまま）。書かないなら whyBuried の行ごと消してください`,
           });
         }
       });

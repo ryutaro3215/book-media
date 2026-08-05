@@ -28,6 +28,7 @@ export const SITE = {
 
 /** グローバルナビゲーション（design/SiteHeader.dc.html 準拠） */
 export const NAV = [
+  { label: "知る人ぞ知る本", href: "/hidden" },
   { label: "ジャンル一覧", href: "/topics" },
   { label: "選者一覧", href: "/selectors" },
   { label: "このサイトについて", href: "/about" },
@@ -35,6 +36,7 @@ export const NAV = [
 
 /** フッターのリンク（design/SiteFooter.dc.html 準拠） */
 export const FOOTER_LINKS = [
+  { label: "知る人ぞ知る本", href: "/hidden" },
   { label: "このサイトについて", href: "/about" },
   { label: "取材依頼・お問い合わせ", href: "/contact" },
   { label: "選者一覧", href: "/selectors" },
