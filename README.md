@@ -34,6 +34,9 @@ npm run build    # dist/ に静的サイトを生成
 npm run preview  # ビルド結果を確認
 
 npm run verify   # push する前にこれ。lint → 型チェック → ビルドを通す
+
+npm run new:article                      # 記事を作る（対話式・書誌を自動取得）
+npm run check:isbn -- 9784150504106 …    # ISBNの書誌が取れるか実測する
 ```
 
 技術構成: **Astro**（静的生成）/ **Tailwind CSS v4** / **Cloudflare Pages**（無料枠で商用利用が許されるため）。
@@ -43,14 +46,35 @@ npm run verify   # push する前にこれ。lint → 型チェック → ビル
 
 ## 2. 記事を書いて公開する
 
-### 手順は3ステップだけ
+### CLIを使う（推奨）
+
+```bash
+npm run new:article
+```
+
+対話形式で以下を聞かれ、`src/content/interviews/<slug>.md` が生成される。
+
+1. **テーマ** — 一覧から選ぶ（新規追加もできる）
+2. **選者** — マスタから選ぶ（その場で新規登録もできる）
+3. **ISBN13 を5冊分** — **書名・著者・出版社・刊行年が自動で取得される**
+4. 取得結果を確認・修正（Enterでそのまま採用）
+5. 各冊の「選書理由」と「この本が知られていない理由」を入力
+
+**書誌の自動取得は openBD と Google Books の両方を引き、項目ごとに良い方を採る。**
+実測では出版社は openBD しか返さず、著者名は Google Books の方がきれいだった。
+ただし**そのままでは使えないことがある**（書名にシリーズ名や文庫番号が混入するなど）ので、
+確認ステップは飛ばさないこと。
+
+生成後は `.md` を開いて**導入文とまとめを書く**（CLIはプレースホルダのコメントを入れる）。
+
+### 手で書く場合
 
 1. `src/content/interviews/` に `.md` ファイルを1つ作る
 2. frontmatter を書く（[全項目は §3](#3-frontmatter-の全項目)）
 3. `git push` する → Cloudflare Pages が自動でビルド・公開
 
-**ファイル名は自由**（URLには影響しない）。慣例として `<選者のローマ字>-<分野>.md` にしている。
-例: `yamada-behavioral-economics.md`
+**ファイル名は自由**（URLには影響しない）。慣例として `<選者のID>-<テーマ>.md` にしている。
+例: `yamada-taro-behavioral-economics.md`
 
 **URLは frontmatter の `slug` で決まる。** `slug: yamada-behavioral-economics` なら
 記事URLは `/yamada-behavioral-economics/` になる。
@@ -71,19 +95,11 @@ title: 山田太郎が選ぶ、行動経済学の5冊
 slug: yamada-behavioral-economics
 publishedAt: 2026-08-04
 description: 一覧・検索・OGP・meta description に使われる要約。120字程度。
-topic: 行動経済学
+topic: 行動経済学        # src/data/topics.json にある語彙のみ
+selector: yamada-taro   # src/data/selectors.json のキー
 keywords:
   - 行動経済学
   - 意思決定
-selector:
-  name: 山田太郎
-  reading: やまだ たろう
-  affiliation: ○○大学 経済学部 教授
-  bio: どういう研究をしている人かを1〜2文で。
-  credentials: 公開された実績。論文・著書・担当した本・職歴など。読者が検証できること。
-  links:
-    x: yamada_t
-    site: https://example.ac.jp/yamada
 books:
   - title: ファスト＆スロー（上）
     author: ダニエル・カーネマン
@@ -139,17 +155,40 @@ books:
 | `selector` | ✅ | 下記 | 選者 |
 | `books` | ✅ | 下記 × **ちょうど5件** | 5冊 |
 
-### `selector`（選者）
+### `selector`（選者）— **記事には書かない。マスタをIDで参照する**
+
+記事の frontmatter には `selector: yamada-taro` のように**IDだけ**を書く。
+実データは `src/data/selectors.json` にある。
+
+**所属や略歴が変わったらマスタ1箇所を直せば全記事に反映される。**
+記事ごとにコピペすると、変更のたびに全記事を直すことになるため分離してある。
+選者ページのURLもこのID（`/selectors/yamada-taro/`）。
+
+```json
+{
+  "yamada-taro": {
+    "name": "山田太郎",
+    "reading": "やまだ たろう",
+    "affiliation": "○○大学 経済学部 教授",
+    "bio": "どういう研究をしている人かを1〜2文で。",
+    "credentials": "公開された実績。論文・著書・担当した本・職歴など。読者が検証できること。",
+    "links": { "x": "yamada_t", "site": "https://example.ac.jp/yamada" }
+  }
+}
+```
 
 | 項目 | 必須 | 説明 |
 |---|---|---|
-| `name` | ✅ | 氏名。**これが選者ページのURLになる**（同姓同名は同一人物として扱われる） |
+| キー（ID） | ✅ | 半角英数とハイフン。**URLになる** |
+| `name` | ✅ | 氏名 |
 | `reading` | — | ふりがな |
 | `affiliation` | ✅ | 所属 |
 | `bio` | ✅ | 略歴 |
 | `credentials` | ✅ | **公開された実績。** 「なぜこの人の推薦を信じるのか」の根拠。読者が検証できる内容にする |
 | `links.x` | — | Xのハンドル。**`@` は付けない**（`yamada_t` と書く） |
 | `links.site` | — | 個人サイト等のURL |
+
+**登録されていないIDを書くとビルドが失敗する。** 新規登録は `npm run new:article` の中でできる。
 
 ### `books`（必ず5件）
 
@@ -163,6 +202,16 @@ books:
 | `isbn` | ✅ | **ハイフンなしの13桁。必ずクォートで囲む**（`"9784150504106"`） |
 | `reason` | ✅ | 選書理由。300〜600字 |
 | `whyUnknown` | ✅ | **この本が知られていない理由。** 150〜300字 |
+
+### `topic` は語彙が閉じている
+
+`src/data/topics.json` に定義した語彙しか使えない。**未登録の値を書くとビルドが失敗する。**
+
+自由入力にすると「行動経済学」「行動経済学入門」「行動経済学 」のように表記が揺れ、
+アーカイブページが乱立する。新しいお題を立てるには topics.json への追記が必要で、
+**その一手間が「本当に新しいテーマか」を考える抑止として機能する。**
+
+追加は `npm run new:article` の中でできる（確認事項が表示される）。
 
 ### `topic` は「分野」ではなく「お題」
 
@@ -221,8 +270,23 @@ books:
 3. Google Books API
 4. 縦組みの書名（フォールバック）
 
-**実測では2と3でほとんど取れない**（サンプル10冊で openBD 2件、Google Books 0件）。
-つまり**書影を出したい本は、基本的に自分で登録することになる。**
+ビルドすると**書影がなかった本がISBN付きで一覧表示される**ので、そのままコピーして画像を用意できる。
+
+```
+[cover] 15冊 — 自前 1 / openBD 4 / GoogleBooks 6 / フォールバック 4
+  書影なし（public/covers/<ISBN>.jpg に置くと反映されます）:
+    9784784212873  実験機器と職人の科学史
+    9784622095804  科学革命の構造
+```
+
+開発サーバーでは**画像を置いてリロードすれば即反映される**（再起動は不要）。
+
+**実測の傾向**: 流通中の本なら7割前後は自動で取れるが、**このメディアが本命とする
+「絶版・少部数の埋もれた本」ではほぼ取れない**（書影は販促用のデータなので、売っていない本には用意されない）。
+書誌データは刊行年に関係なく残るのに対し、書影だけがこの偏りを持つ。
+
+つまり**扱う本が狙いどおりであるほど、書影は自分で登録することになる。**
+縦組みのフォールバックは例外ではなく標準的な見た目として設計してある。
 
 > ### ⚠️ 書影の登録には出版社の許諾が必要
 >
@@ -233,7 +297,7 @@ books:
 > 2. **書誌情報と出典を記事に明記する**（自動で表示される）
 > 3. **削除要請には即応する**（該当ファイルを消して再デプロイ。窓口は `/contact`）
 >
-> **許諾が取れていない書影を置かないこと。** 詳細は `public/covers/README.md`。
+> **許諾が取れていない書影を置かないこと。** 詳細は `docs/covers.md`。
 
 ### 記事サムネイルの登録: `public/thumbnails/<slug>.jpg`
 

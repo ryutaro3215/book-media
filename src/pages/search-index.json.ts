@@ -1,5 +1,6 @@
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
+import { selectorOf } from "../lib/collections";
 
 /**
  * 検索用の静的インデックス（requirements R17a）。
@@ -19,8 +20,8 @@ export const GET: APIRoute = async () => {
       slug: entry.id,
       title: entry.data.title,
       topic: entry.data.topic,
-      selector: entry.data.selector.name,
-      affiliation: entry.data.selector.affiliation,
+      selector: selectorOf(entry).name,
+      affiliation: selectorOf(entry).affiliation,
       publishedAt: entry.data.publishedAt.toISOString().slice(0, 10),
       books: entry.data.books.map((b) => b.title),
       authors: entry.data.books.map((b) => b.author),

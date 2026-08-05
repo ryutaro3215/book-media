@@ -8,15 +8,7 @@ keywords:
   - 行動経済学
   - 意思決定
   - 実験経済学
-selector:
-  name: 山田太郎
-  reading: やまだ たろう
-  affiliation: ○○大学 経済学部 教授
-  bio: 意思決定の実験研究を専門とする。1990年代後半から日本国内でのラボ実験の環境づくりに関わり、現在は公共政策への応用を中心に研究している。
-  credentials: 意思決定の時間割引に関する論文が国際学術誌に複数掲載されている。行動経済学会の企画委員を務め、自治体のナッジ・ユニットに外部委員として参加している。
-  links:
-    x: yamada_t
-    site: https://example.ac.jp/yamada
+selector: yamada-taro
 books:
   - title: ファスト＆スロー（上）
     author: ダニエル・カーネマン

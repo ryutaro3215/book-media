@@ -8,14 +8,7 @@ keywords:
   - 科学史
   - 科学社会学
   - 実験
-selector:
-  name: 佐藤花子
-  reading: さとう はなこ
-  affiliation: △△大学 人文社会系研究科 准教授
-  bio: 17〜19世紀の実験科学の成立過程を研究している。近年は科学機器の製作者と研究者の関係史を中心に扱っている。
-  credentials: 19世紀の実験機器と計測標準に関する単著を学術出版社から刊行し、日本科学史学会の論文賞を受賞している。国立科学博物館の企画展に監修として参加した。
-  links:
-    x: sato_hist
+selector: sato-hanako
 books:
   - title: 科学革命の構造
     author: トーマス・クーン

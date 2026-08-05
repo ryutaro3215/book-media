@@ -17,6 +17,7 @@ import {
   toSelectorHref,
   toTopicHref,
   type TopicGroup,
+  selectorOf,
 } from "../../lib/collections";
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -35,7 +36,7 @@ const { group, others } = Astro.props as {
 
 // 選者名（重複なし）。説明文を創作せずに description を作るための材料
 const selectorNames = [
-  ...new Set(group.articles.map((a) => a.data.selector.name)),
+  ...new Set(group.articles.map((a) => selectorOf(a).name)),
 ];
 
 const title = `${group.name}の5冊 | ${SITE.name}`;

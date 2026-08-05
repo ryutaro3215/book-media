@@ -1,25 +1,28 @@
 /**
  * 記事コレクションの集計（plan.md T13 / T14）。
  *
- * 記事（interviews）から「選者ごと」「分野ごと」のまとまりを作る。
- * `src/content.config.ts` は変更しないため、選者IDも分野IDも
- * **frontmatter の文字列そのもの**（`selector.name` / `topic`）を正規化して使う。
+ * 記事（interviews）から「選者ごと」「テーマごと」のまとまりを作る。
+ *
+ * 選者は `src/data/selectors.json` のマスタをIDで参照する。
+ * 記事側は `selector: yamada-taro` のようにIDだけを持つので、
+ * 所属や略歴が変わってもマスタ1箇所の修正で全記事に反映される。
  *
  * URL の方針:
- *   - 分野名・選者名は日本語なので、ローマ字化はせず **そのまま URL セグメントにし、
- *     リンク生成時に `encodeURIComponent` する**（`toTopicHref` / `toSelectorHref`）。
+ *   - 選者は**ASCIIのID**をそのまま使う（`/selectors/yamada-taro/`）。
+ *   - テーマ名は日本語なので、ローマ字化はせず **そのまま URL セグメントにし、
+ *     リンク生成時に `encodeURIComponent` する**（`toTopicHref`）。
  *   - `getStaticPaths` に渡す params には**生の文字列**を渡す（Astro 側がエンコードする）。
- *   この2点を守れば、日本語のスラグでもリンクと出力パスが必ず一致する。
  */
 import { type CollectionEntry, getCollection } from "astro:content";
+import { getSelector, type Selector } from "./selectors";
 
 export type Interview = CollectionEntry<"interviews">;
 
 export type SelectorGroup = {
-  /** URL に使うID（＝正規化した選者名） */
+  /** URL に使うID（＝selectors.json のキー） */
   id: string;
-  /** 選者情報。同名の選者が複数記事を持つ場合は最新記事のものを採用する */
-  selector: Interview["data"]["selector"];
+  /** マスタから解決した選者情報 */
+  selector: Selector;
   /** 公開日の新しい順 */
   articles: Interview[];
   /** その選者が扱った分野（重複なし・記事の新しい順） */
@@ -59,15 +62,14 @@ export async function getSelectorGroups(
   const map = new Map<string, SelectorGroup>();
 
   for (const entry of all) {
-    const id = normalize(entry.data.selector.name);
+    const id = entry.data.selector;
     const existing = map.get(id);
     if (existing) {
       existing.articles.push(entry);
     } else {
       map.set(id, {
         id,
-        // all は新しい順なので、最初に現れた記事＝最新のプロフィールを採用する
-        selector: entry.data.selector,
+        selector: getSelector(id),
         articles: [entry],
         topics: [],
       });
@@ -116,8 +118,13 @@ export async function getTopicGroups(
 }
 
 /** 選者ページのURL */
-export function toSelectorHref(name: string): string {
-  return `/selectors/${encodeURIComponent(normalize(name))}/`;
+export function toSelectorHref(id: string): string {
+  return `/selectors/${id}/`;
+}
+
+/** 記事の選者をマスタから解決する */
+export function selectorOf(entry: Interview): Selector {
+  return getSelector(entry.data.selector);
 }
 
 /** 分野ページのURL */

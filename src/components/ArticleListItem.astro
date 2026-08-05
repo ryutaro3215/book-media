@@ -8,7 +8,12 @@
  * サムネイルは渡されなかった場合、枠ごと描かない（書影の有無でレイアウトが崩れない）。
  */
 import type { Interview } from "../lib/collections";
-import { formatDate, toArticleHref, toISODate } from "../lib/collections";
+import {
+  formatDate,
+  selectorOf,
+  toArticleHref,
+  toISODate,
+} from "../lib/collections";
 
 interface Props {
   /** 表示する記事 */
@@ -38,7 +43,8 @@ const {
 } = Astro.props;
 
 const Heading = headingLevel;
-const { title, topic, publishedAt, selector } = entry.data;
+const { title, topic, publishedAt } = entry.data;
+const selector = selectorOf(entry);
 ---
 
 <a

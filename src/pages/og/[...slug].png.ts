@@ -6,6 +6,7 @@
 import { getCollection } from "astro:content";
 import type { APIRoute, GetStaticPaths } from "astro";
 import { SITE } from "../../config";
+import { selectorOf } from "../../lib/collections";
 import { renderOgImage } from "../../lib/og-template";
 
 export const prerender = true;
@@ -15,7 +16,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   return interviews.map((entry) => ({
     params: { slug: entry.data.slug },
     props: {
-      selectorName: entry.data.selector.name,
+      selectorName: selectorOf(entry).name,
       topic: entry.data.topic,
       bookTitles: entry.data.books.map((b) => b.title),
     },

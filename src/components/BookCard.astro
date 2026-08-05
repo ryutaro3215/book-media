@@ -8,7 +8,7 @@
  * 罫線と余白だけで区切った短い段落として出す（色や囲みでの強調はしない）。
  */
 import type { Book } from "../content.config";
-import { resolveCover } from "../lib/cover";
+import { noteMissingCover, resolveCover } from "../lib/cover";
 import BookCover from "./BookCover.astro";
 
 interface Props {
@@ -27,6 +27,12 @@ const publisherLine = `${book.publisher}・${book.year}`;
 
 // ビルド時に解決する。実行時にAPIは呼ばれない
 const cover = await resolveCover(book.isbn);
+
+// 書影がない本は、ビルドログの末尾に書名つきで一覧表示する
+// （どの本に画像を用意すればよいかが分かるように）
+if (cover.source === "fallback") {
+  noteMissingCover(book.isbn, book.title);
+}
 ---
 
 <article class="book-card text-ink">
