@@ -9,7 +9,7 @@ export const SITE = {
   /** 表示名。design/ のデザイン上は "Skrinia" が入っている（仮） */
   name: "Skrinia",
   /** 本番の公開URL。OGPの絶対URL生成に使う */
-  url: "https://example.pages.dev",
+  url: "https://book-media.pages.dev",
   description:
     "その領域に詳しい人が、有名ではないけれど本当に面白い本を5冊選んで紹介するメディアです。",
   /** 取材依頼・削除要請の窓口 */
