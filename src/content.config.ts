@@ -8,10 +8,7 @@ function isPlaceholder(value: string): boolean {
   return value.trimStart().startsWith("TODO:");
 }
 
-/**
- * 1冊分の書誌情報と選書理由。
- * `whyUnknown`（この本が知られていない理由）は requirements R2c により必須。
- */
+/** 1冊分の書誌情報と選書理由。 */
 const bookSchema = z.object({
   title: z.string().min(1),
   author: z.string().min(1),
@@ -22,8 +19,6 @@ const bookSchema = z.object({
   isbn: z.string().regex(/^\d{13}$/, "isbn は13桁の数字のみ（ハイフン不可）"),
   /** 選書理由。draft のあいだは `TODO: …` のままでよい */
   reason: z.string().min(1),
-  /** この本が知られていない理由（requirements R2c）。draft のあいだは TODO 可 */
-  whyUnknown: z.string().min(1),
 });
 
 /**
@@ -118,13 +113,6 @@ const interviews = defineCollection({
             code: z.ZodIssueCode.custom,
             path: ["books", i, "reason"],
             message: `${i + 1}冊目の選書理由が未記入です（TODO: のまま）`,
-          });
-        }
-        if (isPlaceholder(book.whyUnknown)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["books", i, "whyUnknown"],
-            message: `${i + 1}冊目の「この本が知られていない理由」が未記入です（TODO: のまま）`,
           });
         }
       });

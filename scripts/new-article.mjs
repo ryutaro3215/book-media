@@ -167,7 +167,7 @@ async function main() {
         "  ※ このメディアの価値は「その道に詳しい人しか知らない本」にあります。\n" +
         "    お題を立てる前に確認してください:\n" +
         "      ・なぜこの人に聞くのか（選者の専門性が要るお題か）\n" +
-        "      ・有名でない本が出てくるか（「知られていない理由」が書けるか）\n",
+        "      ・アーカイブとして成立する粒度か（この記事1本専用にならないか）\n",
     );
     topic = await askRequired("  テーマ名");
     console.log(
@@ -328,8 +328,6 @@ async function main() {
       year: info.year || 0,
       isbn,
       reason: "TODO: この本を薦める理由を300〜600字で書く",
-      whyUnknown:
-        "TODO: この本が知られていない理由を150〜300字で書く（絶版・専門書として刊行された・訳が古い など）",
     });
   }
 
@@ -357,7 +355,6 @@ async function main() {
     lines.push(`    year: ${b.year}`);
     lines.push(`    isbn: ${yamlString(b.isbn)}`);
     lines.push(`    reason: ${block(b.reason, 6)}`);
-    lines.push(`    whyUnknown: ${block(b.whyUnknown, 6)}`);
   }
 
   lines.push("---");
@@ -376,6 +373,9 @@ async function main() {
   lines.push("");
   lines.push("<!-- まとめもここに書く -->");
   lines.push("");
+
+  // 記事を全部消すとディレクトリごと無くなるので、書く前に作る
+  fs.mkdirSync(ARTICLES_DIR, { recursive: true });
 
   const filePath = path.join(ARTICLES_DIR, `${slug}.md`);
   if (fs.existsSync(filePath)) {
