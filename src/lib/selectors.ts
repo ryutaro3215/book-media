@@ -7,6 +7,8 @@
  * JSON にしているのは、Astro（TS）と CLI スクリプト（.mjs）の
  * **両方から同じファイルを読む**ため。
  */
+import { existsSync } from "node:fs";
+import path from "node:path";
 import selectorsJson from "../data/selectors.json";
 
 export type Selector = {
@@ -65,12 +67,36 @@ export function getSelector(id: SelectorId): Selector {
 }
 
 /**
- * 顔写真のURL。未登録なら null。
- * `public/selectors/` に置いたファイル名をそのまま参照する。
+ * 顔写真のURL。
+ *
+ *   1. selectors.json の `avatar`（登録した画像）
+ *   2. `public/selectors/_default.<ext>`（置いてあれば全員の既定値になる）
+ *   3. どちらも無ければ null → 呼び出し側が頭文字を出す
+ *
+ * 2 は**ファイルを置くかどうかだけ**で切り替わる（設定は不要）。
+ * ただし置くと写真のない選者が全員同じ見た目になる。
+ * 頭文字は人ごとに変わるので、一覧での識別性は頭文字の方が高い。
  */
+const DEFAULT_AVATAR_BASENAME = "_default";
+const AVATAR_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"] as const;
+
+const SELECTORS_DIR = path.resolve(process.cwd(), "public/selectors");
+
+function findDefaultAvatar(): string | null {
+  for (const ext of AVATAR_EXTENSIONS) {
+    if (
+      existsSync(path.join(SELECTORS_DIR, `${DEFAULT_AVATAR_BASENAME}${ext}`))
+    ) {
+      return `/selectors/${DEFAULT_AVATAR_BASENAME}${ext}`;
+    }
+  }
+  return null;
+}
+
 export function getAvatarUrl(id: SelectorId): string | null {
   const avatar = selectors[id]?.avatar?.trim();
-  return avatar ? `/selectors/${avatar}` : null;
+  if (avatar) return `/selectors/${avatar}`;
+  return findDefaultAvatar();
 }
 
 /** 全選者を [id, 選者] の組で返す */
