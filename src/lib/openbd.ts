@@ -71,10 +71,18 @@ export async function fetchGoogleBooksCover(
   isbn: string,
 ): Promise<string | null> {
   try {
-    const res = await fetch(
-      `${GOOGLE_BOOKS_ENDPOINT}?q=isbn:${encodeURIComponent(isbn)}`,
-      { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
-    );
+    // APIキーがないと共有IPのクォータで 429 になり、実質いつも失敗する。
+    // 実測: キーなし 0/10 → キーあり 7/10。必ず渡すこと。
+    // ビルド時にしか使わないので PUBLIC_ は付けない（クライアントに露出させない）
+    const url = new URL(GOOGLE_BOOKS_ENDPOINT);
+    url.searchParams.set("q", `isbn:${isbn}`);
+    url.searchParams.set("country", "JP");
+    const key = process.env.GOOGLE_BOOKS_API_KEY;
+    if (key) url.searchParams.set("key", key);
+
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
     if (!res.ok) return null;
 
     const json = (await res.json()) as GoogleBooksResponse;

@@ -19,6 +19,7 @@ import {
   toTopicHref,
   toXProfileUrl,
   toXHandleLabel,
+  selectorOf,
 } from "../lib/collections";
 
 export async function getStaticPaths() {
@@ -31,7 +32,8 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { data } = entry;
-const { selector, books } = data;
+const selector = selectorOf(entry);
+const { books } = data;
 
 const { Content } = await render(entry);
 
@@ -96,7 +98,7 @@ const others = (await getAllInterviews())
     <div class="flex items-center gap-4 border-b border-rule pb-10">
       <div class="flex min-w-0 flex-auto flex-col gap-1">
         <a
-          href={toSelectorHref(selector.name)}
+          href={toSelectorHref(data.selector)}
           class="text-base font-bold text-ink no-underline hover:text-ink"
         >
           {selector.name}

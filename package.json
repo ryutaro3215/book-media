@@ -12,7 +12,9 @@
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "typecheck": "astro check",
-    "verify": "npm run lint && npm run typecheck && npm run build"
+    "verify": "npm run lint && npm run typecheck && npm run build",
+    "check:isbn": "node scripts/check-isbn.mjs",
+    "new:article": "node scripts/new-article.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

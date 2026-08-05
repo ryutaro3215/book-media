@@ -82,7 +82,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
   - ビルド時に解決し、実行時にAPIを呼ばない（ビルド後の `dist/` 内のJSにAPI呼び出しが含まれない）
   - APIが応答しない・タイムアウトした場合でも**ビルドが失敗せず**、フォールバックに倒れる（ネットワークを遮断して `npm run build` が成功することで確認）
   - 各書籍の解決結果（どの経路で取得したか）がビルドログに出力され、フォールバック件数が集計される
-  - **注**: 自前で用意した画像の配信は複製・公衆送信にあたる（requirements.md の8参照）。運用として出版社の許諾取得・出典表記・削除要請への即応が前提であることを `public/covers/README.md` に明記する
+  - **注**: 自前で用意した画像の配信は複製・公衆送信にあたる（requirements.md の8参照）。運用として出版社の許諾取得・出典表記・削除要請への即応が前提であることを `docs/covers.md` に明記する
 - depends: T2
 - skills: なし
 

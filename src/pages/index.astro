@@ -21,6 +21,7 @@ import {
   toArticleHref,
   toSelectorHref,
   toTopicHref,
+  selectorOf,
 } from "../lib/collections";
 
 const articles = await getAllInterviews();
@@ -84,7 +85,7 @@ const topics = await getTopicGroups();
                   {entry.data.title}
                 </div>
                 <div class="flex items-center gap-2.5 text-xs text-muted">
-                  <span>{entry.data.selector.name}</span>
+                  <span>{selectorOf(entry).name}</span>
                   <span class="h-2.5 w-px bg-rule" aria-hidden="true" />
                   <span>{formatDate(entry.data.publishedAt)}</span>
                 </div>
@@ -134,7 +135,7 @@ const topics = await getTopicGroups();
             <div class="flex gap-6 overflow-x-auto pb-2">
               {selectors.map((s) => (
                 <a
-                  href={toSelectorHref(s.selector.name)}
+                  href={toSelectorHref(s.id)}
                   class="flex w-[220px] flex-none flex-col gap-3 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
                 >
                   <div class="text-base font-bold">{s.selector.name}</div>

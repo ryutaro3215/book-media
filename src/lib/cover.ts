@@ -38,6 +38,15 @@ const LOCAL_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"] as const;
 /** 同一ISBNを何度も引かないためのメモ化（値ではなく Promise を保持し、並行呼び出しも1回に畳む） */
 const cache = new Map<string, Promise<CoverResult>>();
 
+/**
+ * 開発サーバーではメモ化しない。
+ *
+ * 記事を書きながら `public/covers/` に画像を足していく運用のとき、
+ * キャッシュが効いていると**サーバーを再起動するまで画像が反映されない**。
+ * dev は1リクエストあたり数冊しか引かないので、毎回引き直して構わない。
+ */
+const useCache = !import.meta.env.DEV;
+
 /** ビルドログのサマリ用カウンタ */
 const tally: Record<CoverSource, number> = {
   local: 0,
@@ -46,7 +55,18 @@ const tally: Record<CoverSource, number> = {
   fallback: 0,
 };
 
+/** 書影が見つからなかった本。ビルド後に「どれに画像を用意すべきか」を出すため */
+const missing = new Map<string, string>();
+
 let summaryScheduled = false;
+
+/**
+ * 書影が見つからなかった本を記録する。
+ * BookCard から書名つきで呼ぶことで、ログに書名を出せる。
+ */
+export function noteMissingCover(isbn: string, title: string): void {
+  missing.set(isbn, title);
+}
 
 /**
  * `public/covers/<isbn>.<ext>` を探す。あればサイト上のパスを返す。
@@ -82,8 +102,10 @@ async function resolveUncached(isbn: string): Promise<CoverResult> {
  * 失敗しても例外は投げず、必ず `CoverResult` を返す。
  */
 export function resolveCover(isbn: string): Promise<CoverResult> {
-  const cached = cache.get(isbn);
-  if (cached) return cached;
+  if (useCache) {
+    const cached = cache.get(isbn);
+    if (cached) return cached;
+  }
 
   const pending = resolveUncached(isbn)
     .catch((): CoverResult => ({ url: null, source: "fallback" }))
@@ -93,18 +115,26 @@ export function resolveCover(isbn: string): Promise<CoverResult> {
       return result;
     });
 
-  cache.set(isbn, pending);
+  if (useCache) cache.set(isbn, pending);
   return pending;
 }
 
 /** 解決結果のサマリ文字列（テスト・手動確認用） */
 export function coverSummary(): string {
   const total = Object.values(tally).reduce((a, b) => a + b, 0);
-  return (
+  const head =
     `[cover] ${total}冊 — ` +
     `自前 ${tally.local} / openBD ${tally.openbd} / ` +
-    `GoogleBooks ${tally.googlebooks} / フォールバック ${tally.fallback}`
-  );
+    `GoogleBooks ${tally.googlebooks} / フォールバック ${tally.fallback}`;
+
+  if (missing.size === 0) return head;
+
+  // どの本に画像を用意すればよいかを、ISBNをコピーできる形で出す
+  const list = [...missing.entries()]
+    .map(([isbn, title]) => `    ${isbn}  ${title}`)
+    .join("\n");
+
+  return `${head}\n  書影なし（public/covers/<ISBN>.jpg に置くと反映されます）:\n${list}`;
 }
 
 /**
