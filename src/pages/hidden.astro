@@ -1,0 +1,133 @@
+---
+/**
+ * 「知る人ぞ知る本」の一覧（plan.md T23）。
+ *
+ * 各記事の `whyBuried` が書かれた本だけを、分野を横断して集める。
+ *
+ * ## なぜこのページが要るか
+ * このメディアの出発点は「良い本を広めたい、埋もれた本を発掘したい」という
+ * オーナーの動機だが、記事は**テーマごとに縦に切られている**ため、
+ * その分野に興味がない読者には届かない。
+ *
+ * このページは**横に切る**。分野を問わず「その道の人が挙げた、あまり
+ * 知られていない本」だけが並ぶので、分野に興味がなくても読める。
+ *
+ * そして**Amazon にも書店の平台にも作れない**。ランキングは売れている順なので、
+ * 原理的に埋もれた本を出せない。記事が増えるほど、ここが資産になる。
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BookCover from "../components/BookCover.astro";
+import SEO from "../components/SEO.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import { SITE } from "../config";
+import {
+  getAllInterviews,
+  selectorOf,
+  toArticleHref,
+  toSelectorHref,
+  toTopicHref,
+} from "../lib/collections";
+import { resolveCover } from "../lib/cover";
+
+const interviews = await getAllInterviews();
+
+// whyBuried が書かれた本だけを集める（記事の公開日が新しい順）
+const entries = [];
+for (const interview of interviews) {
+  for (const book of interview.data.books) {
+    if (!book.whyBuried) continue;
+    entries.push({
+      book,
+      cover: (await resolveCover(book.isbn)).url,
+      interview,
+      selector: selectorOf(interview),
+    });
+  }
+}
+
+const title = "知る人ぞ知る本";
+const description = `その道に詳しい人が「あまり知られていない」として挙げた本の一覧。分野を横断して${entries.length}冊。`;
+---
+
+<BaseLayout headSlot>
+  <SEO
+    slot="head"
+    title={title}
+    description={description}
+    canonical="/hidden/"
+  />
+
+  <SiteHeader />
+
+  <main class="mx-auto max-w-body px-5 pt-14">
+    <h1
+      class="m-0 mb-5 text-[clamp(26px,3.6vw,32px)] leading-[1.4] font-bold"
+    >
+      {title}
+    </h1>
+
+    <p class="m-0 mb-3 text-[15px] leading-[1.9] text-ink text-pretty">
+      各記事の選者が「この中でいちばん知られていない」として挙げた本を、分野を横断して集めています。売れている順でも、話題になった順でもありません。
+    </p>
+    <p class="m-0 mb-14 text-sm text-muted">{entries.length}冊</p>
+
+    {
+      entries.length === 0 ? (
+        <p class="text-[15px] leading-[1.9] text-muted">
+          まだありません。記事が増えるとここに集まります。
+        </p>
+      ) : (
+        <div>
+          {entries.map(({ book, cover, interview, selector }) => (
+            <article class="flex gap-6 border-t border-rule py-9 last:border-b">
+              <div class="flex-none">
+                <BookCover title={book.title} coverUrl={cover} />
+              </div>
+
+              <div class="flex min-w-0 flex-auto flex-col gap-2.5">
+                <h2 class="m-0 text-[19px] leading-[1.5] font-bold text-pretty">
+                  {book.title}
+                </h2>
+                <div class="text-sm leading-[1.7]">
+                  {book.translator
+                    ? `${book.author} / ${book.translator} 訳`
+                    : book.author}
+                </div>
+                <div class="text-[13px] text-muted">
+                  {book.publisher}・{book.year}
+                </div>
+
+                <p class="m-0 mt-1.5 text-[15px] leading-[1.9] text-ink text-pretty">
+                  {book.whyBuried}
+                </p>
+
+                <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-muted">
+                  <a
+                    href={toSelectorHref(interview.data.selector)}
+                    class="text-muted hover:text-ink"
+                  >
+                    {selector.name}
+                  </a>
+                  <span class="h-3 w-px bg-rule" aria-hidden="true" />
+                  <a
+                    href={toTopicHref(interview.data.topic)}
+                    class="text-muted hover:text-ink"
+                  >
+                    {interview.data.topic}
+                  </a>
+                  <span class="h-3 w-px bg-rule" aria-hidden="true" />
+                  <a href={toArticleHref(interview)}>この本が出てくる記事</a>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </main>
+
+  <div class="mx-auto mt-[72px] max-w-body px-5">
+    <SiteFooter />
+  </div>
+</BaseLayout>
