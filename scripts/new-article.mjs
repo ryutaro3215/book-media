@@ -272,74 +272,64 @@ async function main() {
 
   // --- 5冊 ---
   console.log(
-    "\n■ 書籍を5冊登録します。\n" +
-      "  ISBN13（ハイフンありでも可）を入力すると書誌を自動取得します。\n" +
-      "  取得した値はそのままでは使えないことがあるので、必ず確認してください。\n",
+    "\n■ 書籍を5冊登録します。ISBN13 を順に入れてください（ハイフン可）。\n" +
+      "  書誌は自動取得し、確認と選書理由は生成後のファイルで書きます。\n",
   );
 
   const books = [];
+  const warnings = [];
+
   for (let i = 1; i <= 5; i++) {
-    console.log(`\n── ${i}冊目 ──`);
     let isbn = "";
     while (!/^\d{13}$/.test(isbn)) {
-      isbn = (await ask("  ISBN13: ")).replace(/[^\d]/g, "");
-      if (!/^\d{13}$/.test(isbn))
+      isbn = (await ask(`  ${i}冊目のISBN13: `)).replace(/[^\d]/g, "");
+      if (!/^\d{13}$/.test(isbn)) {
         console.log("  ※ 13桁の数字で入力してください");
-    }
-
-    process.stdout.write("  照会中… ");
-    const info = await fetchBook(isbn);
-
-    if (!info.found) {
-      console.log("該当なし（手入力になります）");
-    } else {
-      console.log(`取得（${info.sources.join(" + ")}）`);
-      if (info.raw.openbd && info.raw.googlebooks) {
-        const o = info.raw.openbd;
-        const g = info.raw.googlebooks;
-        if (o.title !== g.title) {
-          console.log(
-            `    書名の候補: openBD「${o.title}」/ Google「${g.title}」`,
-          );
-        }
-        if (o.volume)
-          console.log(`    openBDのvolume: 「${o.volume}」（混入注意）`);
       }
     }
 
-    console.log("  取得した値を確認してください（Enterでそのまま採用）");
-    const bookTitle = await askRequired("    書名", info.title ?? "");
-    const author = await askRequired("    著者", info.author ?? "");
-    const translator = (
-      await ask(
-        `    訳者（任意）${info.translator ? `（現在: ${info.translator}）` : ""}: `,
-      )
-    ).trim();
-    const publisher = await askRequired("    出版社", info.publisher ?? "");
-    const yearInput = await askRequired("    刊行年", String(info.year ?? ""));
+    process.stdout.write("      照会中… ");
+    const info = await fetchBook(isbn);
 
-    console.log(
-      "\n    選書理由（300〜600字）。改行を含められます。\n" +
-        "    入力後、単独行に . を入れて終了してください。",
-    );
-    const reason = await readMultiline();
+    if (!info.found) {
+      console.log("該当なし → 書誌は手入力になります");
+      warnings.push(`${i}冊目（${isbn}）: 書誌が取得できなかったので手で書く`);
+    } else {
+      console.log(`${info.title}（${info.publisher}・${info.year}）`);
 
-    console.log(
-      "\n    この本が知られていない理由（150〜300字）。\n" +
-        "    ※ このメディアの核です。絶版・専門書として刊行された・訳が古い など。\n" +
-        "    入力後、単独行に . を入れて終了してください。",
-    );
-    const whyUnknown = await readMultiline();
+      // 機械では正解を選べない箇所を、ファイル冒頭に残して後で確認できるようにする
+      const o = info.raw.openbd;
+      const g = info.raw.googlebooks;
+      if (o && g && o.title !== g.title) {
+        warnings.push(
+          `${i}冊目: 書名の候補が2つ — openBD「${o.title}」/ Google「${g.title}」`,
+        );
+      }
+      if (o?.volume) {
+        warnings.push(
+          `${i}冊目: openBD の volume「${o.volume}」が書名に混ざっている可能性`,
+        );
+      }
+      if (o && g && o.year && g.year && o.year !== g.year) {
+        warnings.push(
+          `${i}冊目: 刊行年が食い違う — openBD ${o.year} / Google ${g.year}`,
+        );
+      }
+      if (!info.publisher) {
+        warnings.push(`${i}冊目: 出版社が取得できなかった`);
+      }
+    }
 
     books.push({
-      title: bookTitle,
-      author,
-      translator: translator || (info.translator ?? ""),
-      publisher,
-      year: Number(yearInput),
+      title: info.title || "TODO: 書名",
+      author: info.author || "TODO: 著者",
+      translator: info.translator || "",
+      publisher: info.publisher || "TODO: 出版社",
+      year: info.year || 0,
       isbn,
-      reason,
-      whyUnknown,
+      reason: "TODO: この本を薦める理由を300〜600字で書く",
+      whyUnknown:
+        "TODO: この本が知られていない理由を150〜300字で書く（絶版・専門書として刊行された・訳が古い など）",
     });
   }
 
@@ -350,6 +340,8 @@ async function main() {
     `title: ${yamlString(title)}`,
     ...(seoTitle ? [`seoTitle: ${yamlString(seoTitle)}`] : []),
     `slug: ${yamlString(slug)}`,
+    "# 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される",
+    "draft: true",
     `publishedAt: ${today}`,
     `description: ${yamlString(description)}`,
     `topic: ${yamlString(topic)}`,
@@ -370,6 +362,14 @@ async function main() {
 
   lines.push("---");
   lines.push("");
+  if (warnings.length > 0) {
+    lines.push("<!--");
+    lines.push("  要確認（自動取得で判断できなかった箇所）:");
+    for (const w of warnings) lines.push(`    - ${w}`);
+    lines.push("  確認して直したら、このコメントは消してよい");
+    lines.push("-->");
+    lines.push("");
+  }
   lines.push(
     "<!-- 導入文をここに書く。選者がどういう人で、この5冊で何が見えるのか。3〜5段落 -->",
   );
@@ -394,26 +394,25 @@ async function main() {
   fs.writeFileSync(filePath, lines.join("\n"));
 
   console.log(`\n✓ ${path.relative(ROOT, filePath)} を作成しました。\n`);
+  if (warnings.length > 0) {
+    console.log("要確認（ファイル冒頭のコメントにも書いてあります）:");
+    for (const w of warnings) console.log(`  - ${w}`);
+    console.log("");
+  }
   console.log("次にやること:");
-  console.log("  1. ファイルを開いて導入文とまとめを書く");
   console.log(
-    "  2. npm run build  ← ここで5冊固定・ISBN形式・必須項目が検証される",
+    "  1. ファイルをエディタで開き、書誌の確認・選書理由・導入文を書く",
   );
-  console.log("  3. 書影を出したい本があれば public/covers/<ISBN>.jpg に置く");
-  console.log("     （出版社の許諾が必要。public/covers/README.md 参照）\n");
+  console.log(
+    "     TODO: の箇所がすべて対象。draft: true のあいだはビルドが通る",
+  );
+  console.log("  2. npm run dev で見た目を確認する（下書きも表示される）");
+  console.log("  3. 書き上がったら draft: false にする");
+  console.log("     → npm run build で未記入が残っていないか検証される");
+  console.log("  4. 書影を出したい本があれば public/covers/<ISBN>.jpg に置く");
+  console.log("     （出版社の許諾が必要。docs/covers.md 参照）\n");
 
   closeInput();
-}
-
-/** 単独行の "." で終わる複数行入力 */
-async function readMultiline() {
-  const lines = [];
-  while (true) {
-    const line = await ask("    > ");
-    if (line.trim() === ".") break;
-    lines.push(line);
-  }
-  return lines.join("\n").trim();
 }
 
 main().catch((err) => {

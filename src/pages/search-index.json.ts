@@ -1,6 +1,6 @@
-import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
-import { selectorOf } from "../lib/collections";
+// getAllInterviews は本番で下書きを除外する
+import { getAllInterviews, selectorOf } from "../lib/collections";
 
 /**
  * 検索用の静的インデックス（requirements R17a）。
@@ -12,7 +12,8 @@ import { selectorOf } from "../lib/collections";
  * 本文は含めない（全文検索は非スコープ。インデックスが肥大するため）。
  */
 export const GET: APIRoute = async () => {
-  const interviews = await getCollection("interviews");
+  // 下書きは検索に出さない
+  const interviews = await getAllInterviews();
 
   const index = interviews
     .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())

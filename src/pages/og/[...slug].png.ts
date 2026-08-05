@@ -3,16 +3,16 @@
  * 出力先は dist/og/<slug>.png。ランタイム生成はしない（prerender 前提）。
  */
 
-import { getCollection } from "astro:content";
 import type { APIRoute, GetStaticPaths } from "astro";
 import { SITE } from "../../config";
-import { selectorOf } from "../../lib/collections";
+import { getAllInterviews, selectorOf } from "../../lib/collections";
 import { renderOgImage } from "../../lib/og-template";
 
 export const prerender = true;
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const interviews = await getCollection("interviews");
+  // 下書きのOGP画像は生成しない
+  const interviews = await getAllInterviews();
   return interviews.map((entry) => ({
     params: { slug: entry.data.slug },
     props: {
