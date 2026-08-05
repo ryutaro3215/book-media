@@ -277,10 +277,11 @@ async function main() {
     const affiliation = await askRequired("  所属");
     const bio = await askRequired("  略歴（1〜2文）");
     console.log(
-      "\n  ※ credentials は「なぜこの人の推薦を信じるのか」の根拠です。\n" +
-        "    読者がプロフィールから辿って検証できる、公開された実績を書いてください。",
+      "\n  ※ 「なぜこの人の推薦を信じるのか」の根拠になります。\n" +
+        "    肩書きや形式は問いません（研究・仕事・発信・読書歴など）。\n" +
+        "    読者が「この人の話なら聞いてみたい」と思える材料を書いてください。",
     );
-    const credentials = await askRequired("  公開された実績");
+    const credentials = await askRequired("  この人が詳しい理由");
     const x = (await ask("  Xのハンドル（@なし・任意）: ")).trim();
     console.log(
       "\n  顔写真（任意）。public/selectors/ に画像を置き、ファイル名を入力してください。\n" +

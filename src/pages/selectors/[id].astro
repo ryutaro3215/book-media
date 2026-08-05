@@ -5,7 +5,7 @@
  * 顔写真は任意（selectors.json の avatar）。未登録なら頭文字のアバターを出すので、
  * 写真ありと無しが混在してもレイアウトは崩れない。
  *
- * credentials（公開された実績）は「なぜこの人の推薦を信じるのか」を示す核なので、
+ * credentials（この人が詳しい理由）は「なぜこの人の推薦を信じるのか」を示す核なので、
  * プロフィール本文より前・氏名の直下に置く。
  */
 import type { GetStaticPaths } from "astro";
@@ -88,12 +88,12 @@ const description = `${selector.name}（${selector.affiliation}）が選んだ�
       }
     </header>
 
-    {/* 公開された実績。この媒体の信頼の根拠なので本文より先に置く */}
+    {/* この人が詳しい理由。この媒体の信頼の根拠なので本文より先に置く */}
     <section class="mb-10 border-y border-rule py-6">
       <h2
         class="m-0 mb-2 text-xs tracking-[0.1em] text-muted"
       >
-        公開された実績
+        この人が詳しい理由
       </h2>
       <p class="m-0 text-[15px] leading-[1.9] text-ink text-pretty">
         {selector.credentials}
