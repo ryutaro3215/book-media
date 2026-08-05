@@ -12,6 +12,7 @@ import SiteFooter from "../components/SiteFooter.astro";
 import SideNav from "../components/SideNav.astro";
 import { SITE } from "../config";
 import { websiteJsonLd } from "../lib/jsonld";
+import { resolveThumbnail } from "../lib/thumbnail";
 import {
   getAllInterviews,
   getSelectorGroups,
@@ -64,10 +65,15 @@ const topics = await getTopicGroups();
                 href={toArticleHref(entry)}
                 class="flex w-[236px] flex-none flex-col gap-3 text-inherit no-underline hover:text-inherit"
               >
-                <div class="flex h-[150px] w-[236px] items-end overflow-hidden bg-cover-placeholder p-4">
-                  <span class="text-[13px] leading-[1.6] text-muted">
-                    {entry.data.topic}
-                  </span>
+                <div class="h-[150px] w-[236px] overflow-hidden bg-cover-placeholder">
+                  <img
+                    src={resolveThumbnail(entry.data.slug)}
+                    alt=""
+                    width="236"
+                    height="150"
+                    loading="lazy"
+                    class="h-full w-full object-cover"
+                  />
                 </div>
                 <div class="text-base leading-[1.6] font-bold text-pretty">
                   {entry.data.title}
