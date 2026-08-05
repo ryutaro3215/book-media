@@ -105,11 +105,15 @@ const topics = await getTopicGroups();
                 テーマから探す
               </h2>
             </div>
-            <div class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
+            {/* グリッドではなく横スクロールの列にする。
+                グリッドだと画面幅に応じてカードが伸び縮みし、
+                「新着の記事」「選者から探す」と挙動が揃わない。
+                固定幅にすることで、どの画面幅でもカードの大きさが変わらない */}
+            <div class="flex gap-6 overflow-x-auto pb-2">
               {topics.map((t) => (
                 <a
                   href={toTopicHref(t.name)}
-                  class="flex flex-col gap-2 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
+                  class="flex w-[220px] flex-none flex-col gap-2 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
                 >
                   <span class="text-base font-bold">{t.name}</span>
                   <span class="text-[13px] text-muted">
