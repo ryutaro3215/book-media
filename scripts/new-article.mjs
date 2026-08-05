@@ -173,12 +173,16 @@ async function askRequired(label, initial = "") {
   }
 }
 
-async function chooseFromList(label, items, { allowNew = false } = {}) {
+async function chooseFromList(
+  label,
+  items,
+  { allowNew = false, newLabel = "新規に追加する" } = {},
+) {
   console.log(`\n${label}`);
   for (const [i, item] of items.entries()) {
     console.log(`  ${i + 1}. ${item.label}`);
   }
-  if (allowNew) console.log(`  n. 新規に追加する`);
+  if (allowNew) console.log(`  n. ${newLabel}`);
 
   while (true) {
     const answer = (await ask("番号を入力: ")).trim();
@@ -294,14 +298,63 @@ async function main() {
 
   // --- 記事のメタ情報 ---
   console.log("\n■ 記事の情報");
-  const title = await askRequired(
-    "  記事タイトル",
-    `${selectorName}が選ぶ、${topic}の5冊`,
+
+  // タイトルは自動生成しない。雛形は出すが、選ぶか自分で書くかは毎回決めてもらう。
+  // タイトルは記事ごとに考える価値のある要素で、型に流し込むと全記事が同じ顔になる
+  console.log("\n  記事タイトル");
+  const titleChoice = await chooseFromList(
+    "  雛形から選ぶか、自由に入力してください",
+    [
+      {
+        label: `${selectorName}が選ぶ、${topic}の5冊`,
+        value: `${selectorName}が選ぶ、${topic}の5冊`,
+      },
+      {
+        label: `${topic}を知るための5冊 — ${selectorName}が選ぶ`,
+        value: `${topic}を知るための5冊 — ${selectorName}が選ぶ`,
+      },
+      {
+        label: `${selectorName}が薦める、${topic}の隠れた5冊`,
+        value: `${selectorName}が薦める、${topic}の隠れた5冊`,
+      },
+    ],
+    { allowNew: true, newLabel: "自由に入力する" },
   );
-  const slug = await askRequired(
-    "  slug（URLになる。半角英数とハイフン）",
-    `${selectorId}-${toSlugCandidate(topic)}`,
+  const title = titleChoice.isNew
+    ? await askRequired("  タイトル")
+    : titleChoice.value;
+
+  // 検索用タイトル（任意）。
+  // 記事タイトルは「〈選者〉が選ぶ、〈テーマ〉の5冊」の型で、X共有時に
+  // 「誰が選んだか」を伝えるための形。一方で検索する人は
+  // 「〇〇 入門書」「〇〇 おすすめ 本」と打つため、語が噛み合わない。
+  // 両立させるために、<title> だけ差し替えられるようにしてある。
+  console.log(
+    "\n  検索用タイトル（任意・Enterでスキップ）\n" +
+      "  検索結果に出る <title> だけを差し替えます。上のタイトルはそのまま残ります。\n" +
+      `  例: ${topic}の入門書5冊 — ${selectorName}が選ぶ`,
   );
+  const seoTitle = (await ask("  検索用タイトル: ")).trim();
+
+  // slug は必ず半角英数とハイフンにする。
+  // 日本語のままだと共有時にURLがエンコードされて長大化する（Xでの共有が主要導線）。
+  // 一度公開したURLは変えられないので、ここで弾く
+  let slug = "";
+  while (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+    slug = (
+      await ask(
+        `  slug（URLになる。半角小文字英数とハイフンのみ。例: ${selectorId}-picks）: `,
+      )
+    )
+      .trim()
+      .toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+      console.log(
+        "  ※ 半角小文字の英数とハイフンだけで入力してください（日本語は使えません）",
+      );
+    }
+  }
+
   const description = await askRequired("  要約（120字程度）");
 
   // --- 5冊 ---
@@ -382,6 +435,7 @@ async function main() {
   const lines = [
     "---",
     `title: ${yamlString(title)}`,
+    ...(seoTitle ? [`seoTitle: ${yamlString(seoTitle)}`] : []),
     `slug: ${yamlString(slug)}`,
     `publishedAt: ${today}`,
     `description: ${yamlString(description)}`,
