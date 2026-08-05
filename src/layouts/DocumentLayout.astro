@@ -10,6 +10,7 @@
  * 子要素セレクタによって組版が当たる。
  */
 import BaseLayout from "./BaseLayout.astro";
+import SEO from "../components/SEO.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 
@@ -19,12 +20,24 @@ interface Props {
   /** <title> 用。省略時は title をそのまま使う */
   documentTitle?: string;
   description?: string;
+  /** 検索結果に出したくないページ（404 など） */
+  noindex?: boolean;
 }
 
-const { title, documentTitle, description } = Astro.props;
+const { title, documentTitle, description, noindex = false } = Astro.props;
 ---
 
-<BaseLayout title={documentTitle ?? title} description={description}>
+{/* canonical・OGP・Twitter Card をこの1枚で全文書ページに行き渡らせる。
+    以前は BaseLayout に title/description を渡すだけで、
+    about/apply/contact/privacy/404 の5ページにメタタグが無かった */}
+<BaseLayout headSlot>
+  <SEO
+    slot="head"
+    title={documentTitle ?? title}
+    description={description}
+    canonical={Astro.url.pathname}
+    noindex={noindex}
+  />
   <div class="flex min-h-screen flex-col">
     <SiteHeader />
 

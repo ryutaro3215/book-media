@@ -6,6 +6,7 @@
  */
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
+import SEO from "../../components/SEO.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import { SITE } from "../../config";
 import { getTopicGroups, toTopicHref } from "../../lib/collections";
@@ -16,7 +17,13 @@ const title = `テーマ一覧 | ${SITE.name}`;
 const description = `${SITE.name}で扱っている${groups.length}テーマの一覧。テーマごとに、その領域に詳しい選者が選んだ本の記事を読めます。`;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout headSlot>
+  <SEO
+    slot="head"
+    title={title}
+    description={description}
+    canonical={Astro.url.pathname}
+  />
   <SiteHeader />
 
   <main class="mx-auto max-w-body px-5 pt-[72px]">

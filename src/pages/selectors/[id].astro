@@ -11,6 +11,7 @@
 import type { GetStaticPaths } from "astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
+import SEO from "../../components/SEO.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import ArticleListItem from "../../components/ArticleListItem.astro";
 import SelectorAvatar from "../../components/SelectorAvatar.astro";
@@ -43,7 +44,13 @@ const title = `${selector.name} | ${SITE.name}`;
 const description = `${selector.name}（${selector.affiliation}）が選んだ本の記事一覧。${selector.credentials}`;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout headSlot>
+  <SEO
+    slot="head"
+    title={title}
+    description={description}
+    canonical={Astro.url.pathname}
+  />
   <SiteHeader />
 
   <main class="mx-auto max-w-body px-5 pt-14">
