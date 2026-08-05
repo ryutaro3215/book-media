@@ -13,7 +13,7 @@ import { getTopicGroups, toTopicHref } from "../../lib/collections";
 const groups = await getTopicGroups();
 
 const title = `テーマ一覧 | ${SITE.name}`;
-const description = `${SITE.name}で扱っている${groups.length}テーマの一覧。テーマごとに、その領域に詳しい選者が選んだ5冊の記事を読めます。`;
+const description = `${SITE.name}で扱っている${groups.length}テーマの一覧。テーマごとに、その領域に詳しい選者が選んだ本の記事を読めます。`;
 ---
 
 <BaseLayout title={title} description={description}>

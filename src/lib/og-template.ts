@@ -85,7 +85,7 @@ export type OgImageInput = {
   selectorName: string;
   /** 分野名 */
   topic: string;
-  /** 5冊の書名（先頭2点のみ描画し、残りは「ほかN冊」にまとめる） */
+  /** 紹介する全書名（先頭2点のみ描画し、残りは「ほかN冊」にまとめる） */
   bookTitles: string[];
   /** サイト名 */
   siteName: string;
@@ -143,7 +143,7 @@ function template(input: OgImageInput) {
       el("div", {
         style: { display: "flex", flexDirection: "column" },
         children: [
-          // 1) 分野名 ／ 5冊
+          // 1) 分野名 ／ N冊
           el("div", {
             style: {
               display: "flex",
@@ -165,7 +165,7 @@ function template(input: OgImageInput) {
                   backgroundColor: COLOR.rule,
                 },
               }),
-              metaText("5冊"),
+              metaText(`${input.bookTitles.length}冊`),
             ],
           }),
           // 2) 選者名（最大要素）

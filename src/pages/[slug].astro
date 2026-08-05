@@ -149,11 +149,11 @@ const others = (await getAllInterviews())
     <Content />
   </section>
 
-  {/* 目次: この記事で紹介する5冊 */}
+  {/* 目次: この記事で紹介するN冊 */}
   <section class="mx-auto max-w-body px-5 pt-6">
     <div class="border border-rule px-6 pt-6 pb-5">
       <h2 class="m-0 mb-4 text-xs font-normal tracking-[0.1em] text-muted">
-        この記事で紹介する5冊
+        この記事で紹介する{books.length}冊
       </h2>
       <ol class="m-0 flex list-none flex-col gap-2.5 p-0">
         {
@@ -170,7 +170,7 @@ const others = (await getAllInterviews())
     </div>
   </section>
 
-  {/* 5冊のカード。本文より広いカラムを使う */}
+  {/* 書籍カード。本文より広いカラムを使う */}
   <section class="mx-auto max-w-body-wide px-5 pt-[72px]">
     {books.map((book, i) => <BookCard number={i + 1} book={book} />)}
   </section>

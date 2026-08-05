@@ -14,7 +14,7 @@ const groups = await getSelectorGroups();
 
 // SEO.astro は別タスクで作成中のため、ここでは最小限の title / description を自前で持つ
 const title = `選者一覧 | ${SITE.name}`;
-const description = `${SITE.name}で5冊を選んでいる${groups.length}名の選者の一覧。氏名・所属・専門分野・記事数から、信頼できる選者を辿れます。`;
+const description = `${SITE.name}で選書している${groups.length}名の選者の一覧。氏名・所属・専門分野・記事数から、信頼できる選者を辿れます。`;
 ---
 
 <BaseLayout title={title} description={description}>

@@ -3,7 +3,7 @@
  *
  * 記事1本につき `@graph` を1つ出力し、その中に
  *  - Article（著者 = 選者）
- *  - ItemList（5冊の Book。name / author / publisher / isbn）
+ *  - ItemList（紹介する Book。name / author / publisher / isbn）
  * を入れる。Google リッチリザルトテストの必須プロパティを満たすことを優先し、
  * 値が無い項目はプロパティごと落とす（空文字を出さない）。
  */
@@ -122,7 +122,7 @@ export function articleJsonLd(input: ArticleJsonLdInput) {
     "@type": "ItemList",
     "@id": `${url}#books`,
     name: input.title,
-    description: `${input.selector.name}が選ぶ${input.topic}の5冊`,
+    description: `${input.selector.name}が選ぶ${input.topic}の${input.books.length}冊`,
     numberOfItems: input.books.length,
     itemListOrder: "https://schema.org/ItemListOrderAscending",
     itemListElement: input.books.map((book, i) => ({
