@@ -1,6 +1,7 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 import { isKnownSelector, SELECTOR_IDS } from "./lib/selectors";
+import { isKnownTag, TAG_NAMES } from "./lib/tags";
 import { isKnownTopic, TOPIC_NAMES } from "./lib/topics";
 
 /** CLI が書き込むプレースホルダかどうか */
@@ -95,12 +96,35 @@ const interviews = defineCollection({
       /** 内容を直したときに入れる。JSON-LD の dateModified に使う */
       updatedAt: z.date().optional(),
       description: z.string().min(1),
-      /** src/data/topics.json に定義された語彙のみ */
+      /**
+       * **大ジャンル**（必須・1つ）。例: 数学 / 経営学 / 統計学
+       * src/data/topics.json に定義された語彙のみ。
+       * 小ジャンル（解析学など）は `tags` に入れる
+       */
       topic: z.string().refine(isKnownTopic, {
         message:
           `未登録のテーマです。src/data/topics.json に追記してください。` +
           `登録済み: ${TOPIC_NAMES.join(" / ")}`,
       }),
+      /**
+       * **小ジャンル**（任意・複数）。例: 解析学 / 測度論 / 多変量解析
+       *
+       * `topic` と軸を分けているのは、「数学」と「解析学」のように
+       * **レイヤーの違うものが単一軸に混在する**のを避けるため。
+       * src/data/tags.json に定義された語彙のみ（表記揺れ防止）。
+       *
+       * 専用ページは作らず、検索へのリンクとして扱う
+       * （記事が少ないうちは1記事だけの薄いページが量産されるため）。
+       */
+      tags: z
+        .array(
+          z.string().refine(isKnownTag, {
+            message:
+              `未登録のタグです。src/data/tags.json に追記してください。` +
+              `登録済み: ${TAG_NAMES.join(" / ")}`,
+          }),
+        )
+        .optional(),
       keywords: z.array(z.string()).optional(),
       /**
        * 選者は情報を直接書かず、`src/data/selectors.json` のIDで参照する。

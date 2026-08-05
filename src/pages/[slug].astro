@@ -13,6 +13,7 @@ import NewsletterForm from "../components/NewsletterForm.astro";
 import SelectorAvatar from "../components/SelectorAvatar.astro";
 import ShareToX from "../components/ShareToX.astro";
 import { articleJsonLd } from "../lib/jsonld";
+import { toTagHref } from "../lib/tags";
 import {
   getAllInterviews,
   formatDate,
@@ -202,6 +203,27 @@ const others = (await getAllInterviews())
     </div>
 
   </section>
+
+  {/* 小ジャンル。専用ページは作らず検索へ飛ばす */}
+  {
+    data.tags && data.tags.length > 0 && (
+      <section class="mx-auto mt-12 max-w-body px-5">
+        <h2 class="m-0 mb-4 text-xs font-normal tracking-[0.1em] text-muted">
+          この記事のタグ
+        </h2>
+        <div class="flex flex-wrap gap-3">
+          {data.tags.map((tag) => (
+            <a
+              href={toTagHref(tag)}
+              class="rounded-full border border-rule px-4 py-[9px] text-sm text-ink no-underline hover:border-accent hover:text-accent"
+            >
+              {tag}
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   {/* 共有導線（requirements R18b）。記事末尾の1箇所に集約している。
       選者も記事を最後まで読んでから共有するため、ここで読者・選者の

@@ -36,6 +36,7 @@ import {
 const ROOT = process.cwd();
 const TOPICS_PATH = path.join(ROOT, "src/data/topics.json");
 const SELECTORS_PATH = path.join(ROOT, "src/data/selectors.json");
+const TAGS_PATH = path.join(ROOT, "src/data/tags.json");
 const ARTICLES_DIR = path.join(ROOT, "src/content/interviews");
 
 // .env（GOOGLE_BOOKS_API_KEY）を読む
@@ -187,6 +188,47 @@ async function main() {
     console.log(`  → src/data/topics.json に「${topic}」を追加しました`);
   } else {
     topic = topicChoice.value;
+  }
+
+  // --- タグ（小ジャンル・任意・複数） ---
+  // topic は大ジャンル、tags は小ジャンル。「数学」と「解析学」のような
+  // レイヤー違いが単一軸に混ざるのを避けるために分けている
+  const tags = readJson(TAGS_PATH);
+  const tagNames = Object.keys(tags);
+  const chosenTags = [];
+
+  console.log(
+    "\n■ タグ（小ジャンル・任意）\n" +
+      `  テーマ「${topic}」より細かい分類です（例: 解析学 / 測度論）。\n` +
+      "  番号をカンマ区切りで入力。新規追加は n、不要なら Enter。",
+  );
+  for (const [i, name] of tagNames.entries()) {
+    console.log(`  ${i + 1}. ${name}`);
+  }
+
+  const tagAnswer = (await ask("  番号（例: 1,3）: ")).trim();
+  if (tagAnswer.toLowerCase() === "n") {
+    let more = true;
+    while (more) {
+      const name = (await ask("  新しいタグ名（空でEnterなら終了）: ")).trim();
+      if (!name) {
+        more = false;
+        break;
+      }
+      if (!tags[name]) {
+        tags[name] = {};
+        writeJson(TAGS_PATH, tags);
+        console.log(`  → src/data/tags.json に「${name}」を追加しました`);
+      }
+      chosenTags.push(name);
+    }
+  } else if (tagAnswer) {
+    for (const part of tagAnswer.split(",")) {
+      const idx = Number(part.trim()) - 1;
+      if (Number.isInteger(idx) && idx >= 0 && idx < tagNames.length) {
+        chosenTags.push(tagNames[idx]);
+      }
+    }
   }
 
   // --- 選者 ---
@@ -388,6 +430,9 @@ async function main() {
     `publishedAt: ${today}`,
     `description: ${yamlString(description)}`,
     `topic: ${yamlString(topic)}`,
+    ...(chosenTags.length > 0
+      ? ["tags:", ...chosenTags.map((tag) => `  - ${yamlString(tag)}`)]
+      : []),
     `selector: ${yamlString(selectorId)}`,
     "books:",
   ];
