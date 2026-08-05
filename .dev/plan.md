@@ -43,7 +43,6 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
   - スキーマに `books: z.array(bookSchema).length(5)` が定義されている
   - `isbn` が `z.string().regex(/^\d{13}$/)` で13桁数字のみに制約されている（ハイフンありはビルドエラー）
   - 選者情報に `name` / `affiliation` / `bio` / `links.x`（任意）が定義されている
-  - **各書籍に `whyUnknown`（この本が知られていない理由）フィールドが必須項目として定義されている**（requirements R2c）。空文字ではビルドが通らない（`z.string().min(1)`）
   - 選者情報に **`credentials`（この人が詳しい理由）が必須項目**として定義されている（business-plan.md の選者資格基準）
   - サンプル記事2本が5冊ずつ持ち、`npm run build` が成功する
   - **意図的に4冊にしたテスト用ファイルを一時的に置くと `npm run build` が失敗する**ことを確認できる（確認後にファイルは削除する）

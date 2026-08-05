@@ -1,12 +1,5 @@
 ---
-/**
- * 5冊カードの1枚（design/BookCardV2.dc.html）。
- *
- * design/ にない要素を1つだけ足している:
- * 「この本が知られていない理由」（requirements R2c）。
- * このメディアの中核情報なので選書理由の本文に埋もれさせず、
- * 罫線と余白だけで区切った短い段落として出す（色や囲みでの強調はしない）。
- */
+/** 5冊カードの1枚（design/BookCardV2.dc.html）。 */
 import type { Book } from "../content.config";
 import { noteMissingCover, resolveCover } from "../lib/cover";
 import BookCover from "./BookCover.astro";
@@ -52,10 +45,6 @@ if (cover.source === "fallback") {
 
   <div class="card-body">{book.reason}</div>
 
-  <div class="card-unknown border-rule">
-    <div class="card-unknown-label text-muted">この本が知られていない理由</div>
-    <p class="card-unknown-text">{book.whyUnknown}</p>
-  </div>
 </article>
 
 <style>
@@ -124,25 +113,4 @@ if (cover.source === "fallback") {
     text-wrap: pretty;
   }
 
-  /* R2c: 選書理由とは視覚的に分ける。上に細い罫を1本引くだけに留める */
-  .card-unknown {
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top-width: 1px;
-    border-top-style: solid;
-  }
-
-  /* design/Article v2.dc.html の小見出しと同じ体裁 */
-  .card-unknown-label {
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
-  }
-
-  .card-unknown-text {
-    margin: 0;
-    font-size: 15px;
-    line-height: 1.9;
-    text-wrap: pretty;
-  }
 </style>
