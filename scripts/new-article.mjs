@@ -105,11 +105,16 @@ async function fetchGoogleBooks(isbn) {
 }
 
 /**
- * 実測にもとづく項目ごとの優先順位:
- *   書名   openBD（volume は混入しやすいので採らない）→ Google Books
+ * 実測にもとづく項目ごとの優先順位（plan.md T21）:
+ *
+ *   書名   **Google Books** → openBD
+ *          openBD は叢書名・巻次・副題が書名に混ざる。1本目の記事で実際に
+ *          「共立講座数学の魅力. 11」（叢書名）が入り、正しい
+ *          「現代数理統計学の基礎」は Google Books 側が返していた
  *   著者   Google Books（表示用の形）→ openBD（整形後）
- *   出版社 openBD のみ（Google Books は返さない）
- *   刊行年 openBD → Google Books
+ *          openBD は `Locke,John,1632-1704` のような図書館形式で返る
+ *   出版社 **openBD のみ**。Google Books は返さない（実測 0/10）
+ *   刊行年 openBD → Google Books。食い違う場合は要確認コメントに出す
  */
 async function fetchBook(isbn) {
   const [o, g] = await Promise.all([fetchOpenBd(isbn), fetchGoogleBooks(isbn)]);
@@ -119,7 +124,7 @@ async function fetchBook(isbn) {
   return {
     found: true,
     sources,
-    title: o?.title || g?.title || "",
+    title: g?.title || o?.title || "",
     author: g?.author || o?.author || "",
     translator: g?.translator || "",
     publisher: o?.publisher || g?.publisher || "",

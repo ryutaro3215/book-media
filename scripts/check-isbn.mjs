@@ -176,5 +176,11 @@ console.log(`  どちらかで取れた                : ${pct(stats.either)}`);
 console.log(`  どちらでも取れなかった          : ${pct(stats.neither)}`);
 console.log("─".repeat(60));
 console.log(
-  "\n※「4項目」= 書名・著者・出版社・刊行年。ここが揃わない分は手入力になります。\n",
+  "\n※「4項目」= 書名・著者・出版社・刊行年。ここが揃わない分は手入力になります。",
+);
+console.log(
+  "※ 記事作成時は項目ごとに良い方を採ります（plan.md T21）:\n" +
+    "     書名・著者 → Google Books 優先（openBD は叢書名や図書館形式が混ざる）\n" +
+    "     出版社     → openBD のみ（Google Books は返さない）\n" +
+    "     刊行年     → 取れた方。食い違えば要確認として記事に書き出す\n",
 );
