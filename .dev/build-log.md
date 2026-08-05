@@ -118,3 +118,55 @@ design/ 指定の `#787878` は白背景でコントラスト比 **4.42:1** で�
   `dev-bookcard` は `dist/` に出力されてしまうため、公開前に削除するか
   アンダースコア付きに統一する必要がある（**削除はオーナーの確認後に行う**）
 - `src/pages/_dev-og.astro` も同様に確認用ページ
+
+---
+
+## T25: 記事投稿用のローカルWebアプリ（段階1）— 2026-08-06
+
+### 作ったもの
+
+| ファイル | 役割 |
+|---|---|
+| `src/pages/admin.astro` | 入力画面。`npm run dev` → `/admin` |
+| `scripts/lib/admin-dev-server.mjs` | 裏側の口（ISBN取得・ファイル書き出し）。**dev サーバーにだけ生える** |
+| `scripts/lib/article-file.mjs` | frontmatter の組み立て。**CLI と画面の共通処理** |
+| `scripts/strip-admin.mjs` | ビルド後に `dist/` から `/admin` を消す |
+
+### 詰まった点と判断
+
+**Astro の API ルートが使えなかった。**
+`src/pages/api/isbn.json.ts` に置いた handler は、開発サーバーでも
+`?isbn=…` が届かなかった。`url` からも `request.url` からも読めない。
+POST のボディに変えても `request.json()` が落ちる。
+
+原因は `output: "static"` でこのルートが**事前生成の対象**になること。
+静的出力では実リクエストとして扱われない。`export const prerender = false`
+にすればよいが、**アダプタが必要になり本番構成（Cloudflare Pages・静的）が変わる**。
+記事を書くための道具のために本番の出し方を変えるのは順序が逆なので採らなかった。
+
+**Vite プラグイン（`apply: "serve"`）に移した。**
+結果として当初の懸念（本番ビルドに混入しないか）が、
+実行時チェックではなく**そもそもビルドで読み込まれない**という形で解けた。
+`astro.config.mjs` の `vite.plugins` に足すだけで済む。
+
+### 本番に出さないための3層
+
+1. 裏側の口は Vite の `apply: "serve"` プラグイン → **ビルドに存在しない**
+2. `scripts/strip-admin.mjs` が `dist/` から `/admin` を消す
+   （消せなかったらビルドを失敗させる）
+3. `admin.astro` 自身が `import.meta.env.DEV` を見て中身を描画しない
+
+### 見落としていて直した点
+
+**sitemap に `/admin/` が載っていた。**
+`@astrojs/sitemap` は `strip-admin.mjs` より先に走るので、
+ファイルを消しても sitemap は申告し続ける。
+Search Console に404が出るところだった。`astro.config.mjs` の filter に追加。
+
+### 段階2・3をやらなかった理由
+
+本文（Markdown）編集とプレビューは作っていない。
+**長文は結局エディタが一番速く、書き直しはもっと速い。**
+いま実際に困っていたのは「919件から選ぶ」「打ち間違えたら最初からやり直し」の2つで、
+どちらも frontmatter の入力を画面にするだけで解ける。
+運用してみて足りなければ足す。
