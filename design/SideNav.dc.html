@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2F4A3F; }
+  a:hover { color: #23392F; }
+</style>
+</helmet>
+<aside style="font-family: 'Zen Kaku Gothic New', sans-serif; background: #FFFFFF; border-right: 1px solid #E6E6E6; width: 100%; padding: 32px 24px 72px 28px; box-sizing: border-box; height: 100%; overflow-y: auto;">
+  <nav style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px;">
+    <a href="./TopPage v2.dc.html" style="font-size: 15px; font-weight: 700; color: #292929; text-decoration: none;">すべての記事</a>
+    <a href="./Senja List.dc.html" style="font-size: 15px; color: #292929; text-decoration: none;">選者一覧</a>
+    <a href="./Document.dc.html" style="font-size: 15px; color: #292929; text-decoration: none;">このサイトについて</a>
+  </nav>
+  <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="3">
+    <div style="margin-bottom: 32px;">
+      <div style="font-size: 12px; color: #787878; letter-spacing: 0.1em; margin-bottom: 14px;">{{ g.label }}</div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="4">
+          <a href="./Topic.dc.html" style="font-size: 14px; color: #292929; text-decoration: none;" style-hover="color: #2F4A3F;">{{ i }}</a>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+</aside>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 232, &quot;height&quot;: 700}, &quot;navGroups&quot;: {&quot;editor&quot;: null, &quot;tsType&quot;: &quot;{label: string, items: string[]}[]&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      navGroups: this.props.navGroups ?? [
+        { label: '人文', items: ['哲学', '中世哲学', '歴史学', '文学'] },
+        { label: '社会科学', items: ['行動経済学', '経済学', '社会学', '政治学'] },
+        { label: '自然科学', items: ['統計学', '生物学', '物理学'] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

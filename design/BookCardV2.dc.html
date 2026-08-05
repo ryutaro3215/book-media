@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2F4A3F; }
+  a:hover { color: #23392F; }
+</style>
+</helmet>
+<article style="font-family: 'Zen Kaku Gothic New', sans-serif; background: #FFFFFF; color: #292929; padding: 0 0 72px 0;">
+  <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 24px;">
+    <div style="font-size: 28px; font-weight: 900; line-height: 1; color: #292929; letter-spacing: -0.01em;">{{ numberLabel }}</div>
+    <div style="flex: 1 1 auto; height: 1px; background: #E6E6E6;"></div>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; margin-bottom: 28px;">
+    <sc-if value="{{ hasCoverImg }}" hint-placeholder-val="{{ false }}">
+      <div style="width: 152px; height: 228px; flex: 0 0 152px; overflow: hidden; background: #F5F4F1; box-shadow: 0 1px 2px rgba(41,41,41,0.10);">
+        <image-slot id="{{ coverSlotId }}" shape="rect" placeholder="書影" src="{{ coverUrl }}" style="width: 100%; height: 100%;"></image-slot>
+      </div>
+    </sc-if>
+    <sc-if value="{{ !hasCoverImg }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 152px; height: 228px; flex: 0 0 152px; overflow: hidden; background: #F5F4F1; box-shadow: 0 1px 2px rgba(41,41,41,0.10); display: flex; align-items: stretch; padding: 16px 12px; box-sizing: border-box;">
+        <div style="border-left: 1px solid #D8D6D0; padding-left: 10px; display: flex; align-items: flex-start;">
+          <div style="writing-mode: vertical-rl; text-orientation: mixed; font-size: 16px; font-weight: 700; color: #292929; letter-spacing: 0.14em; line-height: 1.6; max-height: 100%;">{{ title }}</div>
+        </div>
+      </div>
+    </sc-if>
+    <div style="flex: 1 1 280px; min-width: 240px; display: flex; flex-direction: column; gap: 12px; padding-top: 4px;">
+      <h3 style="font-size: 20px; font-weight: 700; color: #292929; line-height: 1.5; margin: 0; text-wrap: pretty;">{{ title }}</h3>
+      <div style="font-size: 15px; color: #292929; line-height: 1.7;">{{ authorLine }}</div>
+      <div style="font-size: 13px; color: #787878; line-height: 1.7;">{{ publisherLine }}</div>
+    </div>
+  </div>
+  <div style="font-size: 17px; color: #292929; line-height: 1.9; text-wrap: pretty;">{{ body }}</div>
+</article>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 700}, &quot;number&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 2, &quot;tsType&quot;: &quot;number&quot;}, &quot;title&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;選択と希少性の経済学&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;author&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;センディル・ムッライナタン&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;translator&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;publisher&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;早川書房&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;year&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;2015&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;body&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;hasCover&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;}, &quot;coverUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;&quot;, &quot;tsType&quot;: &quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const numberLabel = String(p.number ?? 1).padStart(2, '0');
+    const title = p.title ?? '選択と希少性の経済学';
+    const author = p.author ?? 'センディル・ムッライナタン';
+    const translator = p.translator ?? '';
+    const publisher = p.publisher ?? '早川書房';
+    const year = p.year ?? '2015';
+    return {
+      numberLabel,
+      title,
+      authorLine: translator ? `${author} / ${translator} 訳` : author,
+      publisherLine: `${publisher}・${year}`,
+      body: p.body ?? 'なぜ人は忙しいときほど判断を誤るのか。希少性という一つの視点が、貧困・時間管理・意思決定の失敗をつなげて説明できることを示した一冊。',
+      hasCoverImg: !!(p.hasCover ?? false),
+      coverUrl: p.coverUrl ?? '',
+      coverSlotId: p.coverSlotId ?? `cover-${numberLabel}`,
+      coverAlt: `${title} の書影`,
+    };
+  }
+}
+</script>
+</body>
+</html>

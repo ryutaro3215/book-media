@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2F4A3F; }
+  a:hover { color: #23392F; }
+</style>
+</helmet>
+
+<div style="font-family: 'Zen Kaku Gothic New', sans-serif; background: #FFFFFF; color: #292929;">
+
+  <dc-import name="SiteHeader" style="position: sticky; top: 0; z-index: 20;" hint-size="100%,73px"></dc-import>
+
+  <main style="max-width: 660px; margin: 0 auto; padding: 56px 20px 0 20px;">
+    <div style="font-size: 12px; color: #787878; letter-spacing: 0.1em; margin-bottom: 12px;">検索結果</div>
+    <h1 style="font-size: clamp(24px, 3.4vw, 30px); font-weight: 700; line-height: 1.5; margin: 0 0 8px 0;">「行動経済学」</h1>
+    <div style="font-size: 14px; color: #787878; margin-bottom: 12px;">{{ totalLabel }}</div>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; padding: 20px 0 4px 0;">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+        <a href="{{ g.anchor }}" style="font-size: 13px; font-weight: 500; text-decoration: none; color: #292929; padding: 7px 13px; border: 1px solid #E6E6E6; border-radius: 999px;" style-hover="border-color: #2F4A3F; color: #2F4A3F;">{{ g.chipLabel }}</a>
+      </sc-for>
+    </div>
+
+    <section id="g-field" style="margin-top: 48px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #292929;">
+        <h2 style="font-size: 16px; font-weight: 700; margin: 0;">分野</h2>
+        <span style="font-size: 13px; color: #787878;">2件</span>
+      </div>
+      <a href="./Topic.dc.html" style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; text-decoration: none; color: inherit; padding: 22px 0; border-bottom: 1px solid #E6E6E6;">
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+          <div style="font-size: 18px; font-weight: 700; line-height: 1.5;">行動経済学</div>
+          <div style="font-size: 14px; color: #787878; line-height: 1.7;">意思決定の歪みと制度設計をめぐる読書案内</div>
+        </div>
+        <span style="flex: 0 0 auto; font-size: 13px; color: #787878;">記事1本</span>
+      </a>
+      <a href="./Topic.dc.html" style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; text-decoration: none; color: inherit; padding: 22px 0; border-bottom: 1px solid #E6E6E6;">
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+          <div style="font-size: 18px; font-weight: 700; line-height: 1.5;">実験経済学</div>
+          <div style="font-size: 14px; color: #787878; line-height: 1.7;">実験室と現場のあいだで経済行動を測る</div>
+        </div>
+        <span style="flex: 0 0 auto; font-size: 13px; color: #787878;">記事1本</span>
+      </a>
+    </section>
+
+    <section id="g-selector" style="margin-top: 56px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #292929;">
+        <h2 style="font-size: 16px; font-weight: 700; margin: 0;">選者</h2>
+        <span style="font-size: 13px; color: #787878;">1件</span>
+      </div>
+      <a href="./Senja Page.dc.html" style="display: flex; gap: 20px; align-items: flex-start; text-decoration: none; color: inherit; padding: 24px 0; border-bottom: 1px solid #E6E6E6;">
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 19px; font-weight: 700; line-height: 1.5;">山田太郎</div>
+          <div style="font-size: 14px; color: #787878; line-height: 1.7;">○○大学 経済学部 教授</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px;">
+            <span>行動経済学</span>
+            <span style="color: #787878;">記事1本</span>
+          </div>
+        </div>
+        <span style="flex: 0 0 auto; font-size: 13px; font-weight: 500; color: #2F4A3F; padding: 7px 13px; border: 1px solid #2F4A3F; border-radius: 999px; margin-top: 4px;">@yamada_t</span>
+      </a>
+    </section>
+
+    <section id="g-book" style="margin-top: 56px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #292929;">
+        <h2 style="font-size: 16px; font-weight: 700; margin: 0;">書名</h2>
+        <span style="font-size: 13px; color: #787878;">3件</span>
+      </div>
+      <sc-for list="{{ books }}" as="b" hint-placeholder-count="3">
+        <a href="./Article.dc.html" style="display: flex; gap: 18px; align-items: flex-start; text-decoration: none; color: inherit; padding: 22px 0; border-bottom: 1px solid #E6E6E6;">
+          <div style="flex: 0 0 44px; width: 44px; height: 62px; background: #F5F4F1; border: 1px solid #E6E6E6;"></div>
+          <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 17px; font-weight: 700; line-height: 1.6;">{{ b.title }}</div>
+            <div style="font-size: 14px; color: #787878; line-height: 1.7;">{{ b.meta }}</div>
+            <div style="font-size: 13px; color: #787878;">{{ b.pickedBy }}</div>
+          </div>
+        </a>
+      </sc-for>
+    </section>
+  </main>
+
+  <div style="max-width: 660px; margin: 72px auto 0 auto; padding: 0 20px;">
+    <dc-import name="SiteFooter" hint-size="100%,180px"></dc-import>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const books = [
+      { title: 'ファスト&スロー（上）', meta: 'ダニエル・カーネマン ／ 早川書房 ／ 2012', pickedBy: '山田太郎が選出' },
+      { title: '行動経済学の使い方', meta: '大竹文雄 ／ 岩波書店 ／ 2019', pickedBy: '山田太郎が選出' },
+      { title: '実践 行動経済学', meta: 'R.セイラー, C.サンスティーン ／ 日経BP ／ 2009', pickedBy: '山田太郎が選出' },
+    ];
+    return {
+      totalLabel: '6件（分野2・選者1・書名3）',
+      groups: [
+        { chipLabel: '分野 2', anchor: '#g-field' },
+        { chipLabel: '選者 1', anchor: '#g-selector' },
+        { chipLabel: '書名 3', anchor: '#g-book' },
+      ],
+      books,
+    };
+  }
+}
+</script>
+</body>
+</html>

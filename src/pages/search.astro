@@ -1,0 +1,194 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { SITE } from "../config";
+
+// 検索は完全にクライアントサイド（requirements R17a）。
+// ビルド時に生成した /search-index.json を読み、分野・選者・書名で絞り込む。
+// サーバーも外部検索サービスも使わない。
+---
+
+<BaseLayout
+  title={`検索 | ${SITE.name}`}
+  description="分野・選者・書名で記事を検索します。"
+>
+  <SiteHeader />
+
+  <main class="mx-auto max-w-body px-5 pt-14">
+    <div class="mb-3 text-xs tracking-[0.1em] text-muted">検索結果</div>
+    <h1
+      class="m-0 mb-2 text-[clamp(24px,3.4vw,30px)] leading-[1.5] font-bold"
+      id="search-heading"
+    >
+      すべての記事
+    </h1>
+    <div class="mb-3 text-sm text-muted" id="search-total"></div>
+
+    <noscript>
+      <p class="mt-6 text-[15px] leading-[1.9] text-ink">
+        検索にはJavaScriptが必要です。<a href="/">記事一覧</a>からお探しください。
+      </p>
+    </noscript>
+
+    <div id="search-results" class="mt-12"></div>
+
+    <div class="mt-16">
+      <SiteFooter />
+    </div>
+  </main>
+</BaseLayout>
+
+<template id="tpl-section">
+  <section class="mt-14 first:mt-0">
+    <div
+      class="flex items-baseline gap-2.5 border-b border-ink pb-3"
+    >
+      <h2 class="m-0 text-base font-bold" data-label></h2>
+      <span class="text-[13px] text-muted" data-count></span>
+    </div>
+    <div data-items></div>
+  </section>
+</template>
+
+<script>
+  type IndexEntry = {
+    slug: string;
+    title: string;
+    topic: string;
+    selector: string;
+    affiliation: string;
+    publishedAt: string;
+    books: string[];
+    authors: string[];
+  };
+
+  const params = new URLSearchParams(location.search);
+  const q = (params.get("q") ?? "").trim();
+
+  const heading = document.getElementById("search-heading")!;
+  const total = document.getElementById("search-total")!;
+  const results = document.getElementById("search-results")!;
+  const tpl = document.getElementById("tpl-section") as HTMLTemplateElement;
+
+  const norm = (s: string) => s.toLowerCase().normalize("NFKC");
+
+  function link(href: string, main: string, sub: string, aside = "") {
+    const a = document.createElement("a");
+    a.href = href;
+    a.className =
+      "flex items-baseline justify-between gap-4 border-b border-rule py-[22px] text-inherit no-underline hover:text-inherit";
+    a.innerHTML = `
+      <span class="flex min-w-0 flex-col gap-1.5">
+        <span class="text-[18px] font-bold leading-[1.5]"></span>
+        <span class="text-sm leading-[1.7] text-muted"></span>
+      </span>
+      <span class="flex-none text-[13px] text-muted"></span>`;
+    const [mainEl, subEl] = a.querySelectorAll("span > span");
+    mainEl.textContent = main;
+    subEl.textContent = sub;
+    a.querySelector<HTMLElement>("span:last-child")!.textContent = aside;
+    return a;
+  }
+
+  function section(label: string, items: HTMLElement[]) {
+    if (items.length === 0) return null;
+    const node = tpl.content.cloneNode(true) as DocumentFragment;
+    node.querySelector<HTMLElement>("[data-label]")!.textContent = label;
+    node.querySelector<HTMLElement>("[data-count]")!.textContent =
+      `${items.length}件`;
+    const box = node.querySelector<HTMLElement>("[data-items]")!;
+    items.forEach((i) => box.appendChild(i));
+    return node;
+  }
+
+  async function run() {
+    const res = await fetch("/search-index.json");
+    const all: IndexEntry[] = await res.json();
+
+    if (q) {
+      heading.textContent = `「${q}」`;
+    }
+
+    const needle = norm(q);
+    const match = (s: string) => needle === "" || norm(s).includes(needle);
+
+    // 分野
+    const topics = [...new Set(all.map((e) => e.topic))]
+      .filter(match)
+      .map((t) =>
+        link(
+          `/topics/${encodeURIComponent(t)}`,
+          t,
+          "",
+          `記事${all.filter((e) => e.topic === t).length}本`,
+        ),
+      );
+
+    // 選者
+    const selectorNames = [...new Set(all.map((e) => e.selector))];
+    const selectors = selectorNames
+      .filter((n) => {
+        const e = all.find((x) => x.selector === n)!;
+        return match(n) || match(e.affiliation);
+      })
+      .map((n) => {
+        const e = all.find((x) => x.selector === n)!;
+        return link(
+          `/selectors/${encodeURIComponent(n)}`,
+          n,
+          e.affiliation,
+          `記事${all.filter((x) => x.selector === n).length}本`,
+        );
+      });
+
+    // 書名（記事へリンク）
+    const books: HTMLElement[] = [];
+    for (const e of all) {
+      e.books.forEach((b, i) => {
+        if (match(b) || match(e.authors[i] ?? "")) {
+          books.push(
+            link(
+              `/${e.slug}`,
+              b,
+              e.authors[i] ?? "",
+              `${e.selector} が選書`,
+            ),
+          );
+        }
+      });
+    }
+
+    // 記事タイトル
+    const articles = all
+      .filter((e) => match(e.title))
+      .map((e) =>
+        link(`/${e.slug}`, e.title, `${e.selector}・${e.topic}`, e.publishedAt),
+      );
+
+    const sections = [
+      section("記事", articles),
+      section("分野", topics),
+      section("選者", selectors),
+      section("書名", books),
+    ].filter(Boolean) as DocumentFragment[];
+
+    const count =
+      articles.length + topics.length + selectors.length + books.length;
+    total.textContent = q
+      ? `${count}件が見つかりました`
+      : `${all.length}本の記事があります`;
+
+    if (sections.length === 0) {
+      const p = document.createElement("p");
+      p.className = "text-[15px] leading-[1.9] text-ink";
+      p.textContent =
+        "該当する記事が見つかりませんでした。分野名・選者名・書名でお試しください。";
+      results.appendChild(p);
+      return;
+    }
+    sections.forEach((s) => results.appendChild(s));
+  }
+
+  run();
+</script>

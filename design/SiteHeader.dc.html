@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2F4A3F; }
+  a:hover { color: #23392F; }
+</style>
+</helmet>
+<header style="font-family: 'Zen Kaku Gothic New', sans-serif; background: rgba(255,255,255,0.94); backdrop-filter: blur(8px); border-bottom: 1px solid #E6E6E6;">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 0 28px; height: 68px;">
+    <a href="./TopPage v2.dc.html" style="font-size: 21px; font-weight: 700; letter-spacing: 0.01em; color: #292929; text-decoration: none; flex: 0 0 auto;">Skrinia<span style="color: #B4552F;">.</span></a>
+
+    <nav style="flex: 1 1 auto; display: flex; align-items: center; gap: 26px;">
+      <a href="./Topic.dc.html" style="font-size: 14px; font-weight: 500; color: #292929; text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent;" style-hover="color: #B4552F; border-bottom-color: #B4552F;">ジャンル一覧</a>
+      <a href="./Senja List.dc.html" style="font-size: 14px; font-weight: 500; color: #292929; text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent;" style-hover="color: #B4552F; border-bottom-color: #B4552F;">選者一覧</a>
+      <a href="./Document.dc.html" style="font-size: 14px; font-weight: 500; color: #292929; text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent;" style-hover="color: #B4552F; border-bottom-color: #B4552F;">このサイトについて</a>
+    </nav>
+
+    <form action="./SearchResults.dc.html" style="flex: 0 1 300px; display: flex; align-items: center; gap: 8px; background: #F5F4F1; border: 1px solid #E6E6E6; border-radius: 999px; padding: 0 14px; height: 38px;" style-focus="border-color: #2F4A3F;">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#787878" stroke-width="1.6" style="flex: 0 0 auto;">
+        <circle cx="7" cy="7" r="4.6"></circle>
+        <line x1="10.4" y1="10.4" x2="14" y2="14"></line>
+      </svg>
+      <input type="search" placeholder="分野・選者・書名で検索" style="flex: 1 1 auto; min-width: 0; font-family: inherit; font-size: 14px; background: transparent; border: 0; outline: none; color: #292929;" />
+    </form>
+  </div>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1100, &quot;height&quot;: 80}}"></script>
+</body>
+</html>

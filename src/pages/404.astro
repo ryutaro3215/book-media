@@ -1,0 +1,16 @@
+---
+import DocumentLayout from "../layouts/DocumentLayout.astro";
+import { SITE } from "../config";
+---
+
+<DocumentLayout
+  title="ページが見つかりません"
+  documentTitle={`ページが見つかりません | ${SITE.name}`}
+>
+  <section>
+    <p>
+      お探しのページは、移動または削除された可能性があります。URLに誤りがないかご確認ください。
+    </p>
+    <p><a href="/">トップページへ</a></p>
+  </section>
+</DocumentLayout>

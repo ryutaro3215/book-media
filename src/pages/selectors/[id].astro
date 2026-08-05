@@ -1,0 +1,137 @@
+---
+/**
+ * 選者個別ページ（plan.md T13）。design/Senja Page.dc.html 準拠。
+ *
+ * design には丸い顔写真の枠があるが、現在のスキーマに avatar フィールドがないため
+ * **写真枠自体を出さない**。全員写真なしで成立させる（写真の有無で崩れないこと）。
+ *
+ * credentials（公開された実績）は「なぜこの人の推薦を信じるのか」を示す核なので、
+ * プロフィール本文より前・氏名の直下に置く。
+ */
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import ArticleListItem from "../../components/ArticleListItem.astro";
+import { SITE } from "../../config";
+import {
+  getSelectorGroups,
+  toTopicHref,
+  toXHandleLabel,
+  toXProfileUrl,
+  type SelectorGroup,
+} from "../../lib/collections";
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const groups = await getSelectorGroups();
+  // params には生の文字列を渡す（Astro 側で URL エンコードされる）
+  return groups.map((group) => ({
+    params: { id: group.id },
+    props: { group },
+  }));
+};
+
+const { group } = Astro.props as { group: SelectorGroup };
+const { selector, articles, topics } = group;
+
+const xUrl = toXProfileUrl(selector.links?.x);
+const xHandle = toXHandleLabel(selector.links?.x);
+const siteUrl = selector.links?.site?.trim() || null;
+
+const title = `${selector.name} | ${SITE.name}`;
+const description = `${selector.name}（${selector.affiliation}）が選んだ本の記事一覧。${selector.credentials}`;
+---
+
+<BaseLayout title={title} description={description}>
+  <SiteHeader />
+
+  <main class="mx-auto max-w-body px-5 pt-14">
+    <a href="/selectors" class="mb-8 inline-block text-[13px] no-underline">
+      ← 選者一覧
+    </a>
+
+    <header class="mb-8 flex flex-col gap-2">
+      <h1 class="m-0 text-[clamp(26px,3.6vw,32px)] leading-[1.4] font-bold">
+        {selector.name}
+      </h1>
+      {
+        selector.reading && (
+          <div class="text-[13px] text-muted">{selector.reading}</div>
+        )
+      }
+      <div class="text-sm leading-[1.7] text-muted">
+        {selector.affiliation}
+        {topics.length > 0 && <> ／ {topics.join("・")}</>}
+      </div>
+      {
+        (xUrl || siteUrl) && (
+          <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-[15px] font-medium">
+            {xUrl && (
+              <a href={xUrl} rel="me noopener" class="no-underline">
+                {xHandle}
+              </a>
+            )}
+            {siteUrl && (
+              <a href={siteUrl} rel="me noopener" class="no-underline">
+                ウェブサイト
+              </a>
+            )}
+          </div>
+        )
+      }
+    </header>
+
+    {/* 公開された実績。この媒体の信頼の根拠なので本文より先に置く */}
+    <section class="mb-10 border-y border-rule py-6">
+      <h2
+        class="m-0 mb-2 text-xs tracking-[0.1em] text-muted"
+      >
+        公開された実績
+      </h2>
+      <p class="m-0 text-[15px] leading-[1.9] text-ink text-pretty">
+        {selector.credentials}
+      </p>
+    </section>
+
+    <p class="m-0 mb-14 text-[17px] leading-[1.9] text-pretty">
+      {selector.bio}
+    </p>
+
+    <section>
+      <h2 class="m-0 mb-1 text-xs tracking-[0.1em] text-muted">
+        この選者の記事（{articles.length}本）
+      </h2>
+      <div>
+        {
+          articles.map((entry) => (
+            <ArticleListItem entry={entry} showSelector={false} />
+          ))
+        }
+      </div>
+    </section>
+
+    {
+      topics.length > 0 && (
+        <section class="mt-[72px]">
+          <h2 class="m-0 mb-4 text-xs tracking-[0.1em] text-muted">
+            この選者が扱った分野
+          </h2>
+          <div class="flex flex-wrap gap-3">
+            {topics.map((topic) => (
+              <a
+                href={toTopicHref(topic)}
+                class="rounded-full border border-rule px-4 py-[9px] text-sm text-ink no-underline hover:border-accent hover:text-accent"
+              >
+                {topic}
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </main>
+
+  <div class="mx-auto mt-[72px] max-w-body px-5">
+    <SiteFooter />
+  </div>
+</BaseLayout>

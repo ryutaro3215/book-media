@@ -1,0 +1,19 @@
+---
+import { SITE, FOOTER_LINKS, FOOTER_NOTE } from "../config";
+---
+
+<footer class="border-t border-rule pt-8 pb-[72px] text-ink">
+  <div
+    class="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-muted"
+  >
+    <span class="font-bold text-ink">{SITE.name}</span>
+    {
+      FOOTER_LINKS.map((item) => (
+        <a href={item.href} class="text-muted no-underline hover:text-ink">
+          {item.label}
+        </a>
+      ))
+    }
+  </div>
+  <p class="m-0 text-xs leading-[1.8] text-muted">{FOOTER_NOTE}</p>
+</footer>

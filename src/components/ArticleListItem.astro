@@ -1,0 +1,93 @@
+---
+/**
+ * 記事1本を縦一列のリストの1行として描く共通コンポーネント。
+ * design/Topic.dc.html のリスト行 / design/TopPage v2.dc.html のトーンに合わせてある。
+ *
+ * トップページ・分野別アーカイブ・選者ページから同じ見た目で使えるように、
+ * 表示要素（分野名・選者名・サムネイル）はすべて任意で切り替えられる。
+ * サムネイルは渡されなかった場合、枠ごと描かない（書影の有無でレイアウトが崩れない）。
+ */
+import type { Interview } from "../lib/collections";
+import { formatDate, toArticleHref, toISODate } from "../lib/collections";
+
+interface Props {
+  /** 表示する記事 */
+  entry: Interview;
+  /** 分野名を meta 行に出すか（分野別アーカイブでは冗長なので false） */
+  showTopic?: boolean;
+  /** 選者名・所属を出すか（選者ページでは冗長なので false） */
+  showSelector?: boolean;
+  /** 公開日を出すか */
+  showDate?: boolean;
+  /** サムネイル画像のURL。未指定なら枠自体を描かない */
+  thumbnailUrl?: string | null;
+  /** 見出しのHTMLタグ。リストの文脈に合わせて変える */
+  headingLevel?: "h2" | "h3" | "div";
+  /** 追加クラス */
+  class?: string;
+}
+
+const {
+  entry,
+  showTopic = true,
+  showSelector = true,
+  showDate = true,
+  thumbnailUrl = null,
+  headingLevel = "h3",
+  class: className = "",
+} = Astro.props;
+
+const Heading = headingLevel;
+const { title, topic, publishedAt, selector } = entry.data;
+---
+
+<a
+  href={toArticleHref(entry)}
+  class:list={[
+    "flex items-start gap-5 border-t border-rule py-7 text-ink no-underline last:border-b hover:text-ink",
+    className,
+  ]}
+>
+  {
+    thumbnailUrl && (
+      <div class="h-[72px] w-24 flex-none overflow-hidden bg-cover-placeholder">
+        <img
+          src={thumbnailUrl}
+          alt=""
+          width="96"
+          height="72"
+          loading="lazy"
+          decoding="async"
+          class="h-full w-full object-cover"
+        />
+      </div>
+    )
+  }
+  <div class="min-w-0 flex-auto">
+    {
+      (showTopic || showDate) && (
+        <div class="mb-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] leading-normal text-muted">
+          {showTopic && <span>{topic}</span>}
+          {showTopic && showDate && (
+            <span class="h-2.5 w-px flex-none bg-rule" aria-hidden="true" />
+          )}
+          {showDate && (
+            <time datetime={toISODate(publishedAt)}>
+              {formatDate(publishedAt)}
+            </time>
+          )}
+        </div>
+      )
+    }
+    <Heading class="m-0 text-[19px] leading-[1.6] font-bold text-balance">
+      {title}
+    </Heading>
+    {
+      showSelector && (
+        <div class="mt-2.5 text-sm leading-relaxed text-muted">
+          {selector.name}（{selector.affiliation}）
+        </div>
+      )
+    }
+  </div>
+</a>

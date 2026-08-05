@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Zen Kaku Gothic New — self-hosted (@fontsource, copied to /fonts)
+   No external CDN (Google Fonts / gstatic) is referenced anywhere.
+   The japanese face is declared first and the latin face second so
+   that, for codepoints both cover, the latin (smaller) file wins.
+   ------------------------------------------------------------------ */
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/zen-kaku-gothic-new-japanese-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/zen-kaku-gothic-new-japanese-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/zen-kaku-gothic-new-japanese-700-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/zen-kaku-gothic-new-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/zen-kaku-gothic-new-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/zen-kaku-gothic-new-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ------------------------------------------------------------------
+   Design tokens (design-brief.md, approved 2026-08-04)
+   Components must use these tokens — never raw HEX / px values.
+   ------------------------------------------------------------------ */
+@theme {
+  /* 配色: 3色構成 + 副次色 */
+  --color-canvas: #ffffff; /* 背景 */
+  --color-ink: #292929; /* 本文 */
+  /* 副次テキスト（出版社名・刊行年・日付）。
+     design/ の指定は #787878 だが白背景でのコントラスト比が 4.42:1 で、
+     requirements の非機能要件「WCAG AA相当（4.5:1）」を下回るため
+     1段だけ暗くしてある（#767676 = 4.54:1）。見た目の差はほぼ判別できない。
+     design準拠を優先して戻す場合は、非機能要件側の見直しが必要。 */
+  --color-muted: #767676;
+  --color-rule: #e6e6e6; /* 罫線・区切り */
+  --color-accent: #2f4a3f; /* アクセント: リンク・メール登録ボタンのみ */
+  --color-accent-hover: #23392f;
+  --color-brand: #b4552f; /* ブランド（ロゴのドット・ナビのホバー）— design/ 準拠 */
+  --color-cover-placeholder: #f5f4f1; /* 書影なしの面の地色・画像プレースホルダ */
+  --color-cover-rule: #d8d6d0; /* 書影フォールバックの縦罫 */
+  --color-header: rgb(255 255 255 / 0.94); /* ヘッダー背景（backdrop-blur と併用） */
+
+  /* 書体 */
+  --font-sans: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", "Noto Sans JP", sans-serif;
+
+  /* 本文カラム幅 */
+  /* max-w-body / max-w-body-wide として使う。
+     `prose` は Tailwind 組み込みの max-w-prose(65ch) と衝突するため使わない */
+  --container-body: 660px; /* 本文カラム（全角約38字） */
+  --container-body-wide: 700px; /* やや広いカラム */
+
+  /* 本文サイズ・行間 */
+  --text-body: 1rem; /* 16px — モバイル */
+  --text-body--line-height: 1.9;
+  --text-body-lg: 1.0625rem; /* 17px — デスクトップ */
+  --text-body-lg--line-height: 1.9;
+  --leading-prose: 1.9; /* noteの読みやすさの正体。詰めない */
+}
+
+/* 最小限のベーススタイル。装飾はしない */
+@layer base {
+  html {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--leading-prose);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (width >= 48rem) {
+    html {
+      font-size: var(--text-body-lg);
+    }
+  }
+
+  a {
+    color: var(--color-accent);
+  }
+
+  a:hover {
+    color: var(--color-accent-hover);
+  }
+}

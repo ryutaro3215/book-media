@@ -1,0 +1,146 @@
+---
+/**
+ * トップページ（design/TopPage v2.dc.html）。
+ *
+ * marketing-plan.md が未確定のため、キャッチコピー・ヒーローセクションは置かない
+ * （design/ にも存在しない）。
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SEO from "../components/SEO.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import SideNav from "../components/SideNav.astro";
+import { SITE } from "../config";
+import { websiteJsonLd } from "../lib/jsonld";
+import {
+  getAllInterviews,
+  getSelectorGroups,
+  getTopicGroups,
+  formatDate,
+  toArticleHref,
+  toSelectorHref,
+  toTopicHref,
+} from "../lib/collections";
+
+const articles = await getAllInterviews();
+const selectors = await getSelectorGroups();
+const topics = await getTopicGroups();
+---
+
+<BaseLayout headSlot>
+  <SEO
+    slot="head"
+    title={SITE.name}
+    description={SITE.description}
+    noSuffix
+    canonical="/"
+    jsonLd={websiteJsonLd()}
+  />
+
+  <SiteHeader />
+
+  <div class="flex items-start">
+    <div
+      class="sticky top-[68px] hidden max-h-[calc(100vh-68px)] w-[232px] flex-none self-start lg:block"
+    >
+      <SideNav />
+    </div>
+
+    <main class="min-w-0 flex-auto px-5 pt-10 pb-24 md:px-7">
+      {/* design/ にヒーローセクションがないため、h1 は読み上げ専用にする。
+          h1 が無いページは見出し階層として不正（requirements 非機能要件） */}
+      <h1 class="sr-only">{SITE.name} — {SITE.description}</h1>
+
+      {/* 新着 */}
+      <section class="mb-16">
+        <div class="mb-6 flex items-center gap-3.5">
+          <span class="h-[22px] w-1 flex-none bg-brand" aria-hidden="true"></span>
+          <h2 class="m-0 text-[26px] leading-[1.5] font-bold">新着の記事</h2>
+        </div>
+        <div class="flex gap-6 overflow-x-auto pb-2">
+          {
+            articles.map((entry) => (
+              <a
+                href={toArticleHref(entry)}
+                class="flex w-[236px] flex-none flex-col gap-3 text-inherit no-underline hover:text-inherit"
+              >
+                <div class="flex h-[150px] w-[236px] items-end overflow-hidden bg-cover-placeholder p-4">
+                  <span class="text-[13px] leading-[1.6] text-muted">
+                    {entry.data.topic}
+                  </span>
+                </div>
+                <div class="text-base leading-[1.6] font-bold text-pretty">
+                  {entry.data.title}
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-muted">
+                  <span>{entry.data.selector.name}</span>
+                  <span class="h-2.5 w-px bg-rule" aria-hidden="true" />
+                  <span>{formatDate(entry.data.publishedAt)}</span>
+                </div>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+
+      {/* 分野から探す */}
+      {
+        topics.length > 0 && (
+          <section class="mb-16">
+            <div class="mb-6 flex items-center gap-3.5">
+              <span class="h-[22px] w-1 flex-none bg-brand" aria-hidden="true" />
+              <h2 class="m-0 text-[26px] leading-[1.5] font-bold">
+                分野から探す
+              </h2>
+            </div>
+            <div class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
+              {topics.map((t) => (
+                <a
+                  href={toTopicHref(t.name)}
+                  class="flex flex-col gap-2 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
+                >
+                  <span class="text-base font-bold">{t.name}</span>
+                  <span class="text-[13px] text-muted">
+                    記事{t.articles.length}本
+                  </span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      {/* 選者から探す */}
+      {
+        selectors.length > 0 && (
+          <section class="mb-16">
+            <div class="mb-6 flex items-center gap-3.5">
+              <span class="h-[22px] w-1 flex-none bg-brand" aria-hidden="true" />
+              <h2 class="m-0 text-[26px] leading-[1.5] font-bold">
+                選者から探す
+              </h2>
+            </div>
+            <div class="flex gap-6 overflow-x-auto pb-2">
+              {selectors.map((s) => (
+                <a
+                  href={toSelectorHref(s.selector.name)}
+                  class="flex w-[220px] flex-none flex-col gap-3 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
+                >
+                  <div class="text-base font-bold">{s.selector.name}</div>
+                  <div class="text-[13px] leading-[1.7] text-muted">
+                    {s.selector.affiliation}
+                  </div>
+                  <div class="text-[13px] text-muted">
+                    記事{s.articles.length}本
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <SiteFooter />
+    </main>
+  </div>
+</BaseLayout>

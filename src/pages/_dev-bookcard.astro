@@ -1,0 +1,90 @@
+---
+/**
+ * 動作確認用ページ（T4 / T5）。本番の導線からは到達できない。
+ *
+ * 書影あり2冊・なし3冊を並べ、5枚のカードの書影枠の高さが揃うことを確認する。
+ * 先頭2冊は openBD に書影があるISBN、残り3冊は書影が取得できないISBN。
+ * ネットワークを遮断した場合は5冊ともフォールバック（縦組み）になるが、
+ * ビルドは成功しなければならない。
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BookCard from "../components/BookCard.astro";
+import type { Book } from "../content.config";
+
+const books: Book[] = [
+  {
+    // openBD に書影あり
+    title: "経済学における合理性の系譜",
+    author: "山田 太郎",
+    publisher: "北大路書房",
+    year: 2009,
+    isbn: "9784762821349",
+    reason:
+      "合理的経済人という前提がどこから来たのかを、思想史として辿り直す。行動経済学の批判が何に対する批判なのかが、ここを読むと初めて像を結ぶ。",
+    whyUnknown:
+      "学部の教科書としても専門書としても中途半端な位置にあり、書店の棚に置かれる場所がなかった。",
+  },
+  {
+    // openBD に書影あり
+    title: "統計的因果推論の基礎",
+    author: "佐藤 花子",
+    translator: "鈴木 一郎",
+    publisher: "ソシム",
+    year: 2020,
+    isbn: "9784815808501",
+    reason:
+      "因果を推定するとはどういう操作なのかを、数式より先に「何を仮定したか」で説明する。手法の羅列にならない稀な入門書。",
+    whyUnknown:
+      "同時期に話題書が複数出たため書評の対象から外れ、実務家の口コミだけで細く読まれてきた。",
+  },
+  {
+    // 書影なし → 縦組みフォールバック
+    title: "ファスト＆スロー（上）",
+    author: "ダニエル・カーネマン",
+    translator: "村井 章子",
+    publisher: "早川書房",
+    year: 2014,
+    isbn: "9784150504106",
+    reason:
+      "二つの思考システムという枠組みを、実験の積み重ねだけで説得してくる。結論より、結論に至る手続きを読む本。",
+    whyUnknown:
+      "文庫化のタイミングで単行本版が絶版になり、書名だけが有名で中身が読まれない状態が続いている。",
+  },
+  {
+    // 書影なし → 縦組みフォールバック
+    title: "選択と希少性の経済学",
+    author: "センディル・ムッライナタン",
+    publisher: "早川書房",
+    year: 2015,
+    isbn: "9784152095671",
+    reason:
+      "なぜ人は忙しいときほど判断を誤るのか。希少性という一つの視点が、貧困・時間管理・意思決定の失敗をつなげて説明できることを示した一冊。",
+    whyUnknown:
+      "邦題が自己啓発書の棚に置かれる語感で、研究書として探している読者に届かなかった。",
+  },
+  {
+    // 書影なし → 縦組みフォールバック
+    title: "制度の経済学と社会的選択",
+    author: "田中 次郎",
+    publisher: "勁草書房",
+    year: 2007,
+    isbn: "9784326102785",
+    reason:
+      "制度を「均衡」として捉える立場と「ルール」として捉える立場の断層を、どちらにも与せずに整理している。",
+    whyUnknown:
+      "刊行時に電子化されず、大学図書館の閉架にしか残っていない。",
+  },
+];
+---
+
+<BaseLayout title="[dev] BookCard の確認">
+  <main class="mx-auto w-full max-w-body px-5 pt-[72px]">
+    <h1 class="m-0 mb-10 text-[26px] leading-[1.5] font-bold">
+      [dev] BookCard / BookCover
+    </h1>
+    <p class="mb-10 text-[15px] leading-[1.9] text-muted">
+      書影あり2冊・なし3冊。5枚とも書影枠は 152×228px で揃う。
+    </p>
+    {books.map((book, i) => <BookCard number={i + 1} book={book} />)}
+  </main>
+</BaseLayout>

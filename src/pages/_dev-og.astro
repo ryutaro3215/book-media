@@ -1,0 +1,75 @@
+---
+/**
+ * T8/T9 の動作確認用ページ（開発用・noindex）。
+ * 生成された OGP 画像と、SEO.astro / jsonld.ts の出力を目視で確認する。
+ * 記事ページの実装が入ったら削除してよい。
+ */
+import { getCollection } from "astro:content";
+import SEO from "../components/SEO.astro";
+import { articleJsonLd } from "../lib/jsonld";
+import { SITE } from "../config";
+
+const interviews = await getCollection("interviews");
+const first = interviews[0];
+
+const jsonLd = articleJsonLd({
+  title: first.data.title,
+  description: first.data.description,
+  url: `/${first.data.slug}`,
+  image: `/og/${first.data.slug}.png`,
+  publishedAt: first.data.publishedAt,
+  topic: first.data.topic,
+  keywords: first.data.keywords,
+  selector: first.data.selector,
+  books: first.data.books,
+});
+---
+
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SEO
+      title={first.data.title}
+      description={first.data.description}
+      ogImage={`/og/${first.data.slug}.png`}
+      type="article"
+      canonical={`/${first.data.slug}`}
+      publishedAt={first.data.publishedAt}
+      authorName={first.data.selector.name}
+      noindex
+      jsonLd={jsonLd}
+    />
+  </head>
+  <body class="mx-auto max-w-body-wide p-8">
+    <h1 class="text-2xl font-bold">OGP / SEO 確認（{SITE.name}）</h1>
+    <ul class="mt-8 space-y-12">
+      {
+        interviews.map((entry) => (
+          <li>
+            <p class="text-sm text-muted">
+              {entry.data.topic} / {entry.data.selector.name}
+            </p>
+            <p class="mt-2 text-sm text-muted">/og/{entry.data.slug}.png（1200×630）</p>
+            <img
+              src={`/og/${entry.data.slug}.png`}
+              width="1200"
+              height="630"
+              alt={`${entry.data.selector.name}のOGP画像`}
+              class="mt-2 w-full border border-rule"
+            />
+            <p class="mt-4 text-sm text-muted">50%相当（600×315）</p>
+            <img
+              src={`/og/${entry.data.slug}.png`}
+              width="600"
+              height="315"
+              alt={`${entry.data.selector.name}のOGP画像（50%）`}
+              class="mt-2 border border-rule"
+              style="width:600px;max-width:100%;height:auto"
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </body>
+</html>

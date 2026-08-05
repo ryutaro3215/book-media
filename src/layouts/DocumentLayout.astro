@@ -1,0 +1,49 @@
+---
+/**
+ * 文書ページ共通テンプレート（design/Document.dc.html 準拠）。
+ *
+ * about / contact / privacy / apply / 404 のすべてをこの1枚で表示する。
+ * 記事ページと同一の本文組版（カラム660px・行間1.9・本文16〜17px）を使い、
+ * 装飾は一切追加しない。
+ *
+ * 本文は slot に h2 / p / ul などを素で書けば、ここで定義した
+ * 子要素セレクタによって組版が当たる。
+ */
+import BaseLayout from "./BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+
+interface Props {
+  /** h1 に表示するページタイトル */
+  title: string;
+  /** <title> 用。省略時は title をそのまま使う */
+  documentTitle?: string;
+  description?: string;
+}
+
+const { title, documentTitle, description } = Astro.props;
+---
+
+<BaseLayout title={documentTitle ?? title} description={description}>
+  <div class="flex min-h-screen flex-col">
+    <SiteHeader />
+
+    <main class="mx-auto w-full max-w-body flex-auto px-5 pt-[72px]">
+      <h1
+        class="m-0 mb-10 text-[clamp(26px,3.6vw,32px)] leading-[1.5] font-bold text-pretty"
+      >
+        {title}
+      </h1>
+
+      <div
+        class="[&>section]:mb-14 [&_h2]:m-0 [&_h2]:mb-5 [&_h2]:text-[26px] [&_h2]:leading-[1.6] [&_h2]:font-bold [&_h3]:m-0 [&_h3]:mb-3 [&_h3]:text-[19px] [&_h3]:leading-[1.6] [&_h3]:font-bold [&_p]:m-0 [&_p]:mb-[1.9em] [&_p]:text-[17px] [&_p]:leading-[1.9] [&_p]:text-pretty [&_ul]:m-0 [&_ul]:mb-[1.9em] [&_ul]:list-disc [&_ul]:pl-[1.4em] [&_li]:text-[17px] [&_li]:leading-[1.9] [&_li]:marker:text-muted [&_p:last-child]:mb-0 [&_ul:last-child]:mb-0"
+      >
+        <slot />
+      </div>
+    </main>
+
+    <div class="mx-auto mt-10 w-full max-w-body px-5">
+      <SiteFooter />
+    </div>
+  </div>
+</BaseLayout>

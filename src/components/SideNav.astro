@@ -1,0 +1,48 @@
+---
+/**
+ * トップページ左のサイドナビ（design/SideNav.dc.html）。
+ *
+ * design/ では分野を「人文 / 社会科学 / 自然科学」にグループ分けしているが、
+ * 現在のスキーマに分野の上位カテゴリがないため、実データから作った
+ * 分野一覧をそのまま1グループとして出す。
+ * 上位カテゴリを持たせたくなったら content.config.ts に追加してから対応する
+ * （デザインの都合でスキーマを勝手に増やさない）。
+ */
+import { getTopicGroups, toTopicHref } from "../lib/collections";
+
+const topics = await getTopicGroups();
+---
+
+<aside
+  class="h-full w-full overflow-y-auto border-r border-rule bg-canvas pt-8 pr-6 pb-[72px] pl-7"
+>
+  <nav class="mb-9 flex flex-col gap-2.5">
+    <a href="/" class="text-[15px] font-bold text-ink no-underline hover:text-accent">
+      すべての記事
+    </a>
+    <a href="/selectors" class="text-[15px] text-ink no-underline hover:text-accent">
+      選者一覧
+    </a>
+    <a href="/about" class="text-[15px] text-ink no-underline hover:text-accent">
+      このサイトについて
+    </a>
+  </nav>
+
+  {
+    topics.length > 0 && (
+      <div class="mb-8">
+        <div class="mb-3.5 text-xs tracking-[0.1em] text-muted">分野</div>
+        <div class="flex flex-col gap-3">
+          {topics.map((t) => (
+            <a
+              href={toTopicHref(t.name)}
+              class="text-sm text-ink no-underline hover:text-accent"
+            >
+              {t.name}
+            </a>
+          ))}
+        </div>
+      </div>
+    )
+  }
+</aside>

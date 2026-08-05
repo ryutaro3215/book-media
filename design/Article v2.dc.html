@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2F4A3F; }
+  a:hover { color: #23392F; }
+</style>
+</helmet>
+
+<div style="font-family: 'Zen Kaku Gothic New', sans-serif; background: #FFFFFF; color: #292929;">
+
+  <dc-import name="SiteHeader" style="position: sticky; top: 0; z-index: 20;" hint-size="100%,73px"></dc-import>
+
+  <header style="max-width: 660px; margin: 0 auto; padding: 72px 20px 0 20px;">
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: #787878; margin-bottom: 20px;">
+      <span>行動経済学</span>
+      <span style="width: 1px; height: 12px; background: #E6E6E6;"></span>
+      <span>2026年8月4日</span>
+    </div>
+    <h1 style="font-size: clamp(30px, 4.4vw, 40px); font-weight: 700; line-height: 1.45; letter-spacing: -0.01em; margin: 0 0 36px 0; text-wrap: pretty;">山田太郎が選ぶ、<br />行動経済学を学ぶための5冊</h1>
+    <div style="display: flex; align-items: center; gap: 16px; padding-bottom: 40px; border-bottom: 1px solid #E6E6E6;">
+      <div style="width: 72px; height: 72px; flex: 0 0 72px; border-radius: 50%; overflow: hidden; background: #F5F4F1;">
+        <image-slot id="v2-selector-avatar" shape="circle" placeholder="写真" style="width: 100%; height: 100%;"></image-slot>
+      </div>
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 16px; font-weight: 700;">山田太郎</div>
+        <div style="font-size: 13px; color: #787878;">○○大学 経済学部 教授</div>
+      </div>
+      <a href="https://x.com/yamada_t" style="flex: 0 0 auto; font-size: 13px; font-weight: 500; text-decoration: none; padding: 8px 14px; border: 1px solid #2F4A3F; border-radius: 999px;">@yamada_t</a>
+    </div>
+  </header>
+
+  <section style="max-width: 660px; margin: 0 auto; padding: 44px 20px 0 20px;">
+    <p style="font-size: 17px; line-height: 1.9; margin: 0 0 1.9em 0; text-wrap: pretty;">行動経済学は「人間は合理的である」という経済学の前提を覆すところから始まった分野だ。山田氏は20年にわたりこの分野の研究と教育に携わり、日本語で読める入門書の変遷をもっともよく知る一人である。</p>
+    <p style="font-size: 17px; line-height: 1.9; margin: 0 0 1.9em 0; text-wrap: pretty;">今回選んでもらった5冊は、専攻外の学生が最初に手に取っても迷わないよう、理論の骨格を掴む本から現実への応用を描いた本まで順を追って並べてある。難易度順に読む必要はないが、迷ったら1冊目から手に取ってほしいという。</p>
+    <blockquote style="margin: 40px 0; padding: 0 0 0 20px; border-left: 2px solid #E6E6E6; font-size: 18px; line-height: 1.9; color: #292929;">どれも初版から10年以上読み継がれている本ばかりです。流行り廃りのある分野だからこそ、時間の検証に耐えた本を選びました。</blockquote>
+  </section>
+
+  <section style="max-width: 660px; margin: 0 auto; padding: 24px 20px 0 20px;">
+    <div style="border: 1px solid #E6E6E6; padding: 24px 24px 20px 24px;">
+      <div style="font-size: 12px; color: #787878; letter-spacing: 0.1em; margin-bottom: 16px;">この記事で紹介する5冊</div>
+      <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px;">
+        <li style="display: flex; gap: 12px; font-size: 15px; line-height: 1.7;"><span style="color: #787878; flex: 0 0 24px;">01</span><span>ファスト＆スロー（上）</span></li>
+        <li style="display: flex; gap: 12px; font-size: 15px; line-height: 1.7;"><span style="color: #787878; flex: 0 0 24px;">02</span><span>選択と希少性の経済学</span></li>
+        <li style="display: flex; gap: 12px; font-size: 15px; line-height: 1.7;"><span style="color: #787878; flex: 0 0 24px;">03</span><span>実践 行動経済学</span></li>
+        <li style="display: flex; gap: 12px; font-size: 15px; line-height: 1.7;"><span style="color: #787878; flex: 0 0 24px;">04</span><span>経済学は人びとを幸福にできるか</span></li>
+        <li style="display: flex; gap: 12px; font-size: 15px; line-height: 1.7;"><span style="color: #787878; flex: 0 0 24px;">05</span><span>行動経済学の逆襲</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section style="max-width: 700px; margin: 0 auto; padding: 72px 20px 0 20px;">
+    <dc-import name="BookCardV2" number="1" title="ファスト＆スロー（上）" author="ダニエル・カーネマン" translator="村井章子" publisher="早川書房" year="2014" has-cover="{{ true }}" cover-slot-id="v2-cover-01" body="人間の思考には速く直感的な「システム1」と遅く論理的な「システム2」があるという枠組みを提示した、行動経済学の出発点となる一冊。バイアスや錯覚がどのように意思決定を歪めるかを豊富な実験例とともに解説し、以降のすべての議論の土台になる。まず読むべき1冊として挙げない研究者はいない。" hint-size="100%,auto"></dc-import>
+    <dc-import name="BookCardV2" number="2" title="選択と希少性の経済学" author="センディル・ムッライナタン" publisher="早川書房" year="2015" has-cover="{{ false }}" body="なぜ人は忙しいときほど判断を誤るのか。「希少性」という一つの視点が、貧困・時間管理・意思決定の失敗を横断的に説明できることを示した一冊。専門外の読者にも実感を持って読み進められる語り口で、理論と実生活の距離が近いことを教えてくれる。" hint-size="100%,auto"></dc-import>
+    <dc-import name="BookCardV2" number="3" title="実践 行動経済学" author="リチャード・セイラー" publisher="日経BP" year="2009" has-cover="{{ true }}" cover-slot-id="v2-cover-03" body="「ナッジ」という概念を一般に広めた記念碑的な著作。人の選択を強制せずにより良い方向へ導く設計思想は、行動経済学を政策や実務に応用する道を切り開いた。理論書と実務書の橋渡しとして、3冊目に読むことを勧めたい。" hint-size="100%,auto"></dc-import>
+    <dc-import name="BookCardV2" number="4" title="経済学は人びとを幸福にできるか" author="宇沢弘文" publisher="東洋経済新報社" year="2013" has-cover="{{ false }}" body="日本の経済学者による、市場原理主義への根本的な問い直し。行動経済学そのものの本ではないが、「人間を経済学にどう位置づけるか」という問いを共有しており、海外の理論に慣れた後にこそ読んでほしい一冊として選んだという。" hint-size="100%,auto"></dc-import>
+    <dc-import name="BookCardV2" number="5" title="行動経済学の逆襲" author="リチャード・セイラー" publisher="早川書房" year="2016" has-cover="{{ true }}" cover-slot-id="v2-cover-05" body="行動経済学が異端の学説から主流へと認められていく過程を、当事者であるセイラー自身が回顧する。学問がどのように形成されるかという物語としても読め、5冊の締めくくりとして分野全体を俯瞰する視点を与えてくれる。" hint-size="100%,auto"></dc-import>
+  </section>
+
+  <section style="max-width: 660px; margin: 0 auto; padding: 8px 20px 0 20px;">
+    <p style="font-size: 17px; line-height: 1.9; margin: 0 0 1.9em 0; text-wrap: pretty;">5冊を通して見えてくるのは、行動経済学が「人間の不合理さを笑う学問」ではなく、「不合理さを前提に、より良い制度や選択肢をどう設計するか」という実践的な問いに向かっているという流れだ。</p>
+    <p style="font-size: 17px; line-height: 1.9; margin: 0; text-wrap: pretty;">入り口としてどれか1冊を選ぶなら、まず「ファスト＆スロー」から始めてほしいというのが山田氏の一貫した助言だった。</p>
+  </section>
+
+  <section style="max-width: 660px; margin: 64px auto 0 auto; padding: 0 20px;">
+    <div style="border-top: 1px solid #E6E6E6; padding-top: 32px; display: flex; gap: 16px; align-items: flex-start;">
+      <div style="width: 64px; height: 64px; flex: 0 0 64px; border-radius: 50%; overflow: hidden; background: #F5F4F1;">
+        <image-slot id="v2-selector-avatar-foot" shape="circle" placeholder="写真" style="width: 100%; height: 100%;"></image-slot>
+      </div>
+      <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 16px; font-weight: 700;">山田太郎</div>
+        <div style="font-size: 14px; color: #787878; line-height: 1.8;">○○大学 経済学部 教授。行動経済学・実験経済学。意思決定の歪みが制度設計にどう影響するかを研究している。</div>
+        <a href="https://x.com/yamada_t" style="font-size: 14px; font-weight: 500; text-decoration: none;">Xでフォローする</a>
+      </div>
+    </div>
+  </section>
+
+
+  <section style="max-width: 660px; margin: 64px auto 0 auto; padding: 0 20px;">
+    <div style="font-size: 12px; color: #787878; letter-spacing: 0.1em; margin-bottom: 4px;">ほかの記事</div>
+    <a href="#" style="display: flex; gap: 16px; align-items: flex-start; text-decoration: none; color: inherit; padding: 22px 0; border-top: 1px solid #E6E6E6;">
+      <div style="width: 88px; height: 66px; flex: 0 0 88px; overflow: hidden; background: #F5F4F1;">
+        <image-slot id="v2-rel-1" shape="rect" placeholder="書影" style="width: 100%; height: 100%;"></image-slot>
+      </div>
+      <div style="flex: 1 1 auto; min-width: 0;">
+        <div style="font-size: 12px; color: #787878; margin-bottom: 6px;">中世哲学</div>
+        <div style="font-size: 16px; font-weight: 700; line-height: 1.6;">佐藤花子が選ぶ、中世哲学への入り口となる5冊</div>
+      </div>
+    </a>
+    <a href="#" style="display: flex; gap: 16px; align-items: flex-start; text-decoration: none; color: inherit; padding: 22px 0; border-top: 1px solid #E6E6E6; border-bottom: 1px solid #E6E6E6;">
+      <div style="width: 88px; height: 66px; flex: 0 0 88px; overflow: hidden; background: #F5F4F1;">
+        <image-slot id="v2-rel-2" shape="rect" placeholder="書影" style="width: 100%; height: 100%;"></image-slot>
+      </div>
+      <div style="flex: 1 1 auto; min-width: 0;">
+        <div style="font-size: 12px; color: #787878; margin-bottom: 6px;">統計学</div>
+        <div style="font-size: 16px; font-weight: 700; line-height: 1.6;">鈴木一郎が選ぶ、統計学の考え方がわかる5冊</div>
+      </div>
+    </a>
+  </section>
+
+  <div style="max-width: 660px; margin: 64px auto 0 auto; padding: 0 20px;">
+    <dc-import name="SiteFooter" hint-size="100%,180px"></dc-import>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

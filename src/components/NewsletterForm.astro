@@ -1,0 +1,56 @@
+---
+import { SITE } from "../config";
+
+interface Props {
+  /** 説明文。marketing-plan.md 未確定のため実文は暫定 */
+  note?: string;
+}
+
+const {
+  note = "新しい記事が公開されたらお知らせします。",
+} = Astro.props;
+
+// 外部メール配信サービスの登録フォームに直接POSTする。
+// 自サイトではメールアドレスを一切保持しない（requirements R8 / セキュリティ要件）。
+const action = SITE.newsletterActionUrl;
+const configured = action !== "";
+---
+
+<section class="border-t border-rule pt-8">
+  <p class="m-0 mb-4 text-[15px] leading-[1.8] text-ink">{note}</p>
+
+  {
+    configured ? (
+      <form
+        action={action}
+        method="post"
+        target="_blank"
+        class="flex flex-col gap-3 sm:flex-row"
+      >
+        <label for="newsletter-email" class="sr-only">
+          メールアドレス
+        </label>
+        <input
+          id="newsletter-email"
+          type="email"
+          name="email"
+          required
+          placeholder="メールアドレス"
+          class="h-11 w-full min-w-0 flex-auto rounded-none border border-rule bg-canvas px-3.5 font-sans text-[15px] text-ink outline-none focus:border-accent"
+        />
+        <button
+          type="submit"
+          class="h-11 flex-none cursor-pointer rounded-none border-0 bg-accent px-6 font-sans text-[15px] font-medium text-canvas hover:bg-accent-hover"
+        >
+          登録する
+        </button>
+      </form>
+    ) : (
+      <p class="m-0 text-[13px] text-muted">
+        {/* 配信サービス未確定のためプレースホルダ。src/config.ts の
+            newsletterActionUrl を設定すると登録フォームが表示される */}
+        メール配信は準備中です。
+      </p>
+    )
+  }
+</section>

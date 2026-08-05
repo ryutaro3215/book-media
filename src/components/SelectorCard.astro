@@ -1,0 +1,39 @@
+---
+/**
+ * 選者一覧（/selectors）の1行。design/Senja List.dc.html 準拠。
+ *
+ * 顔写真は扱わない。現在のスキーマに avatar フィールドがなく、
+ * 研究者が写真提供を渋る場合があるため、**全員写真なしで成立する**設計にしてある。
+ */
+import type { SelectorGroup } from "../lib/collections";
+import { toSelectorHref, toXHandleLabel } from "../lib/collections";
+
+interface Props {
+  group: SelectorGroup;
+}
+
+const { group } = Astro.props;
+const { selector, articles, topics } = group;
+const handle = toXHandleLabel(selector.links?.x);
+---
+
+<a
+  href={toSelectorHref(selector.name)}
+  class="flex items-start gap-5 border-t border-rule py-[26px] text-ink no-underline last:border-b hover:text-ink"
+>
+  <div class="flex min-w-0 flex-auto flex-col gap-2">
+    <div class="text-[19px] leading-[1.5] font-bold">{selector.name}</div>
+    <div class="text-sm leading-[1.7] text-muted">{selector.affiliation}</div>
+    <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-sm">
+      {topics.map((topic) => <span class="text-ink">{topic}</span>)}
+      <span class="text-muted">記事{articles.length}本</span>
+    </div>
+  </div>
+  {
+    handle && (
+      <span class="mt-1 flex-none rounded-full border border-accent px-3.5 py-[7px] text-[13px] font-medium text-accent">
+        {handle}
+      </span>
+    )
+  }
+</a>

@@ -1,0 +1,142 @@
+---
+/**
+ * 5冊カードの1枚（design/BookCardV2.dc.html）。
+ *
+ * design/ にない要素を1つだけ足している:
+ * 「この本が知られていない理由」（requirements R2c）。
+ * このメディアの中核情報なので選書理由の本文に埋もれさせず、
+ * 罫線と余白だけで区切った短い段落として出す（色や囲みでの強調はしない）。
+ */
+import type { Book } from "../content.config";
+import { resolveCover } from "../lib/cover";
+import BookCover from "./BookCover.astro";
+
+interface Props {
+  /** 1〜5。表示は 01〜05 にゼロ埋めする */
+  number: number;
+  book: Book;
+}
+
+const { number, book } = Astro.props;
+
+const numberLabel = String(number).padStart(2, "0");
+const authorLine = book.translator
+  ? `${book.author} / ${book.translator} 訳`
+  : book.author;
+const publisherLine = `${book.publisher}・${book.year}`;
+
+// ビルド時に解決する。実行時にAPIは呼ばれない
+const cover = await resolveCover(book.isbn);
+---
+
+<article class="book-card text-ink">
+  <div class="card-head">
+    <div class="card-number">{numberLabel}</div>
+    <div class="card-rule bg-rule"></div>
+  </div>
+
+  <div class="card-main">
+    <BookCover title={book.title} coverUrl={cover.url} />
+    <div class="card-meta">
+      <h3 class="card-title">{book.title}</h3>
+      <div class="card-author">{authorLine}</div>
+      <div class="card-publisher text-muted">{publisherLine}</div>
+    </div>
+  </div>
+
+  <div class="card-body">{book.reason}</div>
+
+  <div class="card-unknown border-rule">
+    <div class="card-unknown-label text-muted">この本が知られていない理由</div>
+    <p class="card-unknown-text">{book.whyUnknown}</p>
+  </div>
+</article>
+
+<style>
+  /* design/BookCardV2.dc.html の固有寸法。色・罫線はトークン（クラス）側で当てる */
+  .book-card {
+    padding-bottom: 72px;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .card-number {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .card-rule {
+    flex: 1 1 auto;
+    height: 1px;
+  }
+
+  .card-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    align-items: flex-start;
+    margin-bottom: 28px;
+  }
+
+  .card-meta {
+    flex: 1 1 280px;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 4px;
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  .card-author {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .card-publisher {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .card-body {
+    font-size: 17px;
+    line-height: 1.9;
+    text-wrap: pretty;
+  }
+
+  /* R2c: 選書理由とは視覚的に分ける。上に細い罫を1本引くだけに留める */
+  .card-unknown {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top-width: 1px;
+    border-top-style: solid;
+  }
+
+  /* design/Article v2.dc.html の小見出しと同じ体裁 */
+  .card-unknown-label {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .card-unknown-text {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.9;
+    text-wrap: pretty;
+  }
+</style>

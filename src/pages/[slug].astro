@@ -1,0 +1,236 @@
+---
+/**
+ * 記事ページ（design/Article v2.dc.html）。
+ * 本プロジェクトの中核。読書体験を最優先する（requirements「最優先事項: UI/UXの質」）。
+ */
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SEO from "../components/SEO.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import BookCard from "../components/BookCard.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
+import { articleJsonLd } from "../lib/jsonld";
+import {
+  getAllInterviews,
+  formatDate,
+  toArticleHref,
+  toSelectorHref,
+  toTopicHref,
+  toXProfileUrl,
+  toXHandleLabel,
+} from "../lib/collections";
+
+export async function getStaticPaths() {
+  const interviews = await getCollection("interviews");
+  return interviews.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const { selector, books } = data;
+
+const { Content } = await render(entry);
+
+const xUrl = toXProfileUrl(selector.links?.x);
+const xLabel = toXHandleLabel(selector.links?.x);
+
+const ogImage = `/og/${entry.id}.png`;
+const href = toArticleHref(entry);
+
+const jsonLd = articleJsonLd({
+  title: data.title,
+  description: data.description,
+  url: href,
+  image: ogImage,
+  publishedAt: data.publishedAt,
+  updatedAt: data.updatedAt,
+  topic: data.topic,
+  keywords: data.keywords,
+  selector,
+  books,
+});
+
+// 「ほかの記事」。同じ記事は除き、新しい順に2本
+const others = (await getAllInterviews())
+  .filter((e) => e.id !== entry.id)
+  .slice(0, 2);
+---
+
+<BaseLayout headSlot>
+  <SEO
+    slot="head"
+    title={data.title}
+    description={data.description}
+    ogImage={ogImage}
+    type="article"
+    canonical={href}
+    publishedAt={data.publishedAt}
+    updatedAt={data.updatedAt}
+    authorName={selector.name}
+    jsonLd={jsonLd}
+  />
+
+  <SiteHeader />
+
+  <header class="mx-auto max-w-body px-5 pt-[72px]">
+    <div class="mb-5 flex items-center gap-3 text-[13px] text-muted">
+      <a href={toTopicHref(data.topic)} class="text-muted hover:text-ink">
+        {data.topic}
+      </a>
+      <span class="h-3 w-px bg-rule" aria-hidden="true"></span>
+      <time datetime={data.publishedAt.toISOString()}>
+        {formatDate(data.publishedAt)}
+      </time>
+    </div>
+
+    <h1
+      class="m-0 mb-9 text-[clamp(30px,4.4vw,40px)] leading-[1.45] font-bold tracking-[-0.01em] text-pretty"
+    >
+      {data.title}
+    </h1>
+
+    <div class="flex items-center gap-4 border-b border-rule pb-10">
+      <div class="flex min-w-0 flex-auto flex-col gap-1">
+        <a
+          href={toSelectorHref(selector.name)}
+          class="text-base font-bold text-ink no-underline hover:text-ink"
+        >
+          {selector.name}
+        </a>
+        <div class="text-[13px] text-muted">{selector.affiliation}</div>
+      </div>
+      {
+        xUrl && (
+          <a
+            href={xUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+            class="flex-none rounded-full border border-accent px-3.5 py-2 text-[13px] font-medium no-underline"
+          >
+            {xLabel}
+          </a>
+        )
+      }
+    </div>
+  </header>
+
+  {/* 導入文・まとめは Markdown 本文として書く */}
+  <section class="article-prose mx-auto max-w-body px-5 pt-11">
+    <Content />
+  </section>
+
+  {/* 目次: この記事で紹介する5冊 */}
+  <section class="mx-auto max-w-body px-5 pt-6">
+    <div class="border border-rule px-6 pt-6 pb-5">
+      <h2 class="m-0 mb-4 text-xs font-normal tracking-[0.1em] text-muted">
+        この記事で紹介する5冊
+      </h2>
+      <ol class="m-0 flex list-none flex-col gap-2.5 p-0">
+        {
+          books.map((book, i) => (
+            <li class="flex gap-3 text-[15px] leading-[1.7]">
+              <span class="flex-none basis-6 text-muted">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span>{book.title}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  {/* 5冊のカード。本文より広いカラムを使う */}
+  <section class="mx-auto max-w-body-wide px-5 pt-[72px]">
+    {books.map((book, i) => <BookCard number={i + 1} book={book} />)}
+  </section>
+
+  {/* 選者プロフィール */}
+  <section class="mx-auto mt-16 max-w-body px-5">
+    <h2 class="sr-only">選者について</h2>
+    <div class="flex items-start gap-4 border-t border-rule pt-8">
+      <div class="flex min-w-0 flex-auto flex-col gap-2">
+        <div class="text-base font-bold">{selector.name}</div>
+        <div class="text-sm leading-[1.8] text-muted">{selector.bio}</div>
+        <div class="text-sm leading-[1.8] text-muted">
+          {selector.credentials}
+        </div>
+        {
+          xUrl && (
+            <a
+              href={xUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+              class="text-sm font-medium no-underline"
+            >
+              Xでフォローする
+            </a>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* メール登録 */}
+  <section class="mx-auto mt-16 max-w-body px-5">
+    <NewsletterForm />
+  </section>
+
+  {/* ほかの記事 */}
+  {
+    others.length > 0 && (
+      <section class="mx-auto mt-16 max-w-body px-5">
+        <h2 class="m-0 mb-1 text-xs font-normal tracking-[0.1em] text-muted">
+          ほかの記事
+        </h2>
+        {others.map((other) => (
+          <a
+            href={toArticleHref(other)}
+            class="flex items-start gap-4 border-t border-rule py-[22px] text-inherit no-underline last:border-b hover:text-inherit"
+          >
+            <div class="min-w-0 flex-auto">
+              <div class="mb-1.5 text-xs text-muted">{other.data.topic}</div>
+              <div class="text-base leading-[1.6] font-bold">
+                {other.data.title}
+              </div>
+            </div>
+          </a>
+        ))}
+      </section>
+    )
+  }
+
+  <div class="mx-auto mt-16 max-w-body px-5">
+    <SiteFooter />
+  </div>
+</BaseLayout>
+
+<style>
+  /* Markdown で書かれた導入文・まとめの組版。
+     design/Article v2.dc.html の本文と同じ（17px / 行間1.9） */
+  .article-prose :global(p) {
+    font-size: 17px;
+    line-height: 1.9;
+    margin: 0 0 1.9em 0;
+    text-wrap: pretty;
+  }
+
+  .article-prose :global(blockquote) {
+    margin: 40px 0;
+    padding: 0 0 0 20px;
+    border-left: 2px solid var(--color-rule);
+    font-size: 18px;
+    line-height: 1.9;
+  }
+
+  .article-prose :global(h2) {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.6;
+    margin: 2.4em 0 0.8em;
+  }
+</style>

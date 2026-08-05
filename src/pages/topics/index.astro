@@ -1,0 +1,53 @@
+---
+/**
+ * 分野一覧（plan.md T14）。
+ * design/TopPage v2.dc.html の「分野から探す」ブロックと同じ体裁のカードで並べる。
+ * **分野の説明文は創作しない**（marketing-plan.md 未確定）。分野名と記事数のみ。
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import { SITE } from "../../config";
+import { getTopicGroups, toTopicHref } from "../../lib/collections";
+
+const groups = await getTopicGroups();
+
+const title = `分野一覧 | ${SITE.name}`;
+const description = `${SITE.name}で扱っている${groups.length}分野の一覧。分野ごとに、その領域に詳しい選者が選んだ5冊の記事を読めます。`;
+---
+
+<BaseLayout title={title} description={description}>
+  <SiteHeader />
+
+  <main class="mx-auto max-w-body px-5 pt-[72px]">
+    <h1 class="m-0 mb-10 text-[clamp(26px,3.6vw,32px)] leading-[1.5] font-bold">
+      分野一覧
+    </h1>
+
+    {
+      groups.length > 0 ? (
+        <ul class="grid list-none grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4 p-0">
+          {groups.map((group) => (
+            <li>
+              <a
+                href={toTopicHref(group.name)}
+                class="flex h-full flex-col gap-2 border border-rule p-5 text-ink no-underline hover:border-brand hover:text-ink"
+              >
+                <span class="text-base font-bold">{group.name}</span>
+                <span class="text-[13px] text-muted">
+                  記事{group.articles.length}本
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-muted">分野はまだありません。</p>
+      )
+    }
+  </main>
+
+  <div class="mx-auto mt-[72px] max-w-body px-5">
+    <SiteFooter />
+  </div>
+</BaseLayout>

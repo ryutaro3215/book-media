@@ -1,0 +1,59 @@
+---
+import { SITE, NAV } from "../config";
+---
+
+<header
+  class="sticky top-0 z-20 border-b border-rule bg-header backdrop-blur-[8px]"
+>
+  <div
+    class="flex h-[68px] items-center justify-between gap-4 px-5 md:gap-8 md:px-7"
+  >
+    <a
+      href="/"
+      class="flex-none text-[21px] font-bold tracking-[0.01em] text-ink no-underline hover:text-ink"
+    >
+      {SITE.name}<span class="text-brand">.</span>
+    </a>
+
+    <nav class="hidden flex-auto items-center gap-[26px] md:flex">
+      {
+        NAV.map((item) => (
+          <a
+            href={item.href}
+            class="border-b-2 border-transparent py-1 text-sm font-medium text-ink no-underline hover:border-brand hover:text-brand"
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <form
+      action="/search"
+      role="search"
+      class="flex h-[38px] flex-auto items-center gap-2 rounded-full border border-rule bg-cover-placeholder px-3.5 md:flex-[0_1_300px]"
+    >
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        class="flex-none text-muted"
+        aria-hidden="true"
+      >
+        <circle cx="7" cy="7" r="4.6"></circle>
+        <line x1="10.4" y1="10.4" x2="14" y2="14"></line>
+      </svg>
+      <label for="site-search" class="sr-only">分野・選者・書名で検索</label>
+      <input
+        id="site-search"
+        type="search"
+        name="q"
+        placeholder="分野・選者・書名で検索"
+        class="w-full min-w-0 flex-auto border-0 bg-transparent font-sans text-sm text-ink outline-none placeholder:text-muted"
+      />
+    </form>
+  </div>
+</header>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2F4A3F; }
+  a:hover { color: #23392F; }
+</style>
+</helmet>
+
+<div style="font-family: 'Zen Kaku Gothic New', sans-serif; background: #FFFFFF; color: #292929;">
+
+  <dc-import name="SiteHeader" style="position: sticky; top: 0; z-index: 20;" hint-size="100%,73px"></dc-import>
+
+  <main style="max-width: 660px; margin: 0 auto; padding: 72px 20px 0 20px;">
+    <h1 style="font-size: clamp(26px, 3.6vw, 32px); font-weight: 700; line-height: 1.5; margin: 0 0 40px 0;">選者一覧</h1>
+
+    <sc-for list="{{ selectors }}" as="s" hint-placeholder-count="3">
+      <a href="./Senja Page.dc.html" style="display: flex; gap: 20px; align-items: flex-start; text-decoration: none; color: inherit; padding: 26px 0; border-top: 1px solid #E6E6E6;">
+        <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 19px; font-weight: 700; line-height: 1.5;">{{ s.name }}</div>
+          <div style="font-size: 14px; color: #787878; line-height: 1.7;">{{ s.affiliation }}</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; color: #292929;">
+            <span>{{ s.field }}</span>
+            <span style="color: #787878;">{{ s.countLabel }}</span>
+          </div>
+        </div>
+        <sc-if value="{{ s.hasHandle }}" hint-placeholder-val="{{ true }}">
+          <span style="flex: 0 0 auto; font-size: 13px; font-weight: 500; color: #2F4A3F; padding: 7px 13px; border: 1px solid #2F4A3F; border-radius: 999px; margin-top: 4px;">{{ s.handle }}</span>
+        </sc-if>
+      </a>
+    </sc-for>
+    <div style="border-top: 1px solid #E6E6E6;"></div>
+  </main>
+
+  <div style="max-width: 660px; margin: 72px auto 0 auto; padding: 0 20px;">
+    <dc-import name="SiteFooter" hint-size="100%,180px"></dc-import>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const rows = [
+      { name: '山田太郎', affiliation: '○○大学 経済学部 教授', field: '行動経済学', count: 1, handle: '@yamada_t' },
+      { name: '佐藤花子', affiliation: '△△大学 文学部 准教授', field: '中世哲学', count: 1, handle: '' },
+      { name: '鈴木一郎', affiliation: '□□大学 理学部 教授', field: '統計学', count: 1, handle: '@suzuki_stat' },
+    ];
+    return {
+      selectors: rows.map(r => ({ ...r, countLabel: `記事${r.count}本`, hasHandle: !!r.handle })),
+    };
+  }
+}
+</script>
+</body>
+</html>

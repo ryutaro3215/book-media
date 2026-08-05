@@ -1,0 +1,91 @@
+---
+/**
+ * 書影の面（design/BookCardV2.dc.html）。
+ *
+ * 書影があってもなくても **152×228px の同一サイズの枠**を描く。
+ * これにより書影の有無が混在しても5冊のカードが同じグリッドとして成立する。
+ *
+ * 書影がない場合はグレーの塗りや代替文字列を出さず、
+ * 枠のなかに書名を縦組み（writing-mode: vertical-rl）で置き、左に1本の縦罫を引く。
+ * 「意図的な設計に見えるフォールバック」が要件（requirements R2b）。
+ */
+interface Props {
+  /** 書名。フォールバック時はこれを縦組みで見せる */
+  title: string;
+  /** ビルド時に解決済みの書影URL。解決できなかった場合は null */
+  coverUrl?: string | null;
+}
+
+const { title, coverUrl = null } = Astro.props;
+---
+
+<div class="cover-frame bg-cover-placeholder">
+  {
+    coverUrl ? (
+      <img
+        class="cover-img"
+        src={coverUrl}
+        alt={`${title} の書影`}
+        width="152"
+        height="228"
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <div class="cover-fallback">
+        <div class="cover-fallback-rule border-cover-rule">
+          <span class="cover-fallback-title text-ink">{title}</span>
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  /* design/BookCardV2.dc.html の固有寸法。
+     トークン化する対象ではない（この面だけで使う造形の値）ため、
+     Tailwind の任意値記法ではなくスコープ付きCSSで持つ。 */
+  .cover-frame {
+    width: 152px;
+    height: 228px;
+    flex: 0 0 152px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgb(41 41 41 / 0.1);
+    box-sizing: border-box;
+  }
+
+  .cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .cover-fallback {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 16px 12px;
+    display: flex;
+    align-items: stretch;
+  }
+
+  /* 枠の内側に1本だけ引く縦罫。書名はその右に置く */
+  .cover-fallback-rule {
+    border-left-width: 1px;
+    border-left-style: solid;
+    padding-left: 10px;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .cover-fallback-title {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1.6;
+    max-height: 100%;
+  }
+</style>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2F4A3F; }
+  a:hover { color: #23392F; }
+</style>
+</helmet>
+
+<div style="font-family: 'Zen Kaku Gothic New', sans-serif; background: #FFFFFF; color: #292929; min-height: 100vh;">
+
+  <dc-import name="SiteHeader" style="position: sticky; top: 0; z-index: 20;" hint-size="100%,73px"></dc-import>
+
+  <div style="display: flex; align-items: flex-start;">
+
+    <div style="flex: 0 0 232px; width: 232px; position: sticky; top: 68px; align-self: flex-start; max-height: calc(100vh - 68px);">
+      <dc-import name="SideNav" hint-size="232px,600px"></dc-import>
+    </div>
+
+    <main style="flex: 1 1 auto; min-width: 0; padding: 40px 28px 96px 28px;">
+
+      <sc-for list="{{ rails }}" as="r" hint-placeholder-count="2">
+        <section style="margin-bottom: 64px;">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 24px;">
+            <span style="width: 4px; height: 22px; background: #B4552F; flex: 0 0 4px;"></span>
+            <h2 style="font-size: 26px; font-weight: 700; line-height: 1.5; margin: 0;">{{ r.title }}</h2>
+            <a href="#" style="font-size: 13px; text-decoration: none;">すべて見る</a>
+          </div>
+          <div style="display: flex; gap: 24px; overflow-x: auto; padding-bottom: 8px;">
+            <sc-for list="{{ r.items }}" as="a" hint-placeholder-count="4">
+              <a href="#" style="flex: 0 0 236px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 12px;">
+                <div style="width: 236px; height: 150px; background: #F5F4F1; overflow: hidden;">
+                  <image-slot id="{{ a.thumbId }}" shape="rect" placeholder="書影" style="width: 100%; height: 100%;"></image-slot>
+                </div>
+                <div style="font-size: 16px; font-weight: 700; line-height: 1.6; text-wrap: pretty;">{{ a.title }}</div>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: #787878;">
+                  <span>{{ a.selector }}</span>
+                  <span style="width: 1px; height: 10px; background: #E6E6E6;"></span>
+                  <span>{{ a.date }}</span>
+                </div>
+              </a>
+            </sc-for>
+          </div>
+        </section>
+      </sc-for>
+
+      <section style="margin-bottom: 64px;">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 24px;">
+          <span style="width: 4px; height: 22px; background: #B4552F; flex: 0 0 4px;"></span>
+          <h2 style="font-size: 26px; font-weight: 700; line-height: 1.5; margin: 0;">分野から探す</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+          <sc-for list="{{ topics }}" as="t" hint-placeholder-count="6">
+            <a href="#" style="text-decoration: none; color: inherit; border: 1px solid #E6E6E6; padding: 20px; display: flex; flex-direction: column; gap: 8px;" style-hover="border-color: #B4552F;">
+              <span style="font-size: 16px; font-weight: 700;">{{ t.name }}</span>
+              <span style="font-size: 13px; color: #787878;">{{ t.countLabel }}</span>
+            </a>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="margin-bottom: 64px;">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 24px;">
+          <span style="width: 4px; height: 22px; background: #B4552F; flex: 0 0 4px;"></span>
+          <h2 style="font-size: 26px; font-weight: 700; line-height: 1.5; margin: 0;">選者から探す</h2>
+        </div>
+        <div style="display: flex; gap: 24px; overflow-x: auto; padding-bottom: 8px;">
+          <sc-for list="{{ selectors }}" as="s" hint-placeholder-count="4">
+            <a href="#" style="flex: 0 0 220px; text-decoration: none; color: inherit; border: 1px solid #E6E6E6; padding: 20px; display: flex; flex-direction: column; gap: 12px;" style-hover="border-color: #B4552F;">
+              <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: #F5F4F1;">
+                <image-slot id="{{ s.avatarId }}" shape="circle" placeholder="写真" style="width: 100%; height: 100%;"></image-slot>
+              </div>
+              <div style="font-size: 16px; font-weight: 700;">{{ s.name }}</div>
+              <div style="font-size: 13px; color: #787878; line-height: 1.7;">{{ s.affiliation }}</div>
+              <div style="font-size: 13px; color: #787878;">{{ s.meta }}</div>
+            </a>
+          </sc-for>
+        </div>
+      </section>
+
+      <dc-import name="SiteFooter" hint-size="100%,180px"></dc-import>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const mk = (title, selector, date, thumbId) => ({ title, selector, date, thumbId });
+    return {
+      navGroups: [
+        { label: '人文', items: ['哲学', '中世哲学', '歴史学', '文学'] },
+        { label: '社会科学', items: ['行動経済学', '経済学', '社会学', '政治学'] },
+        { label: '自然科学', items: ['統計学', '生物学', '物理学'] },
+      ],
+      rails: [
+        { title: '新着の5冊', items: [
+          mk('山田太郎が選ぶ、行動経済学を学ぶための5冊', '山田太郎', '2026年8月4日', 'h-new-1'),
+          mk('佐藤花子が選ぶ、中世哲学への入り口となる5冊', '佐藤花子', '2026年7月28日', 'h-new-2'),
+          mk('鈴木一郎が選ぶ、統計学の考え方がわかる5冊', '鈴木一郎', '2026年7月20日', 'h-new-3'),
+          mk('高橋次郎が選ぶ、日本近代史を読み直す5冊', '高橋次郎', '2026年7月12日', 'h-new-4'),
+        ]},
+        { title: 'よく読まれている記事', items: [
+          mk('鈴木一郎が選ぶ、統計学の考え方がわかる5冊', '鈴木一郎', '2026年7月20日', 'h-pop-1'),
+          mk('山田太郎が選ぶ、行動経済学を学ぶための5冊', '山田太郎', '2026年8月4日', 'h-pop-2'),
+          mk('高橋次郎が選ぶ、日本近代史を読み直す5冊', '高橋次郎', '2026年7月12日', 'h-pop-3'),
+          mk('佐藤花子が選ぶ、中世哲学への入り口となる5冊', '佐藤花子', '2026年7月28日', 'h-pop-4'),
+        ]},
+      ],
+      topics: [
+        { name: '行動経済学', countLabel: '記事1本' },
+        { name: '中世哲学', countLabel: '記事1本' },
+        { name: '統計学', countLabel: '記事1本' },
+        { name: '日本近代史', countLabel: '記事1本' },
+        { name: '社会学', countLabel: '準備中' },
+        { name: '生物学', countLabel: '準備中' },
+      ],
+      selectors: [
+        { name: '山田太郎', affiliation: '○○大学 経済学部 教授', meta: '行動経済学 ／ 記事1本', avatarId: 'h-sel-1' },
+        { name: '佐藤花子', affiliation: '△△大学 文学部 准教授', meta: '中世哲学 ／ 記事1本', avatarId: 'h-sel-2' },
+        { name: '鈴木一郎', affiliation: '□□大学 理学部 教授', meta: '統計学 ／ 記事1本', avatarId: 'h-sel-3' },
+        { name: '高橋次郎', affiliation: '◇◇大学 文学部 教授', meta: '日本近代史 ／ 記事1本', avatarId: 'h-sel-4' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

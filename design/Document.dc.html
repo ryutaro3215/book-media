@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2F4A3F; }
+  a:hover { color: #23392F; }
+</style>
+</helmet>
+
+<div style="font-family: 'Zen Kaku Gothic New', sans-serif; background: #FFFFFF; color: #292929; min-height: 100vh; display: flex; flex-direction: column;">
+
+  <dc-import name="SiteHeader" style="position: sticky; top: 0; z-index: 20;" hint-size="100%,73px"></dc-import>
+
+  <main style="flex: 1 1 auto; max-width: 660px; margin: 0 auto; padding: 72px 20px 0 20px; width: 100%; box-sizing: border-box;">
+    <h1 style="font-size: clamp(26px, 3.6vw, 32px); font-weight: 700; line-height: 1.5; margin: 0 0 40px 0; text-wrap: pretty;">{{ pageTitle }}</h1>
+
+    <sc-for list="{{ sections }}" as="s" hint-placeholder-count="4">
+      <section style="margin-bottom: 56px;">
+        <sc-if value="{{ s.hasHeading }}" hint-placeholder-val="{{ true }}"><h2 style="font-size: 26px; font-weight: 700; line-height: 1.6; margin: 0 0 20px 0;">{{ s.heading }}</h2></sc-if>
+        <sc-for list="{{ s.paragraphs }}" as="p" hint-placeholder-count="2">
+          <p style="font-size: 17px; line-height: 1.9; margin: 0 0 1.9em 0; text-wrap: pretty;">{{ p }}</p>
+        </sc-for>
+      </section>
+    </sc-for>
+
+    <sc-if value="{{ showOwner }}" hint-placeholder-val="{{ true }}">
+      <section style="margin-bottom: 56px; padding-top: 8px;">
+        <h2 style="font-size: 26px; font-weight: 700; line-height: 1.6; margin: 0 0 24px 0;">運営者</h2>
+        <div style="display: flex; gap: 20px; align-items: flex-start;">
+          <div style="width: 88px; height: 88px; flex: 0 0 88px; border-radius: 50%; overflow: hidden; background: #F5F4F1;">
+            <image-slot id="doc-owner-avatar" shape="circle" placeholder="写真" style="width: 100%; height: 100%;"></image-slot>
+          </div>
+          <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-size: 20px; font-weight: 700;">松場（運営者名）</div>
+            <div style="font-size: 14px; color: #787878; line-height: 1.8;">所属・経歴をここに記載します。実名と所属を明示することが、面識のない研究者に取材を受けてもらえるかを左右します。</div>
+            <a href="https://x.com/" style="font-size: 15px; font-weight: 500; text-decoration: none;">Xアカウント</a>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ showContactLink }}" hint-placeholder-val="{{ true }}">
+      <section style="margin-bottom: 56px;">
+        <h2 style="font-size: 26px; font-weight: 700; line-height: 1.6; margin: 0 0 16px 0;">連絡先</h2>
+        <p style="font-size: 17px; line-height: 1.9; margin: 0;">取材のご依頼・書影の掲載に関するご連絡は<a href="#" style="text-decoration: none;">取材依頼・お問い合わせ</a>のページからお願いします。</p>
+      </section>
+    </sc-if>
+  </main>
+
+  <div style="max-width: 660px; margin: 40px auto 0 auto; padding: 0 20px; width: 100%; box-sizing: border-box;">
+    <dc-import name="SiteFooter" hint-size="100%,180px"></dc-import>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;page&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;about&quot;, &quot;contact&quot;, &quot;privacy&quot;, &quot;notfound&quot;], &quot;default&quot;: &quot;about&quot;, &quot;tsType&quot;: &quot;string&quot;}}">
+const PAGES = {
+  about: {
+    title: 'このサイトについて',
+    owner: true,
+    contact: true,
+    sections: [
+      { heading: 'このメディアについて', paragraphs: [
+        '各分野の専門家に「あなたの分野の必読5冊」を取材し、選者の実名と選書理由をあわせて公開しています。書名の羅列ではなく、誰がどういう理由で薦めたのかを残すことを目的としています。',
+        '（実文はオーナーが執筆します。ここには、何を・なぜやっているかを2〜3段落で書きます。）',
+      ]},
+      { heading: '選書の方針', paragraphs: [
+        '選者は分野の研究・教育に継続して携わっている方に限り、選書はすべて本人の言葉で理由を語っていただいたものだけを掲載します。編集部が本を差し替えることはありません。',
+      ]},
+    ],
+  },
+  contact: {
+    title: '取材依頼・お問い合わせ',
+    owner: false,
+    contact: false,
+    sections: [
+      { heading: '取材のご依頼', paragraphs: [
+        '取材は1回30〜60分、オンラインまたはメールで行います。記事は公開前に必ず選者ご本人に確認していただき、修正のご希望はすべて反映します。',
+        'ご連絡先: contact@example.com',
+      ]},
+      { heading: '書影・引用に関するご連絡', paragraphs: [
+        '掲載中の書影・書誌情報について削除や修正のご要望がある場合は、上記のアドレスまでご連絡ください。内容を確認のうえ速やかに対応します。',
+      ]},
+    ],
+  },
+  privacy: {
+    title: 'プライバシーポリシー／著作権・出典',
+    owner: false,
+    contact: true,
+    sections: [
+      { heading: 'アクセス解析', paragraphs: [
+        '当サイトは Cloudflare Web Analytics を利用しています。Cookie は使用せず、個人を識別する情報は収集しません。',
+      ]},
+      { heading: 'メール登録', paragraphs: [
+        'メールアドレスは外部のメール配信サービスに直接送信され、当サイトのサーバーには保存されません。',
+      ]},
+      { heading: '著作権・出典', paragraphs: [
+        '書名・著者・出版社・刊行年は事実情報として記載しています。書影は各出版社に帰属します。既に公開されている選書を参照した記事では、出典元とリンクを本文中に明記します。',
+      ]},
+    ],
+  },
+  notfound: {
+    title: 'ページが見つかりません',
+    owner: false,
+    contact: true,
+    sections: [
+      { heading: '', paragraphs: [
+        'お探しのページは移動または削除された可能性があります。記事一覧からお探しください。',
+      ]},
+    ],
+  },
+};
+
+class Component extends DCLogic {
+  renderVals() {
+    const page = PAGES[this.props.page ?? 'about'] ?? PAGES.about;
+    return {
+      pageTitle: page.title,
+      sections: page.sections.filter(s => s.heading || s.paragraphs.length).map(s => ({ ...s, hasHeading: !!s.heading })),
+      showOwner: page.owner,
+      showContactLink: page.contact,
+    };
+  }
+}
+</script>
+</body>
+</html>

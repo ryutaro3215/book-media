@@ -1,0 +1,112 @@
+---
+/**
+ * 分野別アーカイブ（plan.md T14）。design/Topic.dc.html 準拠。
+ *
+ * 分野の説明文は置かない（コピーを創作しないため）。
+ * 記事が1本しかない分野でも成立するよう、記事リストの下に
+ * 「ほかの分野」と選者への導線を必ず置く。
+ */
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import ArticleListItem from "../../components/ArticleListItem.astro";
+import { SITE } from "../../config";
+import {
+  getTopicGroups,
+  toSelectorHref,
+  toTopicHref,
+  type TopicGroup,
+} from "../../lib/collections";
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const groups = await getTopicGroups();
+  return groups.map((group) => ({
+    // params には生の文字列を渡す（Astro 側で URL エンコードされる）
+    params: { topic: group.id },
+    props: { group, others: groups.filter((g) => g.id !== group.id) },
+  }));
+};
+
+const { group, others } = Astro.props as {
+  group: TopicGroup;
+  others: TopicGroup[];
+};
+
+// 選者名（重複なし）。説明文を創作せずに description を作るための材料
+const selectorNames = [
+  ...new Set(group.articles.map((a) => a.data.selector.name)),
+];
+
+const title = `${group.name}の5冊 | ${SITE.name}`;
+const description = `${group.name}の記事${group.articles.length}本。${selectorNames.join("、")}が選んだ、${group.name}の本を紹介しています。`;
+---
+
+<BaseLayout title={title} description={description}>
+  <SiteHeader />
+
+  <main class="mx-auto max-w-body px-5 pt-14">
+    <div class="mb-10 flex flex-wrap items-baseline gap-x-3.5 gap-y-2">
+      <h1 class="m-0 text-[clamp(26px,3.6vw,32px)] leading-[1.4] font-bold">
+        {group.name}
+      </h1>
+      <span class="text-sm text-muted">記事{group.articles.length}本</span>
+    </div>
+
+    <div>
+      {
+        group.articles.map((entry) => (
+          <ArticleListItem entry={entry} headingLevel="h2" showTopic={false} />
+        ))
+      }
+    </div>
+
+    <section class="mt-[72px]">
+      <h2 class="m-0 mb-4 text-xs tracking-[0.1em] text-muted">
+        この分野の選者
+      </h2>
+      <div class="flex flex-wrap gap-3">
+        {
+          selectorNames.map((name) => (
+            <a
+              href={toSelectorHref(name)}
+              class="rounded-full border border-rule px-4 py-[9px] text-sm text-ink no-underline hover:border-accent hover:text-accent"
+            >
+              {name}
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    {
+      others.length > 0 && (
+        <section class="mt-14">
+          <h2 class="m-0 mb-4 text-xs tracking-[0.1em] text-muted">
+            ほかの分野
+          </h2>
+          <div class="flex flex-wrap gap-3">
+            {others.map((other) => (
+              <a
+                href={toTopicHref(other.name)}
+                class="rounded-full border border-rule px-4 py-[9px] text-sm text-ink no-underline hover:border-accent hover:text-accent"
+              >
+                {other.name}
+              </a>
+            ))}
+          </div>
+          <a
+            href="/topics"
+            class="mt-5 inline-block text-[13px] no-underline"
+          >
+            分野一覧をすべて見る →
+          </a>
+        </section>
+      )
+    }
+  </main>
+
+  <div class="mx-auto mt-[72px] max-w-body px-5">
+    <SiteFooter />
+  </div>
+</BaseLayout>

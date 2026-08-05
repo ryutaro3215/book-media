@@ -1,0 +1,49 @@
+---
+import "../styles/global.css";
+import { SITE } from "../config";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /**
+   * true にすると <title>/<meta description> を出力せず、
+   * name="head" スロットの内容だけを <head> に入れる。
+   * SEO.astro でメタタグ一式を出すページ（記事・一覧など）で使う。
+   */
+  headSlot?: boolean;
+}
+
+const { title, description, headSlot = false } = Astro.props;
+---
+
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {!headSlot && <title>{title}</title>}
+    {!headSlot && description && <meta name="description" content={description} />}
+    <slot name="head" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/fonts/zen-kaku-gothic-new-japanese-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+  <body class="bg-canvas text-ink font-sans">
+    <slot />
+    {
+      /* Cloudflare Web Analytics — Cookieless。同意バナー不要（requirements R9）。
+         トークン未設定の環境ではスクリプトを出力しない */
+      SITE.analyticsToken && (
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={`{"token": "${SITE.analyticsToken}"}`}
+        />
+      )
+    }
+  </body>
+</html>
