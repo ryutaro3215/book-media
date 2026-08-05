@@ -2,7 +2,12 @@ import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 import { isKnownSelector, SELECTOR_IDS } from "./lib/selectors";
 import { isKnownTag, TAG_NAMES } from "./lib/tags";
-import { isKnownTopic, TOPIC_NAMES } from "./lib/topics";
+import {
+  getSubtopics,
+  isKnownSubtopic,
+  isKnownTopic,
+  TOPIC_NAMES,
+} from "./lib/topics";
 
 /** CLI が書き込むプレースホルダかどうか */
 function isPlaceholder(value: string): boolean {
@@ -97,9 +102,9 @@ const interviews = defineCollection({
       updatedAt: z.date().optional(),
       description: z.string().min(1),
       /**
-       * **大ジャンル**（必須・1つ）。例: 数学 / 経営学 / 統計学
-       * src/data/topics.json に定義された語彙のみ。
-       * 小ジャンル（解析学など）は `tags` に入れる
+       * **大トピック**（必須・1つ）。例: 数学 / 経営学
+       * `/topics/<名前>/` のページが生成される。
+       * より細かい分野は `subtopic`、さらに細かいものは `tags` に入れる
        */
       topic: z.string().refine(isKnownTopic, {
         message:
@@ -107,14 +112,21 @@ const interviews = defineCollection({
           `登録済み: ${TOPIC_NAMES.join(" / ")}`,
       }),
       /**
-       * **小ジャンル**（任意・複数）。例: 解析学 / 測度論 / 多変量解析
+       * **小トピック**（任意・1つ）。例: 解析学 / 統計学 / 経営戦略論
        *
-       * `topic` と軸を分けているのは、「数学」と「解析学」のように
-       * **レイヤーの違うものが単一軸に混在する**のを避けるため。
-       * src/data/tags.json に定義された語彙のみ（表記揺れ防止）。
+       * **その大トピックに属する語彙のみ**（`topics.json` の subtopics）。
+       * 「天体物理学」のように大トピックをまたいで同名が存在するため、
+       * 全体で一意ではなく、`topic` との組で検証する（下の superRefine）。
        *
-       * 専用ページは作らず、検索へのリンクとして扱う
-       * （記事が少ないうちは1記事だけの薄いページが量産されるため）。
+       * **ページは作らない。** 記事が少ないうちは1記事しか無いページが
+       * 量産され、薄いページはインデックスされない。検索で引ければ足りる。
+       */
+      subtopic: z.string().optional(),
+      /**
+       * **タグ**（任意・複数）。例: 多変量解析 / 作用素環論
+       *
+       * 小トピックより細かいもの。src/data/tags.json の語彙のみ（表記揺れ防止）。
+       * 小トピックと同じくページは作らず、検索へのリンクとして扱う。
        */
       tags: z
         .array(
@@ -146,6 +158,22 @@ const interviews = defineCollection({
         .min(3, "books は3冊以上にしてください（2冊以下は公開できません）"),
     })
     .superRefine((data, ctx) => {
+      // 小トピックは「その大トピックに属するか」で検証する。
+      // 全体では重複しうる（天体物理学は物理学にも天文学にもある）ため、
+      // topic との組でなければ判定できない。下書きでも検証する
+      if (data.subtopic && !isKnownSubtopic(data.topic, data.subtopic)) {
+        const candidates = getSubtopics(data.topic);
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["subtopic"],
+          message:
+            `「${data.subtopic}」は大トピック「${data.topic}」の小トピックではありません。` +
+            (candidates.length > 0
+              ? `候補: ${candidates.slice(0, 12).join(" / ")}${candidates.length > 12 ? " …" : ""}`
+              : ""),
+        });
+      }
+
       // 下書きのあいだは未記入を許す。公開する（draft: false）ときだけ検証する
       if (data.draft) return;
 

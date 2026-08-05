@@ -21,6 +21,7 @@ export const GET: APIRoute = async () => {
       slug: entry.id,
       title: entry.data.title,
       topic: entry.data.topic,
+      subtopic: entry.data.subtopic ?? "",
       tags: entry.data.tags ?? [],
       selector: selectorOf(entry).name,
       affiliation: selectorOf(entry).affiliation,

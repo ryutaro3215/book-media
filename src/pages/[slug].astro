@@ -204,15 +204,23 @@ const others = (await getAllInterviews())
 
   </section>
 
-  {/* 小ジャンル。専用ページは作らず検索へ飛ばす */}
+  {/* 小トピックとタグ。どちらも専用ページは作らず検索へ飛ばす */}
   {
-    data.tags && data.tags.length > 0 && (
+    (data.subtopic || (data.tags && data.tags.length > 0)) && (
       <section class="mx-auto mt-12 max-w-body px-5">
         <h2 class="m-0 mb-4 text-xs font-normal tracking-[0.1em] text-muted">
-          この記事のタグ
+          この記事の分野
         </h2>
         <div class="flex flex-wrap gap-3">
-          {data.tags.map((tag) => (
+          {data.subtopic && (
+            <a
+              href={toTagHref(data.subtopic)}
+              class="rounded-full border border-accent px-4 py-[9px] text-sm font-medium text-accent no-underline"
+            >
+              {data.subtopic}
+            </a>
+          )}
+          {(data.tags ?? []).map((tag) => (
             <a
               href={toTagHref(tag)}
               class="rounded-full border border-rule px-4 py-[9px] text-sm text-ink no-underline hover:border-accent hover:text-accent"
