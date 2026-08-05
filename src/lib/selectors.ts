@@ -7,6 +7,8 @@
  * JSON にしているのは、Astro（TS）と CLI スクリプト（.mjs）の
  * **両方から同じファイルを読む**ため。
  */
+import { existsSync } from "node:fs";
+import path from "node:path";
 import selectorsJson from "../data/selectors.json";
 
 export type Selector = {
@@ -14,8 +16,23 @@ export type Selector = {
   reading?: string;
   affiliation: string;
   bio: string;
-  /** 公開された実績。「なぜこの人の推薦を信じるのか」の根拠 */
+  /**
+   * 公開された実績。「なぜこの人の推薦を信じるのか」の根拠。
+   *
+   * ブクログとの差別化が「誰が薦めたか」である以上、名前と所属だけでは
+   * 「その人が詳しい」根拠にならない。読者が納得できる材料をここに書く。
+   * 例: 論文・著書／担当した本・作った棚／その領域での公開された仕事
+   */
   credentials: string;
+  /**
+   * 顔写真のファイル名（任意）。`public/selectors/` に置いた画像を指す。
+   * 例: `matsuba.jpg`
+   *
+   * **必須にはしない。** 研究者が写真提供を渋る場合があり、
+   * 必須にすると取材のたびに交渉が発生する。
+   * 未指定なら頭文字のアバターを表示するので、一覧が崩れることはない。
+   */
+  avatar?: string;
   links?: {
     x?: string;
     site?: string;
@@ -47,6 +64,39 @@ export function getSelector(id: SelectorId): Selector {
     );
   }
   return selector;
+}
+
+/**
+ * 顔写真のURL。
+ *
+ *   1. selectors.json の `avatar`（登録した画像）
+ *   2. `public/selectors/_default.<ext>`（置いてあれば全員の既定値になる）
+ *   3. どちらも無ければ null → 呼び出し側が頭文字を出す
+ *
+ * 2 は**ファイルを置くかどうかだけ**で切り替わる（設定は不要）。
+ * ただし置くと写真のない選者が全員同じ見た目になる。
+ * 頭文字は人ごとに変わるので、一覧での識別性は頭文字の方が高い。
+ */
+const DEFAULT_AVATAR_BASENAME = "_default";
+const AVATAR_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"] as const;
+
+const SELECTORS_DIR = path.resolve(process.cwd(), "public/selectors");
+
+function findDefaultAvatar(): string | null {
+  for (const ext of AVATAR_EXTENSIONS) {
+    if (
+      existsSync(path.join(SELECTORS_DIR, `${DEFAULT_AVATAR_BASENAME}${ext}`))
+    ) {
+      return `/selectors/${DEFAULT_AVATAR_BASENAME}${ext}`;
+    }
+  }
+  return null;
+}
+
+export function getAvatarUrl(id: SelectorId): string | null {
+  const avatar = selectors[id]?.avatar?.trim();
+  if (avatar) return `/selectors/${avatar}`;
+  return findDefaultAvatar();
 }
 
 /** 全選者を [id, 選者] の組で返す */

@@ -2,8 +2,8 @@
 /**
  * 選者個別ページ（plan.md T13）。design/Senja Page.dc.html 準拠。
  *
- * design には丸い顔写真の枠があるが、現在のスキーマに avatar フィールドがないため
- * **写真枠自体を出さない**。全員写真なしで成立させる（写真の有無で崩れないこと）。
+ * 顔写真は任意（selectors.json の avatar）。未登録なら頭文字のアバターを出すので、
+ * 写真ありと無しが混在してもレイアウトは崩れない。
  *
  * credentials（公開された実績）は「なぜこの人の推薦を信じるのか」を示す核なので、
  * プロフィール本文より前・氏名の直下に置く。
@@ -13,6 +13,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import ArticleListItem from "../../components/ArticleListItem.astro";
+import SelectorAvatar from "../../components/SelectorAvatar.astro";
 import { SITE } from "../../config";
 import {
   getSelectorGroups,
@@ -51,6 +52,12 @@ const description = `${selector.name}（${selector.affiliation}）が選んだ�
     </a>
 
     <header class="mb-8 flex flex-col gap-2">
+      <SelectorAvatar
+        id={group.id}
+        name={selector.name}
+        size={88}
+        class="mb-2"
+      />
       <h1 class="m-0 text-[clamp(26px,3.6vw,32px)] leading-[1.4] font-bold">
         {selector.name}
       </h1>
