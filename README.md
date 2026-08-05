@@ -497,18 +497,30 @@ Xがカード画像を強くキャッシュしているため。**Card Validator
 
 ## 補足: Cloudflare へのデプロイでハマる点
 
-**このサイトは完全な静的サイトで、サーバーサイド処理を持たない。**
-`@astrojs/cloudflare` アダプタは**入れてはいけない**。
+### `@astrojs/cloudflare` アダプタを入れてはいけない
 
-`wrangler.jsonc` が無い状態で `wrangler deploy` を実行すると、wrangler が
-自動セットアップを走らせて `astro add cloudflare` でアダプタを追加してしまう。
-すると OGP画像の生成に使っている `@resvg/resvg-js`（ネイティブバイナリ）を
-Worker ランタイム向けにバンドルしようとして、ビルドが失敗する。
+**このサイトは完全な静的サイトで、サーバーサイド処理を持たない。**
+`dist/` をそのまま配信するだけなので、Cloudflare のアダプタは不要。
+
+**Workers として（`wrangler deploy` で）デプロイしようとすると壊れる。**
+wrangler が設定を見つけられずに自動セットアップを走らせ、`astro add cloudflare` で
+アダプタを追加してしまうため。するとビルドがこう落ちる。
 
 ```
 [UNLOADABLE_DEPENDENCY] Could not load @resvg/resvg-js-linux-x64-gnu/resvgjs.linux-x64-gnu.node
 ```
 
-**resvg も satori もビルド時にしか動かない。** ランタイムには一切出てこないので、
-アダプタは不要。`wrangler.jsonc` で「dist を静的アセットとして配信するだけ」と
-明示しておくことで自動セットアップを回避している。**このファイルを消さないこと。**
+OGP画像の生成に使っている `@resvg/resvg-js` は**ネイティブバイナリ**で、
+Worker ランタイム向けにはバンドルできない。**resvg も satori もビルド時にしか
+動かない**（ランタイムには一切出てこない）ので、そもそもバンドルする必要がない。
+
+### 正しい構成: Pages（静的アセットの配信）
+
+| 項目 | 値 |
+|---|---|
+| フレームワークプリセット | Astro |
+| ビルドコマンド | `npm run build` |
+| 出力ディレクトリ | `dist` |
+| デプロイコマンド | **設定しない**（`wrangler deploy` を入れないこと） |
+
+環境変数は §6 を参照。`NODE_VERSION` は必須。
