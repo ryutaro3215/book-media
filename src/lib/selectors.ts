@@ -14,8 +14,23 @@ export type Selector = {
   reading?: string;
   affiliation: string;
   bio: string;
-  /** 公開された実績。「なぜこの人の推薦を信じるのか」の根拠 */
+  /**
+   * 公開された実績。「なぜこの人の推薦を信じるのか」の根拠。
+   *
+   * ブクログとの差別化が「誰が薦めたか」である以上、名前と所属だけでは
+   * 「その人が詳しい」根拠にならない。読者が納得できる材料をここに書く。
+   * 例: 論文・著書／担当した本・作った棚／その領域での公開された仕事
+   */
   credentials: string;
+  /**
+   * 顔写真のファイル名（任意）。`public/selectors/` に置いた画像を指す。
+   * 例: `matsuba.jpg`
+   *
+   * **必須にはしない。** 研究者が写真提供を渋る場合があり、
+   * 必須にすると取材のたびに交渉が発生する。
+   * 未指定なら頭文字のアバターを表示するので、一覧が崩れることはない。
+   */
+  avatar?: string;
   links?: {
     x?: string;
     site?: string;
@@ -47,6 +62,15 @@ export function getSelector(id: SelectorId): Selector {
     );
   }
   return selector;
+}
+
+/**
+ * 顔写真のURL。未登録なら null。
+ * `public/selectors/` に置いたファイル名をそのまま参照する。
+ */
+export function getAvatarUrl(id: SelectorId): string | null {
+  const avatar = selectors[id]?.avatar?.trim();
+  return avatar ? `/selectors/${avatar}` : null;
 }
 
 /** 全選者を [id, 選者] の組で返す */

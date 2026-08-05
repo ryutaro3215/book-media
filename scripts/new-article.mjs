@@ -282,6 +282,11 @@ async function main() {
     );
     const credentials = await askRequired("  公開された実績");
     const x = (await ask("  Xのハンドル（@なし・任意）: ")).trim();
+    console.log(
+      "\n  顔写真（任意）。public/selectors/ に画像を置き、ファイル名を入力してください。\n" +
+        "  例: matsuba.jpg  ／ 未登録なら頭文字のアバターが表示されます",
+    );
+    const avatar = (await ask("  ファイル名: ")).trim();
     const site = (await ask("  サイトURL（任意）: ")).trim();
 
     selectors[selectorId] = {
@@ -290,6 +295,7 @@ async function main() {
       affiliation,
       bio,
       credentials,
+      ...(avatar ? { avatar } : {}),
       ...(x || site
         ? { links: { ...(x ? { x } : {}), ...(site ? { site } : {}) } }
         : {}),

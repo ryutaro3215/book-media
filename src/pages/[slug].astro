@@ -10,6 +10,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import BookCard from "../components/BookCard.astro";
 import NewsletterForm from "../components/NewsletterForm.astro";
+import SelectorAvatar from "../components/SelectorAvatar.astro";
 import ShareToX from "../components/ShareToX.astro";
 import { articleJsonLd } from "../lib/jsonld";
 import {
@@ -117,6 +118,7 @@ const others = (await getAllInterviews())
     </h1>
 
     <div class="flex items-center gap-4 border-b border-rule pb-10">
+      <SelectorAvatar id={data.selector} name={selector.name} size={72} />
       <div class="flex min-w-0 flex-auto flex-col gap-1">
         <a
           href={toSelectorHref(data.selector)}
@@ -176,6 +178,7 @@ const others = (await getAllInterviews())
   <section class="mx-auto mt-16 max-w-body px-5">
     <h2 class="sr-only">選者について</h2>
     <div class="flex items-start gap-4 border-t border-rule pt-8">
+      <SelectorAvatar id={data.selector} name={selector.name} size={64} />
       <div class="flex min-w-0 flex-auto flex-col gap-2">
         <div class="text-base font-bold">{selector.name}</div>
         <div class="text-sm leading-[1.8] text-muted">{selector.bio}</div>

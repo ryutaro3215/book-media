@@ -10,6 +10,7 @@ import SEO from "../components/SEO.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SideNav from "../components/SideNav.astro";
+import SelectorAvatar from "../components/SelectorAvatar.astro";
 import { SITE } from "../config";
 import { websiteJsonLd } from "../lib/jsonld";
 import { resolveThumbnail } from "../lib/thumbnail";
@@ -142,6 +143,7 @@ const topics = await getTopicGroups();
                   href={toSelectorHref(s.id)}
                   class="flex w-[220px] flex-none flex-col gap-3 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
                 >
+                  <SelectorAvatar id={s.id} name={s.selector.name} size={48} />
                   <div class="text-base font-bold">{s.selector.name}</div>
                   <div class="text-[13px] leading-[1.7] text-muted">
                     {s.selector.affiliation}
