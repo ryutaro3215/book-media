@@ -1,0 +1,141 @@
+---
+/**
+ * 記事カードのサムネイル（plan.md T20）。
+ *
+ * その記事で紹介する**5冊の表紙を並べる**。本の記事なのに本が写っていない
+ * 状態を解消するのが目的。
+ *
+ * ## 画像を合成しない（案A）
+ * 5枚を1枚のPNGに合成して自前配信すると**複製・公衆送信**にあたる
+ * （docs/covers.md の整理と同じ論点）。CSSで並べれば、書影カードと同じく
+ * **外部URLを参照するだけ**なので権利上の扱いが変わらない。
+ * Google Books のサムネイルは横128px程度で、合成すると粗くなるという実務的な
+ * 理由もある。
+ *
+ * ## 書影がない本が混ざっても崩れない
+ * 5冊のうち一部が取得できないのは常態（とくに絶版本）。
+ * 取得できなかった枠には書名を縦組みで置く（BookCover と同じ方針を縮小して再現）。
+ *
+ * ## 手動サムネイルが優先される
+ * `public/thumbnails/<slug>.jpg` があればそちらを使う（既存仕様を壊さない）。
+ */
+import type { Book } from "../content.config";
+import { resolveCover } from "../lib/cover";
+import { hasManualThumbnail, resolveThumbnail } from "../lib/thumbnail";
+
+interface Props {
+  /** 記事の slug。手動サムネイルの有無を判定する */
+  slug: string;
+  /** 5冊。表紙を並べる */
+  books: Book[];
+  /** 枠の幅・高さ（px）。トップページのカードは 236×150 */
+  width?: number;
+  height?: number;
+}
+
+const { slug, books, width = 236, height = 150 } = Astro.props;
+
+const manual = hasManualThumbnail(slug) ? resolveThumbnail(slug) : null;
+
+// 手動サムネイルが無いときだけ書影を引く（ビルド時に解決済みなので追加コストは小さい）
+const covers = manual
+  ? []
+  : await Promise.all(
+      books.map(async (book) => ({
+        title: book.title,
+        url: (await resolveCover(book.isbn)).url,
+      })),
+    );
+---
+
+<div
+  class="thumb bg-cover-placeholder"
+  style={`width:${width}px;height:${height}px`}
+>
+  {
+    manual ? (
+      <img
+        src={manual}
+        alt=""
+        width={width}
+        height={height}
+        loading="lazy"
+        class="thumb-manual"
+      />
+    ) : (
+      <div class="thumb-row">
+        {covers.map((cover) =>
+          cover.url ? (
+            <img
+              class="thumb-cover"
+              src={cover.url}
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <div class="thumb-cover thumb-fallback">
+              <span class="thumb-fallback-title text-ink">{cover.title}</span>
+            </div>
+          ),
+        )}
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .thumb {
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .thumb-manual {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* 5冊を等幅で並べる。下端を揃え、上に少し余白を残して「棚」に見せる */
+  .thumb-row {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 14px 10px 10px;
+    box-sizing: border-box;
+  }
+
+  .thumb-cover {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    box-shadow: 0 1px 2px rgb(41 41 41 / 0.18);
+    background-color: var(--color-canvas);
+  }
+
+  /* 書影がない本。BookCover の縦組みを縮めて再現する */
+  .thumb-fallback {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 5px 2px;
+    box-sizing: border-box;
+    border: 1px solid var(--color-cover-rule);
+  }
+
+  .thumb-fallback-title {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    max-height: 100%;
+    overflow: hidden;
+  }
+</style>

@@ -77,7 +77,10 @@ export async function fetchGoogleBooksCover(
     const url = new URL(GOOGLE_BOOKS_ENDPOINT);
     url.searchParams.set("q", `isbn:${isbn}`);
     url.searchParams.set("country", "JP");
-    const key = process.env.GOOGLE_BOOKS_API_KEY;
+    // astro dev では .env が process.env に入らないため import.meta.env も見る。
+    // これを忘れると開発時だけキーなしで叩き、429 で書影が取れなくなる
+    const key =
+      import.meta.env.GOOGLE_BOOKS_API_KEY ?? process.env.GOOGLE_BOOKS_API_KEY;
     if (key) url.searchParams.set("key", key);
 
     const res = await fetch(url, {

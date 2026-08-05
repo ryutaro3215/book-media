@@ -13,7 +13,7 @@ import SideNav from "../components/SideNav.astro";
 import SelectorAvatar from "../components/SelectorAvatar.astro";
 import { SITE } from "../config";
 import { websiteJsonLd } from "../lib/jsonld";
-import { resolveThumbnail } from "../lib/thumbnail";
+import ArticleThumbnail from "../components/ArticleThumbnail.astro";
 import {
   getAllInterviews,
   getSelectorGroups,
@@ -78,19 +78,14 @@ const topics = await getTopicGroups();
                 href={toArticleHref(entry)}
                 class="group flex w-[236px] flex-none flex-col gap-3 text-inherit no-underline hover:text-inherit"
               >
-                {/* サムネイルはOGP画像を流用しており背景が白いため、
-                    罫線がないとページ背景に溶けてカードの境界が分からなくなる。
+                {/* 白背景に溶けないよう罫線を入れる。
                     「テーマから探す」「選者から探す」のカードと同じ視覚言語に揃える */}
                 <div
-                  class="h-[150px] w-[236px] overflow-hidden border border-rule bg-cover-placeholder transition-colors group-hover:border-brand"
+                  class="overflow-hidden border border-rule transition-colors group-hover:border-brand"
                 >
-                  <img
-                    src={resolveThumbnail(entry.data.slug)}
-                    alt=""
-                    width="236"
-                    height="150"
-                    loading="lazy"
-                    class="h-full w-full object-cover"
+                  <ArticleThumbnail
+                    slug={entry.data.slug}
+                    books={entry.data.books}
                   />
                 </div>
                 <div class="text-base leading-[1.6] font-bold text-pretty">
