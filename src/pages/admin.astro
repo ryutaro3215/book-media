@@ -1,0 +1,673 @@
+---
+/**
+ * 記事投稿アプリ（**ローカル専用**・plan.md T25 段階1）。
+ *
+ *   npm run dev  →  http://localhost:4321/admin
+ *
+ * ## なぜ作るか
+ * CLI（npm run new:article）には運用してみて2つ問題があった。
+ *   - **小トピックが919件ある。**番号付きリストに出せる量ではない
+ *   - **一度進むと戻れない。**打ち間違えたら最初からやり直しになる
+ * どちらも「画面がある」だけで解けるので、frontmatter の入力だけを画面にした。
+ *
+ * ## 本文はここで書かない（段階1）
+ * 長文は結局エディタで書くのが速く、書き直しはもっと速い。
+ * ここは `TODO:` の枠まで作って終わり、続きはエディタで書く。
+ * 本文とプレビューは段階2・3で足すか判断する。
+ *
+ * ## 本番に出さない
+ *   1. 開発時以外は中身を描画しない（下の `import.meta.env.DEV`）
+ *   2. ビルド後に scripts/strip-admin.mjs が dist から丸ごと消す
+ * 書き込み口を持つ画面なので、片方が壊れても残るようにしてある。
+ */
+import selectors from "../data/selectors.json";
+import tags from "../data/tags.json";
+import topics from "../data/topics.json";
+
+const isDev = import.meta.env.DEV;
+
+/** 大トピック → 小トピック。クライアント側の絞り込みに使う */
+const topicMap = Object.fromEntries(
+  Object.entries(topics as Record<string, { subtopics: string[] }>).map(
+    ([name, meta]) => [name, meta.subtopics],
+  ),
+);
+const tagNames = Object.keys(tags);
+const selectorList = Object.entries(
+  selectors as Record<string, { name: string; affiliation?: string }>,
+).map(([id, s]) => ({ id, name: s.name, affiliation: s.affiliation ?? "" }));
+---
+
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>記事をつくる — ローカル専用</title>
+  </head>
+  <body>
+    {
+      !isDev ? (
+        <p>この画面は開発時のみ使えます。</p>
+      ) : (
+        <main class="wrap">
+          <header class="head">
+            <h1>記事をつくる</h1>
+            <p class="note">
+              ローカル専用の画面です。frontmatter だけ作ります。
+              選書理由・導入文は、できたファイルをエディタで開いて書いてください。
+            </p>
+          </header>
+
+          <section class="card">
+            <h2>1. 誰が選ぶか</h2>
+            <label class="field">
+              <span>選者</span>
+              <select id="selector">
+                {selectorList.map((s) => (
+                  <option value={s.id}>
+                    {s.name}
+                    {s.affiliation ? `（${s.affiliation}）` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </section>
+
+          <section class="card">
+            <h2>2. 分野</h2>
+            <div class="row">
+              <label class="field">
+                <span>
+                  大トピック <em>必須</em>
+                </span>
+                <select id="topic">
+                  <option value="">選んでください</option>
+                  {Object.keys(topicMap).map((name) => (
+                    <option value={name}>{name}</option>
+                  ))}
+                </select>
+                <small>この分野のページ（/topics/…）が作られます</small>
+              </label>
+
+              <label class="field">
+                <span>小トピック</span>
+                <select id="subtopic" disabled>
+                  <option value="">先に大トピックを選ぶ</option>
+                </select>
+                <small>ページは作られません。検索で引っかかります</small>
+              </label>
+            </div>
+
+            <div class="field">
+              <span>タグ</span>
+              <input
+                id="tag-filter"
+                type="search"
+                placeholder="絞り込む（例: 統計）"
+                autocomplete="off"
+              />
+              <div id="tag-results" class="tag-results" />
+              <div id="tag-chosen" class="chips" />
+              <small>小トピックより細かいもの。いくつでも</small>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>3. タイトル</h2>
+            <div id="title-templates" class="templates" />
+            <label class="field">
+              <span>
+                タイトル <em>必須</em>
+              </span>
+              <input id="title" type="text" placeholder="自由に書けます" />
+            </label>
+            <label class="field">
+              <span>検索用タイトル</span>
+              <input
+                id="seoTitle"
+                type="text"
+                placeholder="空欄ならタイトルをそのまま使います"
+              />
+              <small>
+                検索する人は「〇〇 入門書」と打ちます。噛み合わないときだけ
+              </small>
+            </label>
+            <label class="field">
+              <span>
+                slug（URL） <em>必須</em>
+              </span>
+              <input
+                id="slug"
+                type="text"
+                placeholder="rmatsuba-statistics"
+                autocomplete="off"
+              />
+              <small id="slug-note">半角小文字の英数とハイフンのみ</small>
+            </label>
+            <label class="field">
+              <span>説明（description）</span>
+              <textarea
+                id="description"
+                rows="2"
+                placeholder="空欄なら TODO: のまま出力します"
+              />
+              <small>検索結果に出る100〜120字。あとで書いても大丈夫です</small>
+            </label>
+          </section>
+
+          <section class="card">
+            <h2>4. 本</h2>
+            <p class="note">
+              ISBNを13桁で入れて「取得」を押すと書誌が入ります。
+              取れた内容は必ず現物と照らして直してください。
+            </p>
+            <div id="books" />
+            <button type="button" id="add-book" class="ghost">
+              + 1冊ふやす
+            </button>
+            <p class="note">
+              「知る人ぞ知る本」の印は<strong>1冊だけ</strong>付けられます。
+              付けた本は /hidden に集まります。付けなくても構いません。
+            </p>
+          </section>
+
+          <div class="actions">
+            <button type="button" id="save" class="primary">
+              記事ファイルをつくる
+            </button>
+            <p id="status" class="status" />
+          </div>
+        </main>
+      )
+    }
+
+    <script
+      is:inline
+      define:vars={{ topicMap, tagNames, selectorList, enabled: isDev }}
+    >
+      if (enabled) {
+        const $ = (id) => document.getElementById(id);
+        const chosenTags = new Set();
+
+        // --- 分野 --------------------------------------------------------
+        // 小トピックは919件ある。大トピックを選んだ時点で配下だけに絞る
+        $("topic").addEventListener("change", (e) => {
+          const subtopics = topicMap[e.target.value] ?? [];
+          const sel = $("subtopic");
+          sel.innerHTML =
+            '<option value="">なし</option>' +
+            subtopics.map((s) => `<option value="${s}">${s}</option>`).join("");
+          sel.disabled = subtopics.length === 0;
+          renderTemplates();
+        });
+
+        // --- タグ --------------------------------------------------------
+        // 423件を並べても選べないので、打った語で絞ってから選ぶ
+        function renderTagResults() {
+          const q = $("tag-filter").value.trim();
+          const box = $("tag-results");
+          if (!q) {
+            box.innerHTML = "";
+            return;
+          }
+          const hits = tagNames
+            .filter((t) => t.includes(q) && !chosenTags.has(t))
+            .slice(0, 30);
+          box.innerHTML = hits.length
+            ? hits
+                .map(
+                  (t) =>
+                    `<button type="button" class="chip add" data-tag="${t}">${t}</button>`,
+                )
+                .join("")
+            : `<span class="note">「${q}」に当てはまるタグはありません。src/data/tags.json に足してください</span>`;
+        }
+
+        function renderChosenTags() {
+          $("tag-chosen").innerHTML = [...chosenTags]
+            .map(
+              (t) =>
+                `<button type="button" class="chip on" data-remove="${t}">${t} ×</button>`,
+            )
+            .join("");
+        }
+
+        $("tag-filter").addEventListener("input", renderTagResults);
+        $("tag-results").addEventListener("click", (e) => {
+          const tag = e.target.dataset?.tag;
+          if (!tag) return;
+          chosenTags.add(tag);
+          renderChosenTags();
+          renderTagResults();
+        });
+        $("tag-chosen").addEventListener("click", (e) => {
+          const tag = e.target.dataset?.remove;
+          if (!tag) return;
+          chosenTags.delete(tag);
+          renderChosenTags();
+          renderTagResults();
+        });
+
+        // --- タイトル ----------------------------------------------------
+        // 雛形は「押すと入る」だけ。押さずに自分で書いてもいい
+        function renderTemplates() {
+          const topic = $("topic").value;
+          const subtopic = $("subtopic").value;
+          const theme = subtopic || topic;
+          const who =
+            selectorList.find((s) => s.id === $("selector").value)?.name ?? "";
+          const n = document.querySelectorAll(".book").length;
+          if (!theme) {
+            $("title-templates").innerHTML = "";
+            return;
+          }
+          const candidates = [
+            `${who}が選ぶ、${theme}の${n}冊`,
+            `${theme}を本気で学ぶときに読む${n}冊`,
+            `${theme}の見取り図が手に入る${n}冊`,
+          ];
+          $("title-templates").innerHTML =
+            '<span class="note">雛形（押すと入ります）</span>' +
+            candidates
+              .map(
+                (c) =>
+                  `<button type="button" class="chip" data-title="${c}">${c}</button>`,
+              )
+              .join("");
+        }
+        $("title-templates").addEventListener("click", (e) => {
+          const t = e.target.dataset?.title;
+          if (t) $("title").value = t;
+        });
+        $("selector").addEventListener("change", renderTemplates);
+        $("subtopic").addEventListener("change", renderTemplates);
+
+        $("slug").addEventListener("input", () => {
+          const v = $("slug").value.trim();
+          const ok = !v || /^[a-z0-9][a-z0-9-]*$/.test(v);
+          $("slug-note").textContent = ok
+            ? "半角小文字の英数とハイフンのみ"
+            : "使えない文字が入っています（半角小文字の英数とハイフンのみ）";
+          $("slug-note").classList.toggle("bad", !ok);
+        });
+
+        // --- 本 ----------------------------------------------------------
+        function bookRow(index) {
+          const el = document.createElement("div");
+          el.className = "book";
+          el.innerHTML = `
+            <div class="book-head">
+              <strong>${index + 1}冊目</strong>
+              <label class="buried">
+                <input type="radio" name="buried" value="${index}" />
+                知る人ぞ知る本にする
+              </label>
+              <button type="button" class="ghost small remove">削除</button>
+            </div>
+            <div class="row">
+              <label class="field isbn-field">
+                <span>ISBN（13桁）</span>
+                <div class="isbn-row">
+                  <input class="isbn" type="text" inputmode="numeric" placeholder="9784000000000" />
+                  <button type="button" class="ghost fetch">取得</button>
+                </div>
+              </label>
+              <label class="field"><span>書名</span><input class="btitle" type="text" /></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>著者</span><input class="bauthor" type="text" /></label>
+              <label class="field"><span>訳者</span><input class="btranslator" type="text" placeholder="なければ空欄" /></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>出版社</span><input class="bpublisher" type="text" /></label>
+              <label class="field"><span>刊行年</span><input class="byear" type="number" /></label>
+            </div>
+            <p class="warn"></p>`;
+          return el;
+        }
+
+        function renumber() {
+          document.querySelectorAll(".book").forEach((el, i) => {
+            el.querySelector(".book-head strong").textContent = `${i + 1}冊目`;
+            el.querySelector('input[name="buried"]').value = i;
+          });
+          renderTemplates();
+        }
+
+        function addBook() {
+          $("books").appendChild(bookRow(document.querySelectorAll(".book").length));
+          renumber();
+        }
+
+        $("add-book").addEventListener("click", addBook);
+
+        $("books").addEventListener("click", async (e) => {
+          const row = e.target.closest(".book");
+          if (!row) return;
+
+          if (e.target.classList.contains("remove")) {
+            // 3冊未満は公開できないので、そこまでしか減らせない
+            if (document.querySelectorAll(".book").length <= 3) {
+              alert("本は3冊以上必要です。");
+              return;
+            }
+            row.remove();
+            renumber();
+            return;
+          }
+
+          if (e.target.classList.contains("fetch")) {
+            const isbn = row.querySelector(".isbn").value.replace(/[^\d]/g, "");
+            const warn = row.querySelector(".warn");
+            if (!/^\d{13}$/.test(isbn)) {
+              warn.textContent = "ISBNは13桁の数字で入れてください";
+              return;
+            }
+            e.target.disabled = true;
+            warn.textContent = "取得中…";
+            try {
+              const res = await fetch("/api/isbn.json", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ isbn }),
+              });
+              const data = await res.json();
+              if (!data.found) {
+                warn.textContent =
+                  "書誌が取得できませんでした。手で入れてください";
+              } else {
+                row.querySelector(".isbn").value = isbn;
+                if (data.title) row.querySelector(".btitle").value = data.title;
+                if (data.author) row.querySelector(".bauthor").value = data.author;
+                if (data.translator)
+                  row.querySelector(".btranslator").value = data.translator;
+                if (data.publisher)
+                  row.querySelector(".bpublisher").value = data.publisher;
+                if (data.year) row.querySelector(".byear").value = data.year;
+                warn.textContent = data.warnings.length
+                  ? `要確認: ${data.warnings.join(" / ")}`
+                  : "取得しました。現物と照らして確認してください";
+              }
+            } catch (err) {
+              warn.textContent = `取得に失敗しました: ${err.message}`;
+            } finally {
+              e.target.disabled = false;
+            }
+          }
+        });
+
+        // 3冊が下限なので、最初から3冊置いておく
+        for (let i = 0; i < 3; i++) addBook();
+
+        // --- 保存 --------------------------------------------------------
+        async function save(overwrite) {
+          const status = $("status");
+          const buriedIndex = Number(
+            document.querySelector('input[name="buried"]:checked')?.value ?? -1,
+          );
+
+          const books = [...document.querySelectorAll(".book")].map((row, i) => {
+            const get = (cls) => row.querySelector(cls).value.trim();
+            const warn = row.querySelector(".warn").textContent;
+            return {
+              isbn: get(".isbn").replace(/[^\d]/g, ""),
+              title: get(".btitle"),
+              author: get(".bauthor"),
+              translator: get(".btranslator"),
+              publisher: get(".bpublisher"),
+              year: get(".byear"),
+              whyBuried:
+                i === buriedIndex
+                  ? "TODO: この本がなぜ知られていないのかを150〜300字で書く"
+                  : undefined,
+              _warn: warn.startsWith("要確認") ? warn : "",
+            };
+          });
+
+          const payload = {
+            title: $("title").value.trim(),
+            seoTitle: $("seoTitle").value.trim(),
+            slug: $("slug").value.trim(),
+            description: $("description").value.trim(),
+            topic: $("topic").value,
+            subtopic: $("subtopic").value,
+            tags: [...chosenTags],
+            selector: $("selector").value,
+            books: books.map(({ _warn, ...b }) => b),
+            // 取得時に食い違いが出た箇所は、ファイル冒頭のコメントに残す
+            warnings: books
+              .map((b, i) => (b._warn ? `${i + 1}冊目 — ${b._warn}` : null))
+              .filter(Boolean),
+            overwrite,
+          };
+
+          status.className = "status";
+          status.textContent = "保存中…";
+
+          const res = await fetch("/api/save-article.json", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+
+          if (res.status === 409) {
+            if (confirm(`${data.slug}.md は既にあります。上書きしますか？`)) {
+              await save(true);
+            } else {
+              status.textContent = "中止しました。";
+            }
+            return;
+          }
+
+          if (!res.ok) {
+            status.className = "status bad";
+            status.textContent = `直してください — ${data.errors.join(" / ")}`;
+            return;
+          }
+
+          status.className = "status ok";
+          status.innerHTML =
+            `✓ ${data.path} を作りました。<br />` +
+            "エディタで開いて TODO: を埋めてください。書き上がったら draft: false にします。";
+        }
+
+        $("save").addEventListener("click", () => save(false));
+      }
+    </script>
+
+    <style is:global>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        margin: 0;
+        background: #f5f4f1;
+        color: #292929;
+        font-family: system-ui, sans-serif;
+        line-height: 1.7;
+      }
+      .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 40px 20px 120px;
+      }
+      .head h1 {
+        font-size: 1.6rem;
+        margin: 0 0 8px;
+      }
+      .note {
+        color: #767676;
+        font-size: 0.85rem;
+        margin: 4px 0;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #e5e3de;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .card h2 {
+        font-size: 1rem;
+        margin: 0 0 14px;
+      }
+      .row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .row > .field {
+        flex: 1 1 240px;
+      }
+      .field {
+        display: block;
+        margin-bottom: 14px;
+      }
+      .field > span {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .field em {
+        color: #b23b2e;
+        font-style: normal;
+        font-size: 0.75rem;
+      }
+      .field small {
+        display: block;
+        color: #767676;
+        font-size: 0.75rem;
+        margin-top: 3px;
+      }
+      .field small.bad {
+        color: #b23b2e;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        border: 1px solid #d7d4cd;
+        border-radius: 5px;
+        background: #fff;
+        font: inherit;
+        font-size: 0.9rem;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: 2px solid #1f6f5c;
+        outline-offset: 1px;
+      }
+      .isbn-row {
+        display: flex;
+        gap: 6px;
+      }
+      .isbn-row .isbn {
+        flex: 1;
+      }
+      .templates,
+      .tag-results,
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin: 6px 0;
+      }
+      .chip {
+        border: 1px solid #d7d4cd;
+        background: #fff;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font: inherit;
+        font-size: 0.8rem;
+        cursor: pointer;
+      }
+      .chip:hover {
+        border-color: #1f6f5c;
+      }
+      .chip.on {
+        background: #1f6f5c;
+        border-color: #1f6f5c;
+        color: #fff;
+      }
+      .book {
+        border: 1px solid #e5e3de;
+        border-radius: 6px;
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .book-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 10px;
+      }
+      .book-head strong {
+        font-size: 0.9rem;
+      }
+      .buried {
+        font-size: 0.8rem;
+        color: #767676;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .buried input {
+        width: auto;
+      }
+      .warn {
+        font-size: 0.78rem;
+        color: #8a5a00;
+        margin: 4px 0 0;
+        min-height: 1em;
+      }
+      button.ghost {
+        border: 1px solid #d7d4cd;
+        background: #fff;
+        border-radius: 5px;
+        padding: 8px 14px;
+        font: inherit;
+        font-size: 0.85rem;
+        cursor: pointer;
+      }
+      button.ghost.small {
+        padding: 3px 10px;
+        font-size: 0.78rem;
+      }
+      button.primary {
+        background: #1f6f5c;
+        color: #fff;
+        border: 0;
+        border-radius: 6px;
+        padding: 12px 28px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .actions {
+        position: sticky;
+        bottom: 0;
+        background: #f5f4f1;
+        padding: 16px 0;
+        border-top: 1px solid #e5e3de;
+      }
+      .status {
+        font-size: 0.85rem;
+        margin: 8px 0 0;
+      }
+      .status.ok {
+        color: #1f6f5c;
+      }
+      .status.bad {
+        color: #b23b2e;
+      }
+    </style>
+  </body>
+</html>

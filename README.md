@@ -31,6 +31,7 @@
 ```bash
 npm install
 npm run dev      # http://localhost:4321
+                 #   記事を作る画面は http://localhost:4321/admin（ローカル専用）
 npm run build    # dist/ に静的サイトを生成
 npm run preview  # ビルド結果を確認
 
@@ -38,7 +39,7 @@ npm run verify   # push する前にこれ。lint → 型チェック → ビル
 npm run check:links  # 内部リンクが実在するページを指しているか検査する
 
 npm run new:selector                     # 選者をマスタに登録・編集する（対話式）
-npm run new:article                      # 記事を作る（対話式・書誌を自動取得）
+npm run new:article                      # 記事を作る（対話式・/admin が使えないとき）
 npm run check:isbn -- 9784150504106 …    # ISBNの書誌が取れるか実測する
 ```
 
@@ -49,7 +50,47 @@ npm run check:isbn -- 9784150504106 …    # ISBNの書誌が取れるか実測�
 
 ## 2. 記事を書いて公開する
 
-### CLIを使う（推奨）
+作り方は2つある。**どちらで作っても出来上がるファイルは同じ**
+（生成処理は `scripts/lib/article-file.mjs` に集約してある）。
+
+| | 向いている場面 |
+|---|---|
+| **画面（`/admin`）** — 推奨 | ふつうはこちら。選び直せる・分野の絞り込みが速い |
+| CLI（`npm run new:article`） | 画面が壊れたとき、手が離せないとき |
+
+### 画面を使う（推奨）
+
+```bash
+npm run dev
+# → http://localhost:4321/admin を開く
+```
+
+**ローカル専用の画面。** 本番サイトには存在しない（後述）。
+
+1. **選者**を選ぶ
+2. **大トピック**を選ぶと、**その配下の小トピックだけ**が候補に出る
+3. **タグ**は打った語で絞って選ぶ（いくつでも）
+4. **タイトル**は雛形を押して入れてもいいし、自由に書いてもいい
+5. **ISBN13** を入れて「取得」を押すと書誌が入る。**その場で直せる**
+6. 「記事ファイルをつくる」で `src/content/interviews/<slug>.md` ができる
+
+**長文はここでは書かない。** 選書理由・導入文は `TODO:` のまま出力されるので、
+できたファイルをエディタで開いて書く。長文は結局エディタが一番速い。
+
+> #### この画面が本番に出ない理由
+>
+> 記事ファイルを書き込む口を持つので、公開されると困る。守りは3つある。
+>
+> 1. 裏側の API は **Vite の `apply: "serve"` プラグイン**
+>    （`scripts/lib/admin-dev-server.mjs`）。**ビルドでは読み込まれもしない**
+> 2. `npm run build` の後に `scripts/strip-admin.mjs` が `dist/` から `/admin` を消す
+>    （消えたことをログに出し、残っていればビルドを失敗させる）
+> 3. 画面自体も `import.meta.env.DEV` を見て、開発時以外は中身を描画しない
+>
+> sitemap からも除外している（`astro.config.mjs`）。
+> 除外しないと、消したはずのURLを sitemap が申告し続けて 404 が Search Console に出る。
+
+### CLIを使う
 
 ```bash
 npm run new:article
@@ -71,7 +112,7 @@ npm run new:article
 ### 書き上げるまでの流れ
 
 ```
-npm run new:article     → 雛形ができる（draft: true）
+/admin か npm run new:article  → 雛形ができる（draft: true）
       ↓
 エディタで TODO: を埋める、書誌を確認する
       ↓

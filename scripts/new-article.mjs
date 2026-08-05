@@ -19,9 +19,14 @@
  *   - 書名にシリーズ名や文庫番号が混入することがある
  * したがって「項目ごとに良い方を採ってマージ → 人が確認」という流れを必ず通す。
  */
-import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import {
+  ARTICLES_DIR,
+  articleExists,
+  buildArticle,
+  writeArticle,
+} from "./lib/article-file.mjs";
 import {
   ask,
   askRequired,
@@ -37,7 +42,6 @@ const ROOT = process.cwd();
 const TOPICS_PATH = path.join(ROOT, "src/data/topics.json");
 const SELECTORS_PATH = path.join(ROOT, "src/data/selectors.json");
 const TAGS_PATH = path.join(ROOT, "src/data/tags.json");
-const ARTICLES_DIR = path.join(ROOT, "src/content/interviews");
 
 // .env（GOOGLE_BOOKS_API_KEY）を読む
 loadEnv(path.join(ROOT, ".env"));
@@ -137,20 +141,6 @@ async function fetchBook(isbn) {
 }
 
 // ---------------------------------------------------------------- 入力補助
-
-/** YAML のブロックスカラー（|）で安全に書く */
-function block(text, indent) {
-  const pad = " ".repeat(indent);
-  return `|\n${text
-    .split("\n")
-    .map((line) => pad + line)
-    .join("\n")}`;
-}
-
-function yamlString(value) {
-  // コロン・記号を含む可能性があるので常にクォートする
-  return JSON.stringify(String(value));
-}
 
 // ---------------------------------------------------------------- 本体
 
@@ -450,60 +440,23 @@ async function main() {
   }
 
   // --- 書き出し ---
-  const today = new Date().toISOString().slice(0, 10);
-  const lines = [
-    "---",
-    `title: ${yamlString(title)}`,
-    ...(seoTitle ? [`seoTitle: ${yamlString(seoTitle)}`] : []),
-    `slug: ${yamlString(slug)}`,
-    "# 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される",
-    "draft: true",
-    `publishedAt: ${today}`,
-    `description: ${yamlString(description)}`,
-    `topic: ${yamlString(topic)}`,
-    ...(subtopic ? [`subtopic: ${yamlString(subtopic)}`] : []),
-    ...(chosenTags.length > 0
-      ? ["tags:", ...chosenTags.map((tag) => `  - ${yamlString(tag)}`)]
-      : []),
-    `selector: ${yamlString(selectorId)}`,
-    "books:",
-  ];
+  // frontmatter の組み立ては scripts/lib/article-file.mjs に集約してある。
+  // 投稿アプリ（/admin）も同じものを使うので、出力が食い違わない
+  const contents = buildArticle({
+    title,
+    seoTitle,
+    slug,
+    description,
+    topic,
+    subtopic,
+    tags: chosenTags,
+    selector: selectorId,
+    books,
+    warnings,
+  });
 
-  for (const b of books) {
-    lines.push(`  - title: ${yamlString(b.title)}`);
-    lines.push(`    author: ${yamlString(b.author)}`);
-    if (b.translator) lines.push(`    translator: ${yamlString(b.translator)}`);
-    lines.push(`    publisher: ${yamlString(b.publisher)}`);
-    lines.push(`    year: ${b.year}`);
-    lines.push(`    isbn: ${yamlString(b.isbn)}`);
-    lines.push(`    reason: ${block(b.reason, 6)}`);
-    if (b.whyBuried) {
-      lines.push(`    whyBuried: ${block(b.whyBuried, 6)}`);
-    }
-  }
-
-  lines.push("---");
-  lines.push("");
-  if (warnings.length > 0) {
-    lines.push("<!--");
-    lines.push("  要確認（自動取得で判断できなかった箇所）:");
-    for (const w of warnings) lines.push(`    - ${w}`);
-    lines.push("  確認して直したら、このコメントは消してよい");
-    lines.push("-->");
-    lines.push("");
-  }
-  lines.push(
-    `<!-- 導入文をここに書く。選者がどういう人で、この${books.length}冊で何が見えるのか。3〜5段落 -->`,
-  );
-  lines.push("");
-  lines.push("<!-- まとめもここに書く -->");
-  lines.push("");
-
-  // 記事を全部消すとディレクトリごと無くなるので、書く前に作る
-  fs.mkdirSync(ARTICLES_DIR, { recursive: true });
-
-  const filePath = path.join(ARTICLES_DIR, `${slug}.md`);
-  if (fs.existsSync(filePath)) {
+  if (articleExists(slug)) {
+    const filePath = path.join(ARTICLES_DIR, `${slug}.md`);
     const overwrite = (
       await ask(`\n${filePath} は既にあります。上書きしますか？ (y/N): `)
     )
@@ -516,7 +469,7 @@ async function main() {
     }
   }
 
-  fs.writeFileSync(filePath, lines.join("\n"));
+  const filePath = writeArticle(slug, contents);
 
   console.log(`\n✓ ${path.relative(ROOT, filePath)} を作成しました。\n`);
   if (warnings.length > 0) {
