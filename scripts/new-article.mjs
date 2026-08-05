@@ -228,7 +228,7 @@ async function main() {
   // --- テーマ ---
   const topicChoice = await chooseFromList(
     "■ テーマ（お題）を選んでください",
-    topics.map((t) => ({ label: t, value: t })),
+    Object.keys(topics).map((t) => ({ label: t, value: t })),
     { allowNew: true },
   );
 
@@ -242,7 +242,13 @@ async function main() {
         "      ・有名でない本が出てくるか（「知られていない理由」が書けるか）\n",
     );
     topic = await askRequired("  テーマ名");
-    topics.push(topic);
+    console.log(
+      "\n  テーマの説明文（任意・Enterでスキップ）\n" +
+        "  テーマページに表示されます。記事リストだけのページは検索エンジンに\n" +
+        "  インデックスされにくいため、書けるなら書いておくと効きます。",
+    );
+    const topicDescription = (await ask("  説明文: ")).trim();
+    topics[topic] = { description: topicDescription };
     writeJson(TOPICS_PATH, topics);
     console.log(`  → src/data/topics.json に「${topic}」を追加しました`);
   } else {
