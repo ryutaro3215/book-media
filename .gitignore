@@ -27,3 +27,6 @@ pnpm-debug.log*
 
 # macOS
 .DS_Store
+
+# エージェント用の一時作業ツリー
+.claude/worktrees/

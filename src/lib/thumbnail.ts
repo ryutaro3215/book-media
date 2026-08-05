@@ -25,7 +25,7 @@ export function resolveThumbnail(slug: string): string {
 
 /**
  * 手動で用意したサムネイルがあるか。
- * 無ければ ArticleThumbnail が5冊の書影を並べる（plan.md T20）。
+ * 無ければ ArticleThumbnail が書影を並べる（plan.md T20）。
  */
 export function hasManualThumbnail(slug: string): boolean {
   return EXTENSIONS.some((ext) =>

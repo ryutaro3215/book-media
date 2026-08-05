@@ -7,7 +7,8 @@
  * ## 何をするか
  *   1. テーマを既存の語彙から選ばせる（新規は明示的に追加させる）
  *   2. 選者をマスタから選ばせる（新規はその場で登録できる）
- *   3. ISBN13 を5冊分入力させ、**openBD と Google Books から書誌を自動取得**する
+ *   3. 冊数（3冊以上）を聞き、その冊数ぶん ISBN13 を入力させ、
+ *      **openBD と Google Books から書誌を自動取得**する
  *   4. 取得した値を**画面に出して確認・修正させる**
  *   5. `src/content/interviews/<slug>.md` を書き出す
  *
@@ -217,6 +218,17 @@ async function main() {
   // --- 記事のメタ情報 ---
   console.log("\n■ 記事の情報");
 
+  // 冊数を先に聞く。タイトルの雛形にもISBNの入力回数にも使うため。
+  // 以前は5冊固定だった（.dev/business-plan.md 2026-08-05 の判断で3冊以上に変更）
+  let bookCount = 0;
+  while (!Number.isInteger(bookCount) || bookCount < 3) {
+    const raw = (await ask("\n  紹介する冊数（3以上・Enterで5）: ")).trim();
+    bookCount = raw === "" ? 5 : Number(raw);
+    if (!Number.isInteger(bookCount) || bookCount < 3) {
+      console.log("  ※ 3以上の整数で入力してください");
+    }
+  }
+
   // タイトルは自動生成しない。雛形は出すが、選ぶか自分で書くかは毎回決めてもらう。
   // タイトルは記事ごとに考える価値のある要素で、型に流し込むと全記事が同じ顔になる
   console.log("\n  記事タイトル");
@@ -224,16 +236,16 @@ async function main() {
     "  雛形から選ぶか、自由に入力してください",
     [
       {
-        label: `${selectorName}が選ぶ、${topic}の5冊`,
-        value: `${selectorName}が選ぶ、${topic}の5冊`,
+        label: `${selectorName}が選ぶ、${topic}の${bookCount}冊`,
+        value: `${selectorName}が選ぶ、${topic}の${bookCount}冊`,
       },
       {
-        label: `${topic}を知るための5冊 — ${selectorName}が選ぶ`,
-        value: `${topic}を知るための5冊 — ${selectorName}が選ぶ`,
+        label: `${topic}を知るための${bookCount}冊 — ${selectorName}が選ぶ`,
+        value: `${topic}を知るための${bookCount}冊 — ${selectorName}が選ぶ`,
       },
       {
-        label: `${selectorName}が薦める、${topic}の隠れた5冊`,
-        value: `${selectorName}が薦める、${topic}の隠れた5冊`,
+        label: `${selectorName}が薦める、${topic}の隠れた${bookCount}冊`,
+        value: `${selectorName}が薦める、${topic}の隠れた${bookCount}冊`,
       },
     ],
     { allowNew: true, newLabel: "自由に入力する" },
@@ -243,14 +255,14 @@ async function main() {
     : titleChoice.value;
 
   // 検索用タイトル（任意）。
-  // 記事タイトルは「〈選者〉が選ぶ、〈テーマ〉の5冊」の型で、X共有時に
+  // 記事タイトルは「〈選者〉が選ぶ、〈テーマ〉のN冊」の型で、X共有時に
   // 「誰が選んだか」を伝えるための形。一方で検索する人は
   // 「〇〇 入門書」「〇〇 おすすめ 本」と打つため、語が噛み合わない。
   // 両立させるために、<title> だけ差し替えられるようにしてある。
   console.log(
     "\n  検索用タイトル（任意・Enterでスキップ）\n" +
       "  検索結果に出る <title> だけを差し替えます。上のタイトルはそのまま残ります。\n" +
-      `  例: ${topic}の入門書5冊 — ${selectorName}が選ぶ`,
+      `  例: ${topic}の入門書${bookCount}冊 — ${selectorName}が選ぶ`,
   );
   const seoTitle = (await ask("  検索用タイトル: ")).trim();
 
@@ -275,16 +287,16 @@ async function main() {
 
   const description = await askRequired("  要約（120字程度）");
 
-  // --- 5冊 ---
+  // --- 書籍 ---
   console.log(
-    "\n■ 書籍を5冊登録します。ISBN13 を順に入れてください（ハイフン可）。\n" +
+    `\n■ 書籍を${bookCount}冊登録します。ISBN13 を順に入れてください（ハイフン可）。\n` +
       "  書誌は自動取得し、確認と選書理由は生成後のファイルで書きます。\n",
   );
 
   const books = [];
   const warnings = [];
 
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= bookCount; i++) {
     let isbn = "";
     while (!/^\d{13}$/.test(isbn)) {
       isbn = (await ask(`  ${i}冊目のISBN13: `)).replace(/[^\d]/g, "");
@@ -373,7 +385,7 @@ async function main() {
     lines.push("");
   }
   lines.push(
-    "<!-- 導入文をここに書く。選者がどういう人で、この5冊で何が見えるのか。3〜5段落 -->",
+    `<!-- 導入文をここに書く。選者がどういう人で、この${books.length}冊で何が見えるのか。3〜5段落 -->`,
   );
   lines.push("");
   lines.push("<!-- まとめもここに書く -->");

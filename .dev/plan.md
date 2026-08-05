@@ -37,14 +37,14 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - skills: なし
 
 ## T2: Content Collections のスキーマ定義とサンプル記事
-- goal: 記事のfrontmatterをZodで型検証し、「必ず5冊」をビルド時に強制する
+- goal: 記事のfrontmatterをZodで型検証し、冊数の下限をビルド時に強制する（当初は「必ず5冊」。T22で3冊以上へ緩和）
 - files: `src/content.config.ts` / `src/content/interviews/sample-yamada.md` / `src/content/interviews/sample-sato.md`
 - acceptance:
   - スキーマに `books: z.array(bookSchema).length(5)` が定義されている
   - `isbn` が `z.string().regex(/^\d{13}$/)` で13桁数字のみに制約されている（ハイフンありはビルドエラー）
   - 選者情報に `name` / `affiliation` / `bio` / `links.x`（任意）が定義されている
   - 選者情報に **`credentials`（この人が詳しい理由）が必須項目**として定義されている（business-plan.md の選者資格基準）
-  - サンプル記事2本が5冊ずつ持ち、`npm run build` が成功する
+  - サンプル記事2本が5冊ずつ持ち、`npm run build` が成功する（T22以降は3冊以上であればよい）
   - **意図的に4冊にしたテスト用ファイルを一時的に置くと `npm run build` が失敗する**ことを確認できる（確認後にファイルは削除する）
 - depends: T1
 - skills: なし
@@ -60,7 +60,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - depends: T1
 - skills: baseline-ui, frontend-design（いずれも参考。design-brief.md が優先）
 
-## T4: 5冊カードコンポーネント（書影あり／なしの両対応）
+## T4: 書籍カードコンポーネント（書影あり／なしの両対応）
 - goal: 書影がある書籍とない書籍が縦に並んでも、統一されたグリッドとして成立するカードを実装する
 - files: `src/components/BookCard.astro` / `src/components/BookCover.astro`
 - acceptance:
@@ -89,7 +89,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - goal: 記事1本を最後まで読み通せる品質で表示する（本プロジェクトの中核）
 - files: `src/pages/[slug].astro` / `src/components/ArticleHeader.astro` / `src/components/SelectorProfile.astro`
 - acceptance:
-  - サンプル記事にアクセスすると、記事ヘッダー → 導入文 → 5冊のカード → まとめ → メール登録フォーム → フッターの順で表示される
+  - サンプル記事にアクセスすると、記事ヘッダー → 導入文 → 書籍カード → まとめ → メール登録フォーム → フッターの順で表示される
   - 選者名・所属に加え、**Xアカウントへのリンク**が表示され、`https://x.com/<handle>` に遷移する（requirements R2a）
   - 本文カラムの実効幅が660px以下、`line-height` が1.9であることを開発者ツールで確認できる
   - アクセント色のトークン（`accent`）がリンクとメール登録ボタン以外に使われていない（`grep -rn "accent" src/` の該当箇所がリンク・ボタンのみ）
@@ -116,7 +116,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - files: `src/pages/og/[slug].png.ts` / `src/lib/og-template.tsx` / `public/fonts/`（Satori用フォント）
 - acceptance:
   - `npm run build` 後、`dist/og/` に記事数と同数のPNGが1200×630pxで生成されている（`ls dist/og/*.png | wc -l` が記事数と一致）
-  - 生成された画像に選者名・分野名・「5冊」であることが含まれ、**画像を50%（600×315px）に縮小しても選者名と分野名が判読できる**
+  - 生成された画像に選者名・分野名・冊数が含まれ、**画像を50%（600×315px）に縮小しても選者名と分野名が判読できる**
   - 日本語が文字化けせずに描画されている（フォントのサブセット読み込みが機能している）
   - 書影を使用していない（書影の取得可否に依存しない）
   - 要素数が5つ以内
@@ -205,7 +205,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - files: `src/pages/apply.astro`
 - acceptance:
   - `/apply` に応募の説明・応募いただく内容の項目一覧・外部フォームへの導線が表示される
-  - 応募項目に「氏名 / 所属 / 専門分野 / Xアカウント（任意）/ 推薦する5冊（書名・著者・出版社）/ 各冊の選書理由」が明示されている（requirements R16a）
+  - 応募項目に「氏名 / 所属 / 専門分野 / Xアカウント（任意）/ 推薦する本（3冊以上）（書名・著者・出版社）/ 各冊の選書理由」が明示されている（requirements R16a）
   - **「掲載を確約しない」旨が本文中に記載されている**（requirements R16b）
   - 外部フォームサービス（Tally / Google Forms 等）が埋め込まれている、または外部フォームへのボタンが1つある
   - **フォームを自前実装していない**（`src/` に `<form>` の `action` が自サイト内を指す実装が存在しない）
@@ -219,7 +219,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - goal: ヘッダーの検索フォームから、分野・選者・書名で記事を絞り込めるようにする（requirements R17）
 - files: `src/pages/search.astro` / `src/pages/search-index.json.ts`
 - acceptance:
-  - `npm run build` 後、`dist/search-index.json` が生成され、全記事の「タイトル・分野・選者名・5冊の書名」が含まれている
+  - `npm run build` 後、`dist/search-index.json` が生成され、全記事の「タイトル・分野・選者名・書名」が含まれている
   - `/search?q=<語>` にアクセスすると、該当する記事がリスト表示される
   - **サーバーサイド処理・外部検索サービスを使っていない**（`dist/` に出力されるのは静的JSONとJSのみ）
   - 検索語が空・該当なしの場合に、それぞれ適切な表示になる
@@ -252,7 +252,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
     （現状はヘッダーの nav が `md:flex` で消え、フッターのリンクだけが手段になっている）
   - 375px / 390px / 768px で**横スクロールが発生しない**（全ページ。DevTools で実測する）
   - 検索フォームがモバイルでも使える（プレースホルダが読める、またはアイコンのみに畳む）
-  - 5冊カードが折り返したときに、書影と書誌の位置関係が破綻していない
+  - 書籍カードが折り返したときに、書影と書誌の位置関係が破綻していない
   - 記事本文の行長がモバイルで詰まりすぎていない（`px-5` の余白を含めて確認）
   - タップ領域が 44×44px 以上（リンク・ボタン）
   - **実機またはDevToolsのデバイスモードで全ページを目視確認した記録を残す**
@@ -281,8 +281,8 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - depends: T9, T18
 - skills: なし
 
-## T20: 記事サムネイルを5冊の書影で作る
-- goal: トップページの記事カードを、その記事で紹介する**5冊の表紙を並べた見た目**にする
+## T20: 記事サムネイルを書影で作る
+- goal: トップページの記事カードを、その記事で紹介する**本の表紙を並べた見た目**にする
 - 背景: 現在は OGP画像（選者名が大きく入った画像）を流用している。
   本の記事なのに**本が写っていない**ため、一覧の情報量が乏しい
 - **実装方針の判断が必要（先に決めること）**:
@@ -327,6 +327,30 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
   - 実際のISBNで、1本目の記事で起きた `共立講座数学の魅力. 11` が
     `現代数理統計学の基礎` として取得されることを確認する
 - depends: なし
+- skills: なし
+
+
+## T22: 本の冊数を「5冊ちょうど」から「3冊以上」に変える
+- goal: 記事に載せる本の冊数を可変（3冊以上・上限なし）にし、表示・OGP・CLI・文書の
+  「5冊」という固定表記をすべて実際の冊数から生成する形にする
+- 背景: 5冊固定は選者に「ちょうど5冊ひねり出す」ことを要求し、**記事が出ないリスク**を高める。
+  事業判断としてこれを優先した。**その代わりに識別子としての固定形式を失う**——
+  この論点（Five Books が17年守る商品性であること）はオーナーへ伝達済みで、
+  そのうえでの決定。詳細は `.dev/business-plan.md`【コンセプト変更の履歴】2026-08-05 第3回
+- acceptance:
+  - `src/content.config.ts` の `books` が `z.array(bookSchema).min(3, …)` になっている
+    （エラーメッセージは「3冊以上にしてください」）
+  - 記事ページの目次見出しが実際の冊数（例「この記事で紹介する4冊」）になる
+  - OGP画像のメタ行の「5冊」が実際の冊数になる
+  - `src/lib/jsonld.ts` の ItemList description が実際の冊数になる
+  - `scripts/new-article.mjs` が**冊数を先に聞き**（3以上・既定5）、その冊数ぶん ISBN を聞き、
+    タイトル雛形もその冊数に合わせる
+  - 3冊の記事でビルドが通り、2冊の記事でビルドが失敗する（実地確認）
+  - `grep -rn "5冊" src/ scripts/` に固定値として残っているものがない
+  - requirements.md / README.md / business-plan.md（失うものの記録を含む）が更新されている
+- 対象外: `src/lib/openbd.ts` / `src/lib/bookinfo.ts` / `scripts/check-isbn.mjs`（T21と競合するため触らない）、
+  既存記事 `rmatsuba-statistic-recommendation.md`（5冊のままでよい）
+- depends: T2
 - skills: なし
 
 ---

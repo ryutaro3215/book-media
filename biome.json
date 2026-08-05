@@ -13,7 +13,8 @@
       "!node_modules",
       "!public/fonts",
       "!design",
-      "!package-lock.json"
+      "!package-lock.json",
+      "!.claude"
     ]
   },
   "formatter": {
