@@ -1,7 +1,7 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
-import topicsJson from "./data/topics.json";
 import { isKnownSelector, SELECTOR_IDS } from "./lib/selectors";
+import { isKnownTopic, TOPIC_NAMES } from "./lib/topics";
 
 /**
  * 1冊分の書誌情報と選書理由。
@@ -28,7 +28,6 @@ const bookSchema = z.object({
  * 表記が揺れ、アーカイブページが乱立する。新しいお題を立てるときは
  * topics.json に追記する必要があり、**その一手間が抑止として機能する**。
  */
-const TOPICS = topicsJson as string[];
 
 const interviews = defineCollection({
   loader: glob({ base: "./src/content/interviews", pattern: "**/*.{md,mdx}" }),
@@ -61,10 +60,10 @@ const interviews = defineCollection({
     updatedAt: z.date().optional(),
     description: z.string().min(1),
     /** src/data/topics.json に定義された語彙のみ */
-    topic: z.string().refine((value) => TOPICS.includes(value), {
+    topic: z.string().refine(isKnownTopic, {
       message:
         `未登録のテーマです。src/data/topics.json に追記してください。` +
-        `登録済み: ${TOPICS.join(" / ")}`,
+        `登録済み: ${TOPIC_NAMES.join(" / ")}`,
     }),
     keywords: z.array(z.string()).optional(),
     /**

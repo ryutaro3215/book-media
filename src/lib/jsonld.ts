@@ -132,9 +132,37 @@ export function articleJsonLd(input: ArticleJsonLdInput) {
     })),
   };
 
+  // パンくず。検索結果に「サイト名 > テーマ > 記事」の階層が出るようになる。
+  // 記事が増えてテーマページが検索の受け皿になったとき、
+  // 記事とテーマの関係を検索エンジンに明示できる
+  const breadcrumb = {
+    "@type": "BreadcrumbList",
+    "@id": `${url}#breadcrumb`,
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: SITE.name,
+        item: absoluteUrl("/"),
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: input.topic,
+        item: absoluteUrl(`/topics/${encodeURIComponent(input.topic)}/`),
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: input.title,
+        item: url,
+      },
+    ],
+  };
+
   return {
     "@context": "https://schema.org",
-    "@graph": [article, itemList],
+    "@graph": [article, itemList, breadcrumb],
   };
 }
 

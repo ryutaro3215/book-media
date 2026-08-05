@@ -39,6 +39,12 @@ jobs:
       - name: ビルド（記事スキーマの検証を含む）
         run: npm run build
 
+      # 選者マスタへ移行したとき、氏名でURLを組み立てている箇所が残って
+      # 存在しない /selectors/山田太郎/ にリンクしていた。
+      # ビルドも型チェックもLintも通ったため検出できなかったので、機械的に見る
+      - name: 内部リンクの検査
+        run: npm run check:links
+
       - name: 生成物の健全性チェック
         run: |
           set -e

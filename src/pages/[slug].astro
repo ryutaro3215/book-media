@@ -57,10 +57,27 @@ const jsonLd = articleJsonLd({
   books,
 });
 
-// 「ほかの記事」。同じ記事は除き、新しい順に2本
+// 「ほかの記事」。同じテーマ → 同じ選者 → それ以外 の順で優先する。
+// 単に新しい順で出すと無関係な記事が並び、内部リンクとして機能しない。
+// 記事が増えるほどこの優先順位が効いてくる（回遊と検索の両方に効く）
 const others = (await getAllInterviews())
   .filter((e) => e.id !== entry.id)
-  .slice(0, 2);
+  .map((e) => ({
+    entry: e,
+    rank:
+      e.data.topic === data.topic
+        ? 0
+        : e.data.selector === data.selector
+          ? 1
+          : 2,
+  }))
+  .sort(
+    (a, b) =>
+      a.rank - b.rank ||
+      b.entry.data.publishedAt.getTime() - a.entry.data.publishedAt.getTime(),
+  )
+  .slice(0, 3)
+  .map((x) => x.entry);
 ---
 
 <BaseLayout headSlot>

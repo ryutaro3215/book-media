@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# 検索用のインデックスは実データだが、単体では読み物にならないため除外する
+Disallow: /search-index.json
+
+Sitemap: https://book-media.pages.dev/sitemap-index.xml
