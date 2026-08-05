@@ -60,6 +60,17 @@ const topics = await getTopicGroups();
           <span class="h-[22px] w-1 flex-none bg-brand" aria-hidden="true"></span>
           <h2 class="m-0 text-[26px] leading-[1.5] font-bold">新着の記事</h2>
         </div>
+
+        {/* 記事0本のとき、見出しだけが残って空欄になるのを避ける。
+            公開直後や、全記事を下書きに戻したときに実際に起きる状態 */}
+        {
+          articles.length === 0 && (
+            <p class="m-0 text-[15px] leading-[1.9] text-muted">
+              最初の記事を準備しています。
+            </p>
+          )
+        }
+
         <div class="flex gap-6 overflow-x-auto pb-2">
           {
             articles.map((entry) => (
