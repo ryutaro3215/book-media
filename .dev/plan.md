@@ -242,6 +242,24 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - depends: T6
 - skills: dev-design
 
+## T18: スマートフォン対応
+- goal: モバイルで全ページが破綻せず、**すべてのページに到達できる**状態にする
+- 背景: requirements R7「スマートフォンで読みやすい表示」は当初から要件だが、**実測していない**。
+  design/ にモバイル版の指定がなかったため、ナビゲーションは単に非表示にする実装になっている。
+  **Xからの流入が主要導線であり読者の大半がモバイル**なので、事業上の優先度は高い
+- files: `src/components/SiteHeader.astro` / `src/components/MobileNav.astro`（新規）/ 各ページ
+- acceptance:
+  - **375px 幅でグローバルナビ（ジャンル一覧・選者一覧・このサイトについて）に到達できる**
+    （現状はヘッダーの nav が `md:flex` で消え、フッターのリンクだけが手段になっている）
+  - 375px / 390px / 768px で**横スクロールが発生しない**（全ページ。DevTools で実測する）
+  - 検索フォームがモバイルでも使える（プレースホルダが読める、またはアイコンのみに畳む）
+  - 5冊カードが折り返したときに、書影と書誌の位置関係が破綻していない
+  - 記事本文の行長がモバイルで詰まりすぎていない（`px-5` の余白を含めて確認）
+  - タップ領域が 44×44px 以上（リンク・ボタン）
+  - **実機またはDevToolsのデバイスモードで全ページを目視確認した記録を残す**
+- depends: T7, T12, T13, T14
+- skills: dev-design, baseline-ui, fixing-accessibility
+
 ---
 
 ## 実装順序の推奨

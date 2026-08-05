@@ -1,9 +1,25 @@
 ---
-import { SITE, NAV } from "../config";
+/**
+ * サイト共通ヘッダー。
+ *
+ * ## モバイル対応（plan.md T18）
+ * 以前はナビも検索も `md:` 以上でしか表示されず、**スマホからは
+ * ジャンル一覧・選者一覧・このサイトについてに到達できなかった**。
+ * Xからの流入が主要導線＝読者の大半がモバイルなので、事業上の欠陥だった。
+ *
+ * 対応として、モバイルでは「ロゴ ＋ ハンバーガー」だけを出し、
+ * ナビと検索は開閉パネルに入れる。検索もパネルに移すことで、
+ * 狭い画面でプレースホルダが読めない問題も同時に解消している。
+ *
+ * JS は開閉のためだけに数行だけ使う（`aria-expanded` と Escape 対応）。
+ * 外部ライブラリは使わない。
+ */
+import { NAV, SITE } from "../config";
 ---
 
 <header
   class="sticky top-0 z-20 border-b border-rule bg-header backdrop-blur-[8px]"
+  data-site-header
 >
   <div
     class="flex h-[68px] items-center justify-between gap-4 px-5 md:gap-8 md:px-7"
@@ -15,6 +31,7 @@ import { SITE, NAV } from "../config";
       {SITE.name}<span class="text-brand">.</span>
     </a>
 
+    {/* デスクトップ: ナビを横並びで出す */}
     <nav class="hidden flex-auto items-center gap-[26px] md:flex">
       {
         NAV.map((item) => (
@@ -28,10 +45,11 @@ import { SITE, NAV } from "../config";
       }
     </nav>
 
+    {/* デスクトップ: 検索をヘッダー内に置く */}
     <form
       action="/search"
       role="search"
-      class="flex h-[38px] flex-auto items-center gap-2 rounded-full border border-rule bg-cover-placeholder px-3.5 md:flex-[0_1_300px]"
+      class="hidden h-[38px] items-center gap-2 rounded-full border border-rule bg-cover-placeholder px-3.5 md:flex md:flex-[0_1_300px]"
     >
       <svg
         width="15"
@@ -55,5 +73,208 @@ import { SITE, NAV } from "../config";
         class="w-full min-w-0 flex-auto border-0 bg-transparent font-sans text-sm text-ink outline-none placeholder:text-muted"
       />
     </form>
+
+    {/* モバイル: アイコン2つをまとめて右端に寄せる。
+        ヘッダーが justify-between なので、グループにしないと
+        虫眼鏡がロゴとハンバーガーの中間に浮いてしまう */}
+    <div class="-mr-2 flex flex-none items-center md:hidden">
+      {/* 検索は虫眼鏡だけ出し、押すとヘッダー内に入力欄を展開する。
+          常時入力欄を置くと狭い画面でプレースホルダが読めないため */}
+      <button
+        type="button"
+        data-search-toggle
+        aria-expanded="false"
+        aria-controls="mobile-search"
+        class="flex size-11 items-center justify-center rounded-full text-ink"
+      >
+        <span class="sr-only" data-search-label>検索を開く</span>
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          aria-hidden="true"
+        >
+          <circle cx="7" cy="7" r="4.6"></circle>
+          <line x1="10.4" y1="10.4" x2="14" y2="14"></line>
+        </svg>
+      </button>
+
+      {/* 開閉ボタン。タップ領域を44px以上にする */}
+      <button
+        type="button"
+        data-nav-toggle
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        class="flex size-11 items-center justify-center rounded-full text-ink"
+      >
+        <span class="sr-only">メニューを開く</span>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          aria-hidden="true"
+          data-nav-icon-open
+        >
+          <line x1="3" y1="6" x2="17" y2="6"></line>
+          <line x1="3" y1="10" x2="17" y2="10"></line>
+          <line x1="3" y1="14" x2="17" y2="14"></line>
+        </svg>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          aria-hidden="true"
+          class="hidden"
+          data-nav-icon-close
+        >
+          <line x1="4.5" y1="4.5" x2="15.5" y2="15.5"></line>
+          <line x1="15.5" y1="4.5" x2="4.5" y2="15.5"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  {/* モバイル: 検索バー。虫眼鏡を押すと開き、入力欄にフォーカスが当たる */}
+  <div
+    id="mobile-search"
+    hidden
+    class="border-t border-rule bg-cover-placeholder px-5 py-3 shadow-[0_2px_6px_rgba(41,41,41,0.06)] md:hidden"
+  >
+    <form
+      action="/search"
+      role="search"
+      class="flex h-11 items-center gap-2 rounded-full border border-rule bg-canvas px-4"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        class="flex-none text-muted"
+        aria-hidden="true"
+      >
+        <circle cx="7" cy="7" r="4.6"></circle>
+        <line x1="10.4" y1="10.4" x2="14" y2="14"></line>
+      </svg>
+      <label for="site-search-mobile" class="sr-only">
+        テーマ・選者・書名で検索
+      </label>
+      <input
+        id="site-search-mobile"
+        type="search"
+        name="q"
+        placeholder="テーマ・選者・書名で検索"
+        data-search-input
+        class="w-full min-w-0 flex-auto border-0 bg-transparent font-sans text-[15px] text-ink outline-none placeholder:text-muted"
+      />
+    </form>
+  </div>
+
+  {/* モバイル: ナビの開閉パネル。
+      白背景のページに白いパネルを重ねると境界が分からないため、
+      地色を敷いて「面」として区別する */}
+  <div
+    id="mobile-nav"
+    hidden
+    class="border-t border-rule bg-cover-placeholder px-5 py-2 shadow-[0_2px_6px_rgba(41,41,41,0.06)] md:hidden"
+  >
+    <nav class="flex flex-col">
+      {
+        NAV.map((item) => (
+          <a
+            href={item.href}
+            class="border-b border-rule py-3 text-[15px] font-medium text-ink no-underline last:border-b-0"
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
   </div>
 </header>
+
+<script>
+  const header = document.querySelector<HTMLElement>("[data-site-header]");
+
+  const navToggle = header?.querySelector<HTMLButtonElement>("[data-nav-toggle]");
+  const navPanel = header?.querySelector<HTMLElement>("#mobile-nav");
+  const iconOpen = navToggle?.querySelector<SVGElement>("[data-nav-icon-open]");
+  const iconClose = navToggle?.querySelector<SVGElement>("[data-nav-icon-close]");
+  const navLabel = navToggle?.querySelector<HTMLElement>(".sr-only");
+
+  const searchToggle =
+    header?.querySelector<HTMLButtonElement>("[data-search-toggle]");
+  const searchPanel = header?.querySelector<HTMLElement>("#mobile-search");
+  const searchInput =
+    header?.querySelector<HTMLInputElement>("[data-search-input]");
+  const searchLabel = searchToggle?.querySelector<HTMLElement>("[data-search-label]");
+
+  function setNavOpen(open: boolean) {
+    if (!navToggle || !navPanel) return;
+    navToggle.setAttribute("aria-expanded", String(open));
+    navPanel.hidden = !open;
+    iconOpen?.classList.toggle("hidden", open);
+    iconClose?.classList.toggle("hidden", !open);
+    if (navLabel) {
+      navLabel.textContent = open ? "メニューを閉じる" : "メニューを開く";
+    }
+  }
+
+  function setSearchOpen(open: boolean) {
+    if (!searchToggle || !searchPanel) return;
+    searchToggle.setAttribute("aria-expanded", String(open));
+    searchPanel.hidden = !open;
+    if (searchLabel) {
+      searchLabel.textContent = open ? "検索を閉じる" : "検索を開く";
+    }
+    // 開いたらすぐ打てるようにする
+    if (open) searchInput?.focus();
+  }
+
+  navToggle?.addEventListener("click", () => {
+    const open = navToggle.getAttribute("aria-expanded") !== "true";
+    // 2つのパネルが同時に開くと画面が埋まるので、片方を閉じる
+    if (open) setSearchOpen(false);
+    setNavOpen(open);
+  });
+
+  searchToggle?.addEventListener("click", () => {
+    const open = searchToggle.getAttribute("aria-expanded") !== "true";
+    if (open) setNavOpen(false);
+    setSearchOpen(open);
+  });
+
+  // Escape で閉じ、フォーカスを開いたボタンに戻す
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (searchToggle?.getAttribute("aria-expanded") === "true") {
+      setSearchOpen(false);
+      searchToggle.focus();
+      return;
+    }
+    if (navToggle?.getAttribute("aria-expanded") === "true") {
+      setNavOpen(false);
+      navToggle.focus();
+    }
+  });
+
+  // デスクトップ幅に戻ったら閉じる（パネルが開いたまま残らないように）
+  window.matchMedia("(min-width: 48rem)").addEventListener("change", (e) => {
+    if (!e.matches) return;
+    setNavOpen(false);
+    setSearchOpen(false);
+  });
+</script>

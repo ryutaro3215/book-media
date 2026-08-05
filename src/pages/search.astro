@@ -23,7 +23,42 @@ import { SITE } from "../config";
     >
       すべての記事
     </h1>
-    <div class="mb-3 text-sm text-muted" id="search-total"></div>
+    <div class="mb-6 text-sm text-muted" id="search-total"></div>
+
+    {/* 検索結果ページ自身にも入力欄を置く。
+        モバイルのヘッダーは虫眼鏡アイコンだけでここに送るため、
+        入力欄が無いと検索語を入れる手段が無くなる。
+        デスクトップでも「結果ページで絞り込み直す」ができるようになる。
+        JSなしでも GET で動く */}
+    <form
+      action="/search"
+      role="search"
+      class="mb-10 flex h-11 items-center gap-2 rounded-full border border-rule bg-cover-placeholder px-4"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        class="flex-none text-muted"
+        aria-hidden="true"
+      >
+        <circle cx="7" cy="7" r="4.6"></circle>
+        <line x1="10.4" y1="10.4" x2="14" y2="14"></line>
+      </svg>
+      <label for="search-page-input" class="sr-only">
+        テーマ・選者・書名で検索
+      </label>
+      <input
+        id="search-page-input"
+        type="search"
+        name="q"
+        placeholder="テーマ・選者・書名で検索"
+        class="w-full min-w-0 flex-auto border-0 bg-transparent font-sans text-[15px] text-ink outline-none placeholder:text-muted"
+      />
+    </form>
 
     <noscript>
       <p class="mt-6 text-[15px] leading-[1.9] text-ink">
@@ -108,6 +143,11 @@ import { SITE } from "../config";
 
     if (q) {
       heading.textContent = `「${q}」`;
+      // 入力欄に検索語を残す（絞り込み直せるように）
+      const input = document.getElementById(
+        "search-page-input",
+      ) as HTMLInputElement | null;
+      if (input) input.value = q;
     }
 
     const needle = norm(q);
