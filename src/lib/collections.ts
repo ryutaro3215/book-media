@@ -48,10 +48,21 @@ function byPublishedAtDesc(a: Interview, b: Interview): number {
   return b.data.publishedAt.getTime() - a.data.publishedAt.getTime();
 }
 
-/** 全記事を公開日の新しい順で取得する */
+/**
+ * 全記事を公開日の新しい順で取得する。
+ *
+ * **本番ビルドでは下書き（`draft: true`）を除外する。**
+ * 開発サーバーでは含めるので、書きかけの記事を見ながら書ける。
+ *
+ * 記事を扱うページは必ずこの関数を通すこと。
+ * `getCollection("interviews")` を直接呼ぶと下書きが本番に漏れる。
+ */
 export async function getAllInterviews(): Promise<Interview[]> {
   const entries = await getCollection("interviews");
-  return [...entries].sort(byPublishedAtDesc);
+  const visible = import.meta.env.DEV
+    ? entries
+    : entries.filter((entry) => !entry.data.draft);
+  return [...visible].sort(byPublishedAtDesc);
 }
 
 /** 選者ごとにグルーピングする（記事数の多い順 → 名前順） */

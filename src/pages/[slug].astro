@@ -3,7 +3,7 @@
  * 記事ページ（design/Article v2.dc.html）。
  * 本プロジェクトの中核。読書体験を最優先する（requirements「最優先事項: UI/UXの質」）。
  */
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SEO from "../components/SEO.astro";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -25,7 +25,8 @@ import {
 } from "../lib/collections";
 
 export async function getStaticPaths() {
-  const interviews = await getCollection("interviews");
+  // getAllInterviews を通すこと（本番では下書きが除外される）
+  const interviews = await getAllInterviews();
   return interviews.map((entry) => ({
     params: { slug: entry.id },
     props: { entry },

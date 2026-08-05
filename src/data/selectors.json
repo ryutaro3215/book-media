@@ -19,5 +19,17 @@
     "links": {
       "x": "sato_hist"
     }
+  },
+  "rmatsuba": {
+    "name": "松葉隆太郎",
+    "reading": "まつば りゅうたろう",
+    "affiliation": "早稲田大学大学院商学研究科",
+    "bio": "大学院修士1年",
+    "credentials": "経営学について修士課程で研究を行っている。また42Tokyoでコンピュータサイエンスについても学習済み。",
+    "avatar": "rmatsuba.png",
+    "links": {
+      "x": "dokugaku_zin",
+      "site": "https://rmatsuba.com"
+    }
   }
 }
