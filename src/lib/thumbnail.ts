@@ -22,3 +22,13 @@ export function resolveThumbnail(slug: string): string {
   }
   return `/og/${slug}.png`;
 }
+
+/**
+ * 手動で用意したサムネイルがあるか。
+ * 無ければ ArticleThumbnail が5冊の書影を並べる（plan.md T20）。
+ */
+export function hasManualThumbnail(slug: string): boolean {
+  return EXTENSIONS.some((ext) =>
+    fs.existsSync(path.join(THUMBNAILS_DIR, `${slug}${ext}`)),
+  );
+}
