@@ -4,7 +4,12 @@ slug: "rmatsuba-statistic-recommendation"
 draft: false
 publishedAt: 2026-08-05
 description: "統計学を本気で学びたい大人のための厳選した5冊"
-topic: "統計学"
+topic: "数学"
+subtopic: "統計学"
+tags:
+  - "数理統計学"
+  - "多変量解析"
+  - "回帰分析"
 selector: "rmatsuba"
 books:
   - title: "現代数理統計学"

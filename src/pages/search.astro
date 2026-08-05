@@ -15,7 +15,7 @@ import { SITE } from "../config";
   <SEO
     slot="head"
     title="検索"
-    description="テーマ・選者・書名で記事を検索します。"
+    description="テーマ・タグ・選者・書名で記事を検索します。"
     canonical="/search/"
     noindex
   />
@@ -61,7 +61,7 @@ import { SITE } from "../config";
         id="search-page-input"
         type="search"
         name="q"
-        placeholder="テーマ・選者・書名で検索"
+        placeholder="テーマ・タグ・選者・書名で検索"
         class="w-full min-w-0 flex-auto border-0 bg-transparent font-sans text-[15px] text-ink focus:outline-none placeholder:text-muted"
       />
     </form>
@@ -97,6 +97,8 @@ import { SITE } from "../config";
     slug: string;
     title: string;
     topic: string;
+    subtopic: string;
+    tags: string[];
     selector: string;
     affiliation: string;
     publishedAt: string;
@@ -205,9 +207,25 @@ import { SITE } from "../config";
       });
     }
 
-    // 記事タイトル
+    // 小トピックとタグ。専用ページが無いので、ここが実質の入口になる
+    const tagNames = [
+      ...new Set([
+        ...all.map((e) => e.subtopic).filter(Boolean),
+        ...all.flatMap((e) => e.tags),
+      ]),
+    ];
+    const tags = tagNames.filter(match).map((name) =>
+      link(
+        `/search?q=${encodeURIComponent(name)}`,
+        name,
+        "",
+        `記事${all.filter((e) => e.subtopic === name || e.tags.includes(name)).length}本`,
+      ),
+    );
+
+    // 記事タイトル。タグでも引っかかるようにする
     const articles = all
-      .filter((e) => match(e.title))
+      .filter((e) => match(e.title) || match(e.subtopic) || e.tags.some(match))
       .map((e) =>
         link(`/${e.slug}`, e.title, `${e.selector}・${e.topic}`, e.publishedAt),
       );
@@ -215,12 +233,17 @@ import { SITE } from "../config";
     const sections = [
       section("記事", articles),
       section("テーマ", topics),
+      section("分野・タグ", tags),
       section("選者", selectors),
       section("書名", books),
     ].filter(Boolean) as DocumentFragment[];
 
     const count =
-      articles.length + topics.length + selectors.length + books.length;
+      articles.length +
+      topics.length +
+      tags.length +
+      selectors.length +
+      books.length;
     total.textContent = q
       ? `${count}件が見つかりました`
       : `${all.length}本の記事があります`;
@@ -229,7 +252,7 @@ import { SITE } from "../config";
       const p = document.createElement("p");
       p.className = "text-[15px] leading-[1.9] text-ink";
       p.textContent =
-        "該当する記事が見つかりませんでした。テーマ名・選者名・書名でお試しください。";
+        "該当する記事が見つかりませんでした。テーマ名・タグ・選者名・書名でお試しください。";
       results.appendChild(p);
       return;
     }

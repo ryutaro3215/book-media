@@ -27,7 +27,17 @@ if (interactive) {
 
 export async function ask(question) {
   if (interactive) return rl.question(question);
-  const line = queued.length > 0 ? queued.shift() : "";
+
+  // 入力が尽きたら止める。空文字を返し続けると、値を検証して聞き直す
+  // ループ（冊数・slug・ISBN など）が無限に回り、メモリを食い潰して落ちる
+  if (queued.length === 0) {
+    throw new Error(
+      `入力が尽きました（"${question.trim()}" に答える行がありません）。` +
+        "パイプで渡す行数が足りているか確認してください。",
+    );
+  }
+
+  const line = queued.shift();
   output.write(`${question}${line}\n`);
   return line;
 }

@@ -36,6 +36,7 @@ import {
 const ROOT = process.cwd();
 const TOPICS_PATH = path.join(ROOT, "src/data/topics.json");
 const SELECTORS_PATH = path.join(ROOT, "src/data/selectors.json");
+const TAGS_PATH = path.join(ROOT, "src/data/tags.json");
 const ARTICLES_DIR = path.join(ROOT, "src/content/interviews");
 
 // .env（GOOGLE_BOOKS_API_KEY）を読む
@@ -156,37 +157,109 @@ function yamlString(value) {
 async function main() {
   console.log("\n記事の雛形を作ります。Ctrl+C でいつでも中断できます。\n");
 
-  const topics = readJson(TOPICS_PATH);
   const selectors = readJson(SELECTORS_PATH);
 
-  // --- テーマ ---
+  // --- 大トピック ---
+  // 語彙は docs/topics-list.md 由来（学問分類）。ページが生成されるのはここだけ
+  const topics = readJson(TOPICS_PATH);
+  const topicNames = Object.keys(topics);
+
   const topicChoice = await chooseFromList(
-    "■ テーマ（お題）を選んでください",
-    Object.keys(topics).map((t) => ({ label: t, value: t })),
+    "■ 大トピックを選んでください",
+    topicNames.map((t) => ({ label: t, value: t })),
     { allowNew: true },
   );
 
   let topic;
   if (topicChoice.isNew) {
     console.log(
-      "\n  新しいテーマを追加します。\n" +
-        "  ※ このメディアの価値は「その道に詳しい人しか知らない本」にあります。\n" +
-        "    お題を立てる前に確認してください:\n" +
-        "      ・なぜこの人に聞くのか（選者の専門性が要るお題か）\n" +
-        "      ・アーカイブとして成立する粒度か（この記事1本専用にならないか）\n",
+      "\n  新しい大トピックを追加します。\n" +
+        "  ※ 大トピックは学問の大分類です（数学 / 経営学 など）。\n" +
+        "    細かい分野は小トピックかタグに入れてください。",
     );
-    topic = await askRequired("  テーマ名");
-    console.log(
-      "\n  テーマの説明文（任意・Enterでスキップ）\n" +
-        "  テーマページに表示されます。記事リストだけのページは検索エンジンに\n" +
-        "  インデックスされにくいため、書けるなら書いておくと効きます。",
-    );
-    const topicDescription = (await ask("  説明文: ")).trim();
-    topics[topic] = { description: topicDescription };
+    topic = await askRequired("  大トピック名");
+    topics[topic] = { description: "", subtopics: [] };
     writeJson(TOPICS_PATH, topics);
     console.log(`  → src/data/topics.json に「${topic}」を追加しました`);
   } else {
     topic = topicChoice.value;
+  }
+
+  // --- 小トピック（任意・1つ） ---
+  // 全体で919件あるため一覧は出さず、大トピック配下だけを見せる
+  const subtopics = topics[topic]?.subtopics ?? [];
+  let subtopic = "";
+
+  if (subtopics.length > 0) {
+    console.log(`\n■ 小トピック（任意）— 「${topic}」の中の分野`);
+    for (const [i, name] of subtopics.entries()) {
+      console.log(`  ${String(i + 1).padStart(3)}. ${name}`);
+    }
+    console.log("  n. 新しく追加する  ／  Enter で指定しない");
+
+    const answer = (await ask("  番号: ")).trim();
+    if (answer.toLowerCase() === "n") {
+      subtopic = await askRequired("  小トピック名");
+      topics[topic].subtopics = [...subtopics, subtopic].sort();
+      writeJson(TOPICS_PATH, topics);
+      console.log(`  → 「${topic}」に「${subtopic}」を追加しました`);
+    } else if (answer) {
+      const idx = Number(answer) - 1;
+      if (Number.isInteger(idx) && idx >= 0 && idx < subtopics.length) {
+        subtopic = subtopics[idx];
+      }
+    }
+  }
+
+  // --- タグ（任意・複数） ---
+  // 423件あるので一覧は出さず、入力した語で絞り込む
+  const tags = readJson(TAGS_PATH);
+  const allTags = Object.keys(tags);
+  const chosenTags = [];
+
+  console.log(
+    "\n■ タグ（任意・複数）— 小トピックより細かいもの\n" +
+      "  語を入力すると候補を絞り込みます。Enter だけで終了。\n" +
+      "  候補に無い語はそのまま新しいタグとして登録されます。",
+  );
+
+  while (true) {
+    const query = (await ask("  検索/入力（空でEnter終了）: ")).trim();
+    if (!query) break;
+
+    const hits = allTags.filter((name) => name.includes(query));
+    if (hits.length === 0) {
+      tags[query] = {};
+      writeJson(TAGS_PATH, tags);
+      allTags.push(query);
+      chosenTags.push(query);
+      console.log(`  → 新しいタグ「${query}」を追加しました`);
+      continue;
+    }
+
+    if (hits.length === 1) {
+      chosenTags.push(hits[0]);
+      console.log(`  → 「${hits[0]}」を追加`);
+      continue;
+    }
+
+    for (const [i, name] of hits.slice(0, 20).entries()) {
+      console.log(`    ${i + 1}. ${name}`);
+    }
+    const pick = (await ask("    番号（新規登録するなら n）: ")).trim();
+    if (pick.toLowerCase() === "n") {
+      tags[query] = {};
+      writeJson(TAGS_PATH, tags);
+      allTags.push(query);
+      chosenTags.push(query);
+      console.log(`  → 新しいタグ「${query}」を追加しました`);
+    } else {
+      const idx = Number(pick) - 1;
+      if (Number.isInteger(idx) && idx >= 0 && idx < hits.length) {
+        chosenTags.push(hits[idx]);
+        console.log(`  → 「${hits[idx]}」を追加`);
+      }
+    }
   }
 
   // --- 選者 ---
@@ -388,6 +461,10 @@ async function main() {
     `publishedAt: ${today}`,
     `description: ${yamlString(description)}`,
     `topic: ${yamlString(topic)}`,
+    ...(subtopic ? [`subtopic: ${yamlString(subtopic)}`] : []),
+    ...(chosenTags.length > 0
+      ? ["tags:", ...chosenTags.map((tag) => `  - ${yamlString(tag)}`)]
+      : []),
     `selector: ${yamlString(selectorId)}`,
     "books:",
   ];
