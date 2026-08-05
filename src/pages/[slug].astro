@@ -64,9 +64,12 @@ const others = (await getAllInterviews())
 ---
 
 <BaseLayout headSlot>
+  {/* 検索用タイトルがあれば <title> はそちらを使う。
+      H1・OGP・X共有は data.title のまま（誰が選んだかを伝えるため） */}
   <SEO
     slot="head"
-    title={data.title}
+    title={data.seoTitle ?? data.title}
+    ogTitle={data.title}
     description={data.description}
     ogImage={ogImage}
     type="article"

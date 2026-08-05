@@ -260,6 +260,28 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - depends: T7, T12, T13, T14
 - skills: dev-design, baseline-ui, fixing-accessibility
 
+## T19: Google検索への対応（土台の整備）
+- goal: **検索エンジンに正しくクロール・インデックスされる状態**を作る
+- 前提: メタタグ・JSON-LD・sitemap・見出し階層・モバイル対応は **T9/T11/T18 で実装済み**。
+  ここでやるのは残りの土台整備と、外部サービスへの登録・検証
+- **重要な判断**: 記事が実質1本の段階で、コンテンツSEO（キーワード設計・内部リンク最適化）
+  に投資しても効果は出ない。**検索流入は記事の蓄積が前提**であり、いま必要なのは
+  「記事が増えたときに正しく拾われる状態」を先に作っておくことだけ。
+  ここに時間をかけすぎない
+- files: `public/robots.txt` / `src/lib/jsonld.ts` / `src/components/SEO.astro`
+- acceptance:
+  - **`public/robots.txt` が存在し、sitemap の場所を示している**（現状は未作成）
+  - **BreadcrumbList の JSON-LD** を記事ページに出力する（トップ → テーマ → 記事の階層。
+    検索結果にパンくずが出るようになる）
+  - **Google リッチリザルトテストでエラーが0件**（`search.google.com/test/rich-results`）
+  - **Google Search Console にサイトを登録し、sitemap を送信した**
+    （※これをやらないと、インデックス状況もクエリも一切測定できない。
+      個人サイトは放置すると数週間インデックスされないため、送信が最速）
+  - URL の末尾スラッシュが全ページで統一されている（sitemap・canonical・内部リンクの3者が一致）
+  - Lighthouse の SEO スコアが95以上
+- depends: T9, T18
+- skills: なし
+
 ---
 
 ## 実装順序の推奨

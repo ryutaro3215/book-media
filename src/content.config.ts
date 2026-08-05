@@ -34,7 +34,28 @@ const interviews = defineCollection({
   loader: glob({ base: "./src/content/interviews", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
     title: z.string().min(1),
-    slug: z.string().min(1),
+    /**
+     * 検索結果に出る `<title>` だけを差し替える（任意）。
+     *
+     * 記事タイトルは「〈選者〉が選ぶ、〈テーマ〉の5冊」のような形で、
+     * X共有時に「誰が選んだか」を伝えるためのもの。一方で検索する人は
+     * 「〇〇 入門書」「〇〇 おすすめ 本」と打つため、語が噛み合わない。
+     * 両立させるために、検索用のタイトルだけ別に持てるようにしてある。
+     * 未指定なら title がそのまま使われる。
+     */
+    seoTitle: z.string().min(1).optional(),
+    /**
+     * URLになる。**半角小文字の英数とハイフンのみ。**
+     * 日本語を許すと共有時にURLがエンコードされて長大化する
+     * （Xでの共有が主要導線なので実害が大きい）。
+     * 一度公開したURLは変えられないため、ここで弾く。
+     */
+    slug: z
+      .string()
+      .regex(
+        /^[a-z0-9][a-z0-9-]*$/,
+        "slug は半角小文字の英数とハイフンのみ（日本語不可・先頭はハイフン以外）",
+      ),
     publishedAt: z.date(),
     /** 内容を直したときに入れる。JSON-LD の dateModified に使う */
     updatedAt: z.date().optional(),
