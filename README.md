@@ -18,9 +18,10 @@
 - [4. 画像の置き場所](#4-画像の置き場所)
 - [5. ディレクトリ構造](#5-ディレクトリ構造)
 - [6. 設定と環境変数](#6-設定と環境変数)
-- [7. デプロイ](#7-デプロイ)
-- [8. 公開前チェックリスト](#8-公開前チェックリスト)
-- [9. よくある詰まりどころ](#9-よくある詰まりどころ)
+- [7. 品質管理（CI・Linter）](#7-品質管理cilinter)
+- [8. デプロイ](#8-デプロイ)
+- [9. 公開前チェックリスト](#9-公開前チェックリスト)
+- [10. よくある詰まりどころ](#10-よくある詰まりどころ)
 
 ---
 
@@ -31,6 +32,8 @@ npm install
 npm run dev      # http://localhost:4321
 npm run build    # dist/ に静的サイトを生成
 npm run preview  # ビルド結果を確認
+
+npm run verify   # push する前にこれ。lint → 型チェック → ビルドを通す
 ```
 
 技術構成: **Astro**（静的生成）/ **Tailwind CSS v4** / **Cloudflare Pages**（無料枠で商用利用が許されるため）。
@@ -129,6 +132,7 @@ books:
 | `title` | ✅ | 文字列 | 記事タイトル |
 | `slug` | ✅ | 文字列 | URLになる。半角英数とハイフン推奨 |
 | `publishedAt` | ✅ | 日付 | `2026-08-04` 形式。並び順に使う |
+| `updatedAt` | — | 日付 | 内容を直したときに入れる。JSON-LD の `dateModified` に使われる |
 | `description` | ✅ | 文字列 | 一覧・検索・OGP・meta description。120字程度 |
 | `topic` | ✅ | 文字列 | 分野名。`/topics/<分野名>/` が自動生成される |
 | `keywords` | — | 文字列の配列 | SEO用 |
@@ -288,7 +292,56 @@ PUBLIC_CF_BEACON_TOKEN=xxxxx   # Cloudflare Web Analytics のトークン
 
 ---
 
-## 7. デプロイ
+## 7. 品質管理（CI・Linter）
+
+### コマンド
+
+| コマンド | 内容 |
+|---|---|
+| `npm run verify` | **push 前にこれを実行する。** lint → 型チェック → ビルドを順に通す |
+| `npm run lint` | Biome でチェック（フォーマット + Lint） |
+| `npm run lint:fix` | 自動修正できるものを直す |
+| `npm run format` | フォーマットだけかける |
+| `npm run typecheck` | `astro check` による型チェック |
+
+### Linter: Biome
+
+フォーマットとLintを1つでまかなう（ESLint + Prettier の代わり）。設定は `biome.json`。
+
+**`.astro` ファイルは Lint の一部を無効にしてある。** Biome は Astro のテンプレート部分を解析できず、
+テンプレート内でしか使っていない import を「未使用」と誤検出するため。
+`.ts` / `.json` / `.css` は通常どおりチェックされる。
+
+### CI: GitHub Actions
+
+`.github/workflows/ci.yml`。**push と Pull Request のたびに自動で走る。**
+
+| ステップ | 何を防ぐか |
+|---|---|
+| Lint（Biome） | コード品質のばらつき |
+| 型チェック | 存在しないフィールドの参照など |
+| **ビルド** | **記事の不備。5冊でない・ISBNの形式違い・必須項目の欠けはここで落ちる** |
+| 生成物の健全性チェック | 下記4点 |
+| 脆弱性チェック | 依存の既知の脆弱性（警告のみ。CIは落とさない） |
+
+**生成物の健全性チェックで見ているもの:**
+
+1. **外部CDNへの参照がない**こと（フォントのセルフホストが壊れていないか）
+2. **色の直書きがない**こと（`text-[#2F4A3F]` のようにトークンを迂回していないか）
+3. **書影のフォールバックが "No Image" になっていない**こと
+4. **記事数とOGP画像の数が一致**していること、sitemap・検索インデックスが生成されていること
+
+2番目は特に重要。Tailwind は任意値記法で簡単にトークンを迂回できてしまい、
+放置すると色や余白が少しずつばらついて「洗練」が壊れる。**機械的に止めている。**
+
+### CI と Cloudflare Pages の役割分担
+
+- **CI**: main にマージする**前**に落とす。壊れた記事が本番に出るのを防ぐ
+- **Cloudflare Pages**: main にマージされた**後**にビルドして公開する
+
+両方でビルドが走るが、目的が違う。
+
+## 8. デプロイ
 
 **Cloudflare Pages**（無料枠で商用利用が許されている。Vercel HobbyとGitHub Pagesは規約で商用利用を禁止しているため使えない）。
 
@@ -301,7 +354,7 @@ PUBLIC_CF_BEACON_TOKEN=xxxxx   # Cloudflare Web Analytics のトークン
 
 ---
 
-## 8. 公開前チェックリスト
+## 9. 公開前チェックリスト
 
 ### 記事を1本追加したとき
 
@@ -324,7 +377,7 @@ PUBLIC_CF_BEACON_TOKEN=xxxxx   # Cloudflare Web Analytics のトークン
 
 ---
 
-## 9. よくある詰まりどころ
+## 10. よくある詰まりどころ
 
 ### ビルドが `expected array to have >=5 items` で失敗する
 **書籍が5冊ちょうどになっていない。** これは仕様。「5冊」がこのメディアの商品性そのものなので、

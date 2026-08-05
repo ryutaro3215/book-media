@@ -1,5 +1,5 @@
-import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
+import type { APIRoute } from "astro";
 
 /**
  * 検索用の静的インデックス（requirements R17a）。
@@ -14,10 +14,7 @@ export const GET: APIRoute = async () => {
   const interviews = await getCollection("interviews");
 
   const index = interviews
-    .sort(
-      (a, b) =>
-        b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf(),
-    )
+    .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())
     .map((entry) => ({
       slug: entry.id,
       title: entry.data.title,

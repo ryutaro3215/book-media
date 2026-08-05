@@ -9,11 +9,11 @@
  * ランタイムでは一切実行されない。
  */
 import fs from "node:fs";
-import path from "node:path";
 import { createRequire } from "node:module";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
-import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
+import satori from "satori";
 
 export const OG_WIDTH = 1200;
 export const OG_HEIGHT = 630;

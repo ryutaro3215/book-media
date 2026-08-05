@@ -43,6 +43,8 @@ const interviews = defineCollection({
     title: z.string().min(1),
     slug: z.string().min(1),
     publishedAt: z.date(),
+    /** 内容を直したときに入れる。JSON-LD の dateModified に使う */
+    updatedAt: z.date().optional(),
     description: z.string().min(1),
     topic: z.string().min(1),
     keywords: z.array(z.string()).optional(),
@@ -53,5 +55,7 @@ const interviews = defineCollection({
 });
 
 export const collections = { interviews };
-export type Book = z.infer<typeof bookSchema>;
-export type Selector = z.infer<typeof selectorSchema>;
+// `z.infer<…>` は astro:content の `z` が値としてのみ公開されていて
+// 型名前空間として参照できないため、parse の戻り値から型を取り出す
+export type Book = ReturnType<typeof bookSchema.parse>;
+export type Selector = ReturnType<typeof selectorSchema.parse>;

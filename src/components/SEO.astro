@@ -47,7 +47,11 @@ const {
 const base = SITE.url;
 const abs = (p: string) => new URL(p, base).href;
 
-const pageTitle = !title ? SITE.name : noSuffix ? title : `${title} | ${SITE.name}`;
+const pageTitle = !title
+  ? SITE.name
+  : noSuffix
+    ? title
+    : `${title} | ${SITE.name}`;
 const canonicalUrl = abs(canonical ?? Astro.url.pathname);
 const imageUrl = abs(ogImage);
 ---

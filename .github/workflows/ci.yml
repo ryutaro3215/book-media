@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 同じブランチで新しい push があったら古い実行は打ち切る
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint / Typecheck / Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 依存をインストール
+        run: npm ci
+
+      - name: Lint（Biome）
+        run: npm run lint
+
+      - name: 型チェック（astro check）
+        run: npm run typecheck
+
+      # ここで記事のスキーマ検証が走る。
+      # 5冊でない・ISBNの形式違い・必須項目の欠けは、このステップで落ちる。
+      - name: ビルド（記事スキーマの検証を含む）
+        run: npm run build
+
+      - name: 生成物の健全性チェック
+        run: |
+          set -e
+
+          echo "→ 外部CDNへの参照がないこと（フォントはセルフホスト）"
+          if grep -rl "gstatic\|googleapis" dist/ >/dev/null 2>&1; then
+            echo "::error::dist/ に外部CDN（Google Fonts）への参照があります"
+            grep -rl "gstatic\|googleapis" dist/
+            exit 1
+          fi
+
+          echo "→ デザイントークンを迂回した色の直書きがないこと"
+          if grep -rEl "\[#[0-9a-fA-F]{3,6}\]" src/ >/dev/null 2>&1; then
+            echo "::error::src/ に色の直書き（Tailwindの任意値記法）があります。global.css の @theme に定義したトークンを使ってください"
+            grep -rEn "\[#[0-9a-fA-F]{3,6}\]" src/
+            exit 1
+          fi
+
+          echo "→ 書影フォールバックが 'No Image' になっていないこと"
+          if grep -rEil "no.?image" src/ >/dev/null 2>&1; then
+            echo "::error::書影のフォールバックに 'No Image' 相当の表示が含まれています（requirements で禁止）"
+            grep -rEin "no.?image" src/
+            exit 1
+          fi
+
+          echo "→ 記事ごとのOGP画像が生成されていること"
+          articles=$(find src/content/interviews -name '*.md' -o -name '*.mdx' | wc -l | tr -d ' ')
+          ogimages=$(find dist/og -name '*.png' | wc -l | tr -d ' ')
+          if [ "$articles" -ne "$ogimages" ]; then
+            echo "::error::記事数（$articles）とOGP画像の数（$ogimages）が一致しません"
+            exit 1
+          fi
+
+          echo "→ sitemap と検索インデックスが生成されていること"
+          test -f dist/sitemap-index.xml || { echo "::error::sitemap-index.xml がありません"; exit 1; }
+          test -f dist/search-index.json || { echo "::error::search-index.json がありません"; exit 1; }
+
+          echo "すべて通過しました"
+
+      - name: 依存の脆弱性チェック
+        # 脆弱性があってもCIは落とさない（警告として残す）
+        run: npm audit --audit-level=high || true

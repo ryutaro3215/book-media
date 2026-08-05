@@ -11,7 +11,7 @@
  *   - `getStaticPaths` に渡す params には**生の文字列**を渡す（Astro 側がエンコードする）。
  *   この2点を守れば、日本語のスラグでもリンクと出力パスが必ず一致する。
  */
-import { getCollection, type CollectionEntry } from "astro:content";
+import { type CollectionEntry, getCollection } from "astro:content";
 
 export type Interview = CollectionEntry<"interviews">;
 
@@ -110,7 +110,8 @@ export async function getTopicGroups(
 
   return groups.sort(
     (a, b) =>
-      b.articles.length - a.articles.length || a.name.localeCompare(b.name, "ja"),
+      b.articles.length - a.articles.length ||
+      a.name.localeCompare(b.name, "ja"),
   );
 }
 
@@ -141,7 +142,9 @@ export function toXProfileUrl(handle: string | undefined): string | null {
 /** 表示用のハンドル（先頭に `@` を付けた形） */
 export function toXHandleLabel(handle: string | undefined): string | null {
   if (!handle) return null;
-  const value = handle.trim().replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, "");
+  const value = handle
+    .trim()
+    .replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, "");
   if (!value) return null;
   return value.startsWith("@") ? value : `@${value}`;
 }

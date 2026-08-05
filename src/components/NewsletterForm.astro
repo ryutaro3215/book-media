@@ -6,9 +6,7 @@ interface Props {
   note?: string;
 }
 
-const {
-  note = "新しい記事が公開されたらお知らせします。",
-} = Astro.props;
+const { note = "新しい記事が公開されたらお知らせします。" } = Astro.props;
 
 // 外部メール配信サービスの登録フォームに直接POSTする。
 // 自サイトではメールアドレスを一切保持しない（requirements R8 / セキュリティ要件）。

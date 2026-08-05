@@ -2,8 +2,9 @@
  * 記事ごとの OGP 画像を **ビルド時に** 静的生成するエンドポイント。
  * 出力先は dist/og/<slug>.png。ランタイム生成はしない（prerender 前提）。
  */
-import type { APIRoute, GetStaticPaths } from "astro";
+
 import { getCollection } from "astro:content";
+import type { APIRoute, GetStaticPaths } from "astro";
 import { SITE } from "../../config";
 import { renderOgImage } from "../../lib/og-template";
 

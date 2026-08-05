@@ -7,7 +7,12 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "astro check",
+    "verify": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
@@ -17,5 +22,10 @@
     "astro": "^7.1.6",
     "satori": "^0.29.0",
     "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@biomejs/biome": "2.5.7",
+    "typescript": "^6.0.3"
   }
 }
