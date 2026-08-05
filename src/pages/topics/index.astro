@@ -12,8 +12,8 @@ import { getTopicGroups, toTopicHref } from "../../lib/collections";
 
 const groups = await getTopicGroups();
 
-const title = `分野一覧 | ${SITE.name}`;
-const description = `${SITE.name}で扱っている${groups.length}分野の一覧。分野ごとに、その領域に詳しい選者が選んだ5冊の記事を読めます。`;
+const title = `テーマ一覧 | ${SITE.name}`;
+const description = `${SITE.name}で扱っている${groups.length}テーマの一覧。テーマごとに、その領域に詳しい選者が選んだ5冊の記事を読めます。`;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -21,7 +21,7 @@ const description = `${SITE.name}で扱っている${groups.length}分野の一�
 
   <main class="mx-auto max-w-body px-5 pt-[72px]">
     <h1 class="m-0 mb-10 text-[clamp(26px,3.6vw,32px)] leading-[1.5] font-bold">
-      分野一覧
+      テーマ一覧
     </h1>
 
     {
@@ -42,7 +42,7 @@ const description = `${SITE.name}で扱っている${groups.length}分野の一�
           ))}
         </ul>
       ) : (
-        <p class="text-muted">分野はまだありません。</p>
+        <p class="text-muted">テーマはまだありません。</p>
       )
     }
   </main>

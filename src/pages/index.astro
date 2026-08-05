@@ -63,9 +63,14 @@ const topics = await getTopicGroups();
             articles.map((entry) => (
               <a
                 href={toArticleHref(entry)}
-                class="flex w-[236px] flex-none flex-col gap-3 text-inherit no-underline hover:text-inherit"
+                class="group flex w-[236px] flex-none flex-col gap-3 text-inherit no-underline hover:text-inherit"
               >
-                <div class="h-[150px] w-[236px] overflow-hidden bg-cover-placeholder">
+                {/* サムネイルはOGP画像を流用しており背景が白いため、
+                    罫線がないとページ背景に溶けてカードの境界が分からなくなる。
+                    「テーマから探す」「選者から探す」のカードと同じ視覚言語に揃える */}
+                <div
+                  class="h-[150px] w-[236px] overflow-hidden border border-rule bg-cover-placeholder transition-colors group-hover:border-brand"
+                >
                   <img
                     src={resolveThumbnail(entry.data.slug)}
                     alt=""
@@ -89,14 +94,14 @@ const topics = await getTopicGroups();
         </div>
       </section>
 
-      {/* 分野から探す */}
+      {/* テーマから探す */}
       {
         topics.length > 0 && (
           <section class="mb-16">
             <div class="mb-6 flex items-center gap-3.5">
               <span class="h-[22px] w-1 flex-none bg-brand" aria-hidden="true" />
               <h2 class="m-0 text-[26px] leading-[1.5] font-bold">
-                分野から探す
+                テーマから探す
               </h2>
             </div>
             <div class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">

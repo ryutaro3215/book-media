@@ -11,7 +11,7 @@ import { SITE } from "../config";
 
 <BaseLayout
   title={`検索 | ${SITE.name}`}
-  description="分野・選者・書名で記事を検索します。"
+  description="テーマ・選者・書名で記事を検索します。"
 >
   <SiteHeader />
 
@@ -168,7 +168,7 @@ import { SITE } from "../config";
 
     const sections = [
       section("記事", articles),
-      section("分野", topics),
+      section("テーマ", topics),
       section("選者", selectors),
       section("書名", books),
     ].filter(Boolean) as DocumentFragment[];
@@ -183,7 +183,7 @@ import { SITE } from "../config";
       const p = document.createElement("p");
       p.className = "text-[15px] leading-[1.9] text-ink";
       p.textContent =
-        "該当する記事が見つかりませんでした。分野名・選者名・書名でお試しください。";
+        "該当する記事が見つかりませんでした。テーマ名・選者名・書名でお試しください。";
       results.appendChild(p);
       return;
     }
