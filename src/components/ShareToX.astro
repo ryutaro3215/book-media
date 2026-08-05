@@ -1,0 +1,72 @@
+---
+/**
+ * 記事をXに共有するボタン（requirements R18）。
+ *
+ * business-plan.md では「選者本人によるX共有」を唯一の流入導線と定めており、
+ * 成功指標も「X共有率50%」。共有の摩擦を下げることが導線の強化そのものになる。
+ *
+ * ## 外部スクリプトを使わない理由（R18a）
+ * Xの公式シェアウィジェットは script を読み込むが、それをすると
+ *   ① 読者の閲覧行動がXに送信される
+ *   ② 表示が遅くなる
+ *   ③ 「外部CDNへのリクエスト0件」という既存の方針と矛盾する
+ * intent URL は素のリンクなので、追加のリクエストが一切発生しない。
+ *
+ * ## 共有文は記事タイトルのみ（案A）
+ * 記事タイトルは `〈選者名〉が選ぶ、〈テーマ〉の5冊` の型なので、
+ * **主語が選者名になっている**。差別化の中核が「選者の実名と専門性」である以上、
+ * 共有文から選者名が消えないことが重要。
+ * ハッシュタグは入れない（サービス名が未確定であり、無関係なタグは共有者に嫌われる）。
+ */
+import { SITE } from "../config";
+
+interface Props {
+  /** 記事タイトル。そのまま共有文になる */
+  title: string;
+  /** 記事のパス（`/slug/`）。絶対URLに変換して共有する */
+  path: string;
+  /** ボタンの文言。文脈によって変える */
+  label?: string;
+  class?: string;
+}
+
+const {
+  title,
+  path,
+  label = "Xで共有する",
+  class: className = "",
+} = Astro.props;
+
+// 相対パスのまま共有すると共有先で壊れるため、必ず絶対URLにする
+const url = new URL(path, SITE.url).href;
+
+const intent = new URL("https://x.com/intent/post");
+intent.searchParams.set("text", title);
+intent.searchParams.set("url", url);
+---
+
+<a
+  href={intent.href}
+  target="_blank"
+  rel="noopener noreferrer"
+  class:list={[
+    "inline-flex items-center gap-2 rounded-full border border-rule px-4 py-2",
+    "text-[13px] font-medium text-ink no-underline",
+    "hover:border-ink hover:text-ink",
+    className,
+  ]}
+>
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+    class="flex-none"
+  >
+    <path
+      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+    ></path>
+  </svg>
+  {label}
+</a>

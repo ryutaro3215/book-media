@@ -229,6 +229,19 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - depends: T7
 - skills: dev-design
 
+## T17: Xへの共有ボタン
+- goal: 記事を X に共有する摩擦を下げる。**選者本人が共有したくなる状態**を作る（成功指標「X共有率50%」に直結）
+- files: `src/components/ShareToX.astro` / `src/pages/[slug].astro`
+- acceptance:
+  - 記事ページに共有ボタンがあり、押すと X の投稿画面が**別タブで開く**
+  - 投稿画面に「記事タイトル・選者名・記事の絶対URL」が**事前入力されている**
+  - **外部スクリプトを読み込んでいない**（`grep -r "platform.twitter.com\|widgets.js" src/ dist/` が0件）。intent URL のみで実装する
+  - 共有ボタンが**記事末尾の1箇所だけ**にある（requirements R18b）
+  - URL が `SITE.url` を基準にした絶対URLである（相対パスだと共有先で壊れる）
+  - ボタンにアクセント色を使っていない（アクセントはリンクとメール登録ボタンのみ。design-brief.md の制約）
+- depends: T6
+- skills: dev-design
+
 ---
 
 ## 実装順序の推奨

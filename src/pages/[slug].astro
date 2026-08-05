@@ -10,6 +10,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import BookCard from "../components/BookCard.astro";
 import NewsletterForm from "../components/NewsletterForm.astro";
+import ShareToX from "../components/ShareToX.astro";
 import { articleJsonLd } from "../lib/jsonld";
 import {
   getAllInterviews,
@@ -175,10 +176,19 @@ const others = (await getAllInterviews())
         }
       </div>
     </div>
+
+  </section>
+
+  {/* 共有導線（requirements R18b）。記事末尾の1箇所に集約している。
+      選者も記事を最後まで読んでから共有するため、ここで読者・選者の
+      両方に届く。プロフィール欄には既に「Xでフォローする」があり、
+      同種のリンクを並べると散らかる */}
+  <section class="mx-auto mt-12 max-w-body px-5">
+    <ShareToX title={data.title} path={href} label="この記事をXで共有する" />
   </section>
 
   {/* メール登録 */}
-  <section class="mx-auto mt-16 max-w-body px-5">
+  <section class="mx-auto mt-12 max-w-body px-5">
     <NewsletterForm />
   </section>
 
