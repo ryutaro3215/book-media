@@ -1,0 +1,20 @@
+{
+  // Cloudflare へのデプロイ設定。
+  //
+  // このサイトは**完全な静的サイト**で、サーバーサイド処理を持たない。
+  // したがって Worker のスクリプト（main）は無く、dist/ をそのまま配信するだけ。
+  //
+  // このファイルが無いと `wrangler deploy` が「設定なし」と判断して
+  // 自動セットアップを走らせ、`astro add cloudflare` でアダプタを追加してしまう。
+  // すると OGP画像生成に使っている @resvg/resvg-js（ネイティブバイナリ）を
+  // Worker ランタイム向けにバンドルしようとしてビルドが失敗する。
+  // resvg も satori も **ビルド時にしか動かない**ので、アダプタは不要。
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "book-media",
+  "compatibility_date": "2026-08-05",
+  "assets": {
+    "directory": "./dist",
+    // 存在しないURLでは dist/404.html を返す
+    "not_found_handling": "404-page"
+  }
+}
