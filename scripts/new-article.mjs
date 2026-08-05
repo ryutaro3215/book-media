@@ -20,57 +20,25 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import process, { stdin as input, stdout as output } from "node:process";
-import readline from "node:readline/promises";
+import process from "node:process";
+import {
+  ask,
+  askRequired,
+  chooseFromList,
+  closeInput,
+  loadEnv,
+  promptSelector,
+  readJson,
+  writeJson,
+} from "./lib/prompt.mjs";
 
 const ROOT = process.cwd();
 const TOPICS_PATH = path.join(ROOT, "src/data/topics.json");
 const SELECTORS_PATH = path.join(ROOT, "src/data/selectors.json");
 const ARTICLES_DIR = path.join(ROOT, "src/content/interviews");
 
-// --- .env（GOOGLE_BOOKS_API_KEY） --------------------------------------
-const envPath = path.join(ROOT, ".env");
-if (fs.existsSync(envPath)) {
-  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-    if (m && !process.env[m[1]]) {
-      process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
-    }
-  }
-}
-
-/**
- * 対話は readline を使うが、**パイプ入力のときは先に全行を読み込む**。
- * readline はパイプが EOF に達すると close し、以降の question() が
- * 解決されないまま終了してしまうため（テストや自動実行が黙って途中で止まる）。
- */
-const interactive = input.isTTY;
-
-let rl = null;
-let queued = [];
-
-if (interactive) {
-  rl = readline.createInterface({ input, output });
-} else {
-  const chunks = [];
-  for await (const chunk of input) chunks.push(chunk);
-  queued = Buffer.concat(chunks).toString("utf8").split("\n");
-}
-
-async function ask(question) {
-  if (interactive) return rl.question(question);
-  const line = queued.length > 0 ? queued.shift() : "";
-  output.write(`${question}${line}\n`);
-  return line;
-}
-
-function closeInput() {
-  rl?.close();
-}
-
-const readJson = (p) => JSON.parse(fs.readFileSync(p, "utf8"));
-const writeJson = (p, data) =>
-  fs.writeFileSync(p, `${JSON.stringify(data, null, 2)}\n`);
+// .env（GOOGLE_BOOKS_API_KEY）を読む
+loadEnv(path.join(ROOT, ".env"));
 
 // ---------------------------------------------------------------- 書誌取得
 
@@ -163,46 +131,6 @@ async function fetchBook(isbn) {
 
 // ---------------------------------------------------------------- 入力補助
 
-async function askRequired(label, initial = "") {
-  while (true) {
-    const suffix = initial ? `（現在: ${initial} / Enterでそのまま）` : "";
-    const answer = (await ask(`${label}${suffix}: `)).trim();
-    if (answer) return answer;
-    if (initial) return initial;
-    console.log("  ※ 必須です");
-  }
-}
-
-async function chooseFromList(
-  label,
-  items,
-  { allowNew = false, newLabel = "新規に追加する" } = {},
-) {
-  console.log(`\n${label}`);
-  for (const [i, item] of items.entries()) {
-    console.log(`  ${i + 1}. ${item.label}`);
-  }
-  if (allowNew) console.log(`  n. ${newLabel}`);
-
-  while (true) {
-    const answer = (await ask("番号を入力: ")).trim();
-    if (allowNew && answer.toLowerCase() === "n") return { isNew: true };
-    const idx = Number(answer) - 1;
-    if (Number.isInteger(idx) && idx >= 0 && idx < items.length) {
-      return { isNew: false, value: items[idx].value };
-    }
-    console.log("  ※ 一覧の番号を入力してください");
-  }
-}
-
-function toSlugCandidate(text) {
-  return text
-    .normalize("NFKC")
-    .toLowerCase()
-    .replace(/[^\w一-龠ぁ-んァ-ヴー]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 /** YAML のブロックスカラー（|）で安全に書く */
 function block(text, indent) {
   const pad = " ".repeat(indent);
@@ -268,41 +196,13 @@ async function main() {
   let selectorId;
   if (selectorChoice.isNew) {
     console.log("\n  新しい選者を登録します。");
-    const name = await askRequired("  氏名");
-    selectorId = await askRequired(
-      "  ID（半角英数とハイフン）",
-      toSlugCandidate(name),
-    );
-    const reading = (await ask("  ふりがな（任意）: ")).trim();
-    const affiliation = await askRequired("  所属");
-    const bio = await askRequired("  略歴（1〜2文）");
-    console.log(
-      "\n  ※ 「なぜこの人の推薦を信じるのか」の根拠になります。\n" +
-        "    肩書きや形式は問いません（研究・仕事・発信・読書歴など）。\n" +
-        "    読者が「この人の話なら聞いてみたい」と思える材料を書いてください。",
-    );
-    const credentials = await askRequired("  この人が詳しい理由");
-    const x = (await ask("  Xのハンドル（@なし・任意）: ")).trim();
-    console.log(
-      "\n  顔写真（任意）。public/selectors/ に画像を置き、ファイル名を入力してください。\n" +
-        "  例: matsuba.jpg  ／ 未登録なら頭文字のアバターが表示されます",
-    );
-    const avatar = (await ask("  ファイル名: ")).trim();
-    const site = (await ask("  サイトURL（任意）: ")).trim();
-
-    selectors[selectorId] = {
-      name,
-      ...(reading ? { reading } : {}),
-      affiliation,
-      bio,
-      credentials,
-      ...(avatar ? { avatar } : {}),
-      ...(x || site
-        ? { links: { ...(x ? { x } : {}), ...(site ? { site } : {}) } }
-        : {}),
-    };
+    const created = await promptSelector(Object.keys(selectors));
+    selectorId = created.id;
+    selectors[selectorId] = created.selector;
     writeJson(SELECTORS_PATH, selectors);
-    console.log(`  → src/data/selectors.json に「${name}」を追加しました`);
+    console.log(
+      `  → src/data/selectors.json に「${created.selector.name}」を追加しました`,
+    );
   } else {
     selectorId = selectorChoice.value;
   }

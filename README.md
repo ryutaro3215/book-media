@@ -36,6 +36,7 @@ npm run preview  # ビルド結果を確認
 npm run verify   # push する前にこれ。lint → 型チェック → ビルドを通す
 npm run check:links  # 内部リンクが実在するページを指しているか検査する
 
+npm run new:selector                     # 選者をマスタに登録・編集する（対話式）
 npm run new:article                      # 記事を作る（対話式・書誌を自動取得）
 npm run check:isbn -- 9784150504106 …    # ISBNの書誌が取れるか実測する
 ```
@@ -195,7 +196,19 @@ books:
 | `links.x` | — | Xのハンドル。**`@` は付けない**（`yamada_t` と書く） |
 | `links.site` | — | 個人サイト等のURL |
 
-**登録されていないIDを書くとビルドが失敗する。** 新規登録は `npm run new:article` の中でできる。
+**登録されていないIDを書くとビルドが失敗する。**
+
+### 選者の登録・編集
+
+```bash
+npm run new:selector
+```
+
+新規登録と、既存選者の編集ができる。**所属や略歴が変わったらここから直せば全記事に反映される。**
+記事作成（`npm run new:article`）の途中でも新規登録できるが、選者はマスタなので
+**記事を書く前に単独で登録しておける。**
+
+> **IDは変更できない。** 変えるとURL（`/selectors/<id>/`）が変わり、公開済みのリンクが切れる。
 
 #### `credentials` を必須にしている理由
 

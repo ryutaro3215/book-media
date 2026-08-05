@@ -15,7 +15,8 @@
     "verify": "npm run lint && npm run typecheck && npm run build && npm run check:links",
     "check:isbn": "node scripts/check-isbn.mjs",
     "new:article": "node scripts/new-article.mjs",
-    "check:links": "node scripts/check-links.mjs"
+    "check:links": "node scripts/check-links.mjs",
+    "new:selector": "node scripts/new-selector.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
