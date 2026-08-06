@@ -10,6 +10,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import YAML from "yaml";
 
 export const ARTICLES_DIR = path.join(process.cwd(), "src/content/interviews");
 
@@ -40,11 +41,11 @@ export function isValidSlug(slug) {
 }
 
 /**
- * frontmatter + 本文の雛形を組み立てて文字列を返す。
+ * frontmatter + 本文を組み立てて文字列を返す。
  *
- * 長文（description / reason / whyBuried / 導入文）は `TODO:` のまま出す。
- * ターミナルでもブラウザのフォームでも長文は書きにくく、書き直しはもっと辛い。
- * **エディタで書くのが一番速い**ので、ここでは枠だけ作る。
+ * 長文（description / reason / whyBuried / 本文）は、渡されなければ
+ * `TODO:` のまま出す。`draft: true` のあいだは `TODO:` が残っていても
+ * ビルドが通るので、途中の状態でも保存できる。
  */
 export function buildArticle(data) {
   const {
@@ -59,6 +60,11 @@ export function buildArticle(data) {
     books,
     warnings = [],
     publishedAt = new Date().toISOString().slice(0, 10),
+    updatedAt,
+    /** frontmatter の外の Markdown。導入文とまとめはここに一続きで書く */
+    body,
+    /** 既存記事を編集して保存するときは、draft の値を保つ */
+    draft = true,
   } = data;
 
   const lines = [
@@ -67,8 +73,9 @@ export function buildArticle(data) {
     ...(seoTitle ? [`seoTitle: ${yamlString(seoTitle)}`] : []),
     `slug: ${yamlString(slug)}`,
     "# 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される",
-    "draft: true",
+    `draft: ${draft}`,
     `publishedAt: ${publishedAt}`,
+    ...(updatedAt ? [`updatedAt: ${updatedAt}`] : []),
     `description: ${yamlString(description || "TODO: 検索結果に出る100〜120字の説明")}`,
     `topic: ${yamlString(topic)}`,
     ...(subtopic ? [`subtopic: ${yamlString(subtopic)}`] : []),
@@ -106,14 +113,82 @@ export function buildArticle(data) {
     lines.push("");
   }
 
-  lines.push(
-    `<!-- 導入文をここに書く。選者がどういう人で、この${books.length}冊で何が見えるのか。3〜5段落 -->`,
-  );
-  lines.push("");
-  lines.push("<!-- まとめもここに書く -->");
+  // 本文が渡されていればそれを、無ければ何を書く場所かの案内を置く
+  if (body?.trim()) {
+    lines.push(body.trim());
+  } else {
+    lines.push(
+      `<!-- 導入文をここに書く。選者がどういう人で、この${books.length}冊で何が見えるのか。3〜5段落 -->`,
+    );
+    lines.push("");
+    lines.push("<!-- まとめもここに書く -->");
+  }
   lines.push("");
 
   return lines.join("\n");
+}
+
+/**
+ * 既存記事を読む。**編集して保存し直すために使う。**
+ *
+ * `mtimeMs` を一緒に返すのが要点。保存するときにこの値と突き合わせて、
+ * **読み込んだあとにファイルが外で変わっていたら気づけるようにする**
+ * （ビルドが落ちてエディタで直した / git pull した、など）。
+ * 失うのが原稿そのものなので、黙って上書きさせない。
+ */
+export function readArticle(slug) {
+  const filePath = path.join(ARTICLES_DIR, `${slug}.md`);
+  const raw = fs.readFileSync(filePath, "utf8");
+
+  const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (!m) throw new Error(`${slug}.md の frontmatter を読めません`);
+
+  return {
+    // 日付は yaml が文字列のまま返す（Date にすると保存時に表記が変わる）
+    data: YAML.parse(m[1]) ?? {},
+    body: m[2] ?? "",
+    mtimeMs: fs.statSync(filePath).mtimeMs,
+  };
+}
+
+/** 記事の一覧。編集する記事を選ぶために使う */
+export function listArticles() {
+  if (!fs.existsSync(ARTICLES_DIR)) return [];
+  return fs
+    .readdirSync(ARTICLES_DIR)
+    .filter((f) => f.endsWith(".md"))
+    .map((f) => {
+      const slug = f.replace(/\.md$/, "");
+      try {
+        const { data } = readArticle(slug);
+        return {
+          slug: data.slug ?? slug,
+          file: slug,
+          title: data.title ?? slug,
+          draft: data.draft !== false,
+          publishedAt: String(data.publishedAt ?? ""),
+          topic: data.topic ?? "",
+          books: Array.isArray(data.books) ? data.books.length : 0,
+        };
+      } catch {
+        // 壊れた記事があっても一覧そのものは出す
+        return {
+          slug,
+          file: slug,
+          title: `（読めません）${slug}`,
+          broken: true,
+        };
+      }
+    })
+    .sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
+}
+
+/** 読み込んだあとに外でファイルが変わっていないか */
+export function isStale(slug, knownMtimeMs) {
+  const filePath = path.join(ARTICLES_DIR, `${slug}.md`);
+  if (!fs.existsSync(filePath)) return false;
+  // 保存のたびに mtime は変わる。1ms 単位の比較だと誤検知するので少し緩める
+  return fs.statSync(filePath).mtimeMs - Number(knownMtimeMs ?? 0) > 1;
 }
 
 /**

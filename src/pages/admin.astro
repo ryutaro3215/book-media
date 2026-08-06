@@ -10,10 +10,13 @@
  *   - **一度進むと戻れない。**打ち間違えたら最初からやり直しになる
  * どちらも「画面がある」だけで解けるので、frontmatter の入力だけを画面にした。
  *
- * ## 本文はここで書かない（段階1）
- * 長文は結局エディタで書くのが速く、書き直しはもっと速い。
- * ここは `TODO:` の枠まで作って終わり、続きはエディタで書く。
- * 本文とプレビューは段階2・3で足すか判断する。
+ * ## 長文もここで書く（段階2）
+ * description / 選書理由 / 知られていない理由 / 本文を、この画面で書けるようにした。
+ * 既存の記事を開いて直せるので、書きかけのまま閉じてよい。
+ *
+ * **導入文とまとめは1つの入力欄**にしてある。記事ページは frontmatter の外の
+ * Markdown を**一続きで書籍カードの上に描画する**（src/pages/[slug].astro）ので、
+ * 2つに分けても保存時に1つへ戻すしかなく、往復で内容が壊れる。
  *
  * ## 本番に出さない
  *   1. 開発時以外は中身を描画しない（下の `import.meta.env.DEV`）
@@ -54,10 +57,29 @@ const selectorList = Object.entries(
           <header class="head">
             <h1>記事をつくる</h1>
             <p class="note">
-              ローカル専用の画面です。frontmatter だけ作ります。
-              選書理由・導入文は、できたファイルをエディタで開いて書いてください。
+              ローカル専用の画面です。長文もここで書けます。
+              書きかけの記事は上の一覧から開き直してください。
             </p>
           </header>
+
+          <section class="card">
+            <h2>編集する記事</h2>
+            <div class="row">
+              <label class="field">
+                <span>書きかけ・公開済みの記事</span>
+                <select id="open-article">
+                  <option value="">新しく作る</option>
+                </select>
+              </label>
+              <div class="field">
+                <span>&nbsp;</span>
+                <button type="button" id="reload" class="ghost">
+                  一覧を読み直す
+                </button>
+              </div>
+            </div>
+            <p id="editing-note" class="note" />
+          </section>
 
           <section class="card">
             <h2>1. 誰が選ぶか</h2>
@@ -149,10 +171,13 @@ const selectorList = Object.entries(
               <span>説明（description）</span>
               <textarea
                 id="description"
-                rows="2"
+                rows="3"
+                data-count="100,120"
                 placeholder="空欄なら TODO: のまま出力します"
               />
-              <small>検索結果に出る100〜120字。あとで書いても大丈夫です</small>
+              <small>
+                検索結果・一覧・OGPに出ます。<b class="counter" />
+              </small>
             </label>
           </section>
 
@@ -172,9 +197,25 @@ const selectorList = Object.entries(
             </p>
           </section>
 
+          <section class="card">
+            <h2>5. 本文</h2>
+            <p class="note">
+              書籍カードの<strong>上</strong>に置かれます。導入文もまとめも、
+              ここに一続きで書きます（記事ページがそう描画するため、分けられません）。
+              見出し（<code>## </code>）・引用（<code>&gt; </code>）が使えます。
+            </p>
+            <label class="field">
+              <textarea id="body" rows="14" data-count="600," />
+              <small>
+                選者がどういう人で、この数冊で何が見えるのか。3〜5段落。
+                <b class="counter" />
+              </small>
+            </label>
+          </section>
+
           <div class="actions">
             <button type="button" id="save" class="primary">
-              記事ファイルをつくる
+              保存する
             </button>
             <p id="status" class="status" />
           </div>
@@ -189,6 +230,42 @@ const selectorList = Object.entries(
       if (enabled) {
         const $ = (id) => document.getElementById(id);
         const chosenTags = new Set();
+
+        /**
+         * 編集中の記事。空なら新規。
+         * `mtimeMs` は読み込んだ時点の更新時刻で、保存時にサーバーへ返して
+         * **外で変わっていないか**を見てもらう。`draft` と `publishedAt` を
+         * 抱えているのは、編集で公開状態と公開日を巻き戻さないため
+         * （公開済みの記事が下書きに戻る事故を一度やっている）。
+         */
+        let editing = null;
+
+        // --- 文字数 ------------------------------------------------------
+        // 目安であって制約ではない。範囲外でも色を変えるだけで保存は妨げない。
+        // 何字が適量かは書いてみないと分からず、弾くと書く手が止まる
+        function updateCount(el) {
+          const [min, max] = (el.dataset.count ?? "").split(",");
+          const n = el.value.trim().length;
+          const counter = el.parentElement?.querySelector("small .counter");
+          if (!counter) return;
+          counter.textContent = max
+            ? `${n}字 / ${min}〜${max}`
+            : `${n}字 / ${min}字以上が目安`;
+          const under = n > 0 && n < Number(min);
+          const over = max && n > Number(max);
+          counter.classList.toggle("off", Boolean(under || over));
+        }
+
+        function updateAllCounts() {
+          for (const el of document.querySelectorAll("textarea[data-count]")) {
+            updateCount(el);
+          }
+        }
+
+        // 本の行は後から増える。行ごとに配線すると足し忘れるので委譲でまとめる
+        document.addEventListener("input", (e) => {
+          if (e.target.matches?.("textarea[data-count]")) updateCount(e.target);
+        });
 
         // --- 分野 --------------------------------------------------------
         // 小トピックは919件ある。大トピックを選んだ時点で配下だけに絞る
@@ -323,6 +400,19 @@ const selectorList = Object.entries(
               <label class="field"><span>出版社</span><input class="bpublisher" type="text" /></label>
               <label class="field"><span>刊行年</span><input class="byear" type="number" /></label>
             </div>
+            <label class="field">
+              <span>選書理由</span>
+              <textarea class="breason" rows="6" data-count="300,600"></textarea>
+              <small>なぜこの本を薦めるのか。<b class="counter"></b></small>
+            </label>
+            <label class="field buried-field" hidden>
+              <span>なぜ知られていないのか</span>
+              <textarea class="bburied" rows="4" data-count="150,300"></textarea>
+              <small>
+                絶版・専門書として出た・訳が古い・分野をまたぐので棚に置かれにくい など。
+                <b class="counter"></b>
+              </small>
+            </label>
             <p class="warn"></p>`;
           return el;
         }
@@ -397,11 +487,158 @@ const selectorList = Object.entries(
           }
         });
 
+        // 印は1冊だけ。印の付いていない行に理由欄を出しても書く場所が無いので隠す
+        function syncBuriedFields() {
+          for (const row of document.querySelectorAll(".book")) {
+            const on = row.querySelector('input[name="buried"]').checked;
+            row.querySelector(".buried-field").hidden = !on;
+          }
+        }
+        $("books").addEventListener("change", (e) => {
+          if (e.target.name === "buried") syncBuriedFields();
+        });
+
         // 3冊が下限なので、最初から3冊置いておく
         for (let i = 0; i < 3; i++) addBook();
+        updateAllCounts();
+
+        // --- 記事を開く --------------------------------------------------
+        // 長文を書くには「書きかけを開き直せる」ことが要る。段階1の画面は
+        // 新規ファイルを作るだけで、既存の記事を読まなかった
+
+        /** 保存すると `TODO:` の枠が入る。開いたときは未記入として扱う */
+        function unTodo(value) {
+          const v = String(value ?? "");
+          return v.startsWith("TODO:") ? "" : v;
+        }
+
+        /**
+         * 本文から雛形コメントだけを落とす。
+         * 残したまま開くと、書くたびに手で消すことになる。
+         * **「要確認」コメントは残す** — あれは人が現物と照らして消すもの
+         */
+        function stripPlaceholders(md) {
+          return String(md ?? "")
+            .replace(/<!--\s*導入文をここに書く[\s\S]*?-->/g, "")
+            .replace(/<!--\s*まとめもここに書く[\s\S]*?-->/g, "")
+            .trim();
+        }
+
+        function resetForm() {
+          editing = null;
+          $("title").value = "";
+          $("seoTitle").value = "";
+          $("slug").value = "";
+          $("description").value = "";
+          $("body").value = "";
+          $("topic").value = "";
+          $("topic").dispatchEvent(new Event("change"));
+          chosenTags.clear();
+          renderChosenTags();
+          renderTagResults();
+          $("books").innerHTML = "";
+          for (let i = 0; i < 3; i++) addBook();
+          $("editing-note").textContent = "";
+          $("status").className = "status";
+          $("status").textContent = "";
+          updateAllCounts();
+        }
+
+        async function loadArticleList() {
+          const res = await fetch("/api/articles.json", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: "{}",
+          });
+          const { articles } = await res.json();
+          const keep = $("open-article").value;
+          $("open-article").innerHTML =
+            '<option value="">新しく作る</option>' +
+            articles
+              .map(
+                (a) =>
+                  `<option value="${a.file}">${a.draft ? "[下書き] " : ""}${a.title}（${a.publishedAt}）</option>`,
+              )
+              .join("");
+          $("open-article").value = keep;
+        }
+
+        async function openArticle(file) {
+          const res = await fetch("/api/article.json", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ slug: file }),
+          });
+          if (!res.ok) {
+            $("status").className = "status bad";
+            $("status").textContent = `開けませんでした（${file}）`;
+            return;
+          }
+          const { data, body, mtimeMs } = await res.json();
+
+          $("selector").value = data.selector ?? "";
+          $("topic").value = data.topic ?? "";
+          // 小トピックの候補は大トピックで作られる。先に change を通さないと
+          // option が無く、値を入れても空に落ちる
+          $("topic").dispatchEvent(new Event("change"));
+          $("subtopic").value = data.subtopic ?? "";
+
+          chosenTags.clear();
+          for (const t of data.tags ?? []) chosenTags.add(t);
+          renderChosenTags();
+          renderTagResults();
+
+          $("title").value = data.title ?? "";
+          $("seoTitle").value = data.seoTitle ?? "";
+          $("slug").value = data.slug ?? file;
+          $("description").value = unTodo(data.description);
+          $("body").value = stripPlaceholders(body);
+
+          $("books").innerHTML = "";
+          for (const b of data.books ?? []) {
+            const row = bookRow(document.querySelectorAll(".book").length);
+            $("books").appendChild(row);
+            row.querySelector(".isbn").value = b.isbn ?? "";
+            row.querySelector(".btitle").value = unTodo(b.title);
+            row.querySelector(".bauthor").value = unTodo(b.author);
+            row.querySelector(".btranslator").value = b.translator ?? "";
+            row.querySelector(".bpublisher").value = unTodo(b.publisher);
+            row.querySelector(".byear").value = b.year ?? "";
+            row.querySelector(".breason").value = unTodo(b.reason);
+            if (b.whyBuried) {
+              row.querySelector('input[name="buried"]').checked = true;
+              row.querySelector(".bburied").value = unTodo(b.whyBuried);
+            }
+          }
+          renumber();
+          syncBuriedFields();
+          updateAllCounts();
+
+          editing = {
+            file,
+            mtimeMs,
+            draft: data.draft !== false,
+            publishedAt: String(data.publishedAt ?? ""),
+          };
+          const state = editing.draft ? "下書き" : "公開済み";
+          const renamed =
+            (data.slug ?? file) !== file
+              ? `（保存先は ${data.slug}.md になります）`
+              : "";
+          $("editing-note").textContent = `${file}.md を編集中（${state}）${renamed}`;
+          $("status").className = "status";
+          $("status").textContent = "";
+        }
+
+        $("open-article").addEventListener("change", (e) => {
+          if (e.target.value) openArticle(e.target.value);
+          else resetForm();
+        });
+        $("reload").addEventListener("click", loadArticleList);
+        loadArticleList();
 
         // --- 保存 --------------------------------------------------------
-        async function save(overwrite) {
+        async function save(overwrite, force) {
           const status = $("status");
           const buriedIndex = Number(
             document.querySelector('input[name="buried"]:checked')?.value ?? -1,
@@ -410,6 +647,7 @@ const selectorList = Object.entries(
           const books = [...document.querySelectorAll(".book")].map((row, i) => {
             const get = (cls) => row.querySelector(cls).value.trim();
             const warn = row.querySelector(".warn").textContent;
+            const buried = get(".bburied");
             return {
               isbn: get(".isbn").replace(/[^\d]/g, ""),
               title: get(".btitle"),
@@ -417,9 +655,15 @@ const selectorList = Object.entries(
               translator: get(".btranslator"),
               publisher: get(".bpublisher"),
               year: get(".byear"),
+              // 空なら送らない。buildArticle が `TODO:` の枠を入れてくれる。
+              // 空文字を送ると枠ごと消え、draft: false で min(1) に引っかかる
+              reason: get(".breason") || undefined,
+              // whyBuried だけは事情が違う。**値が無いと項目ごと出力されない**
+              // ので、空のまま送ると「知る人ぞ知る本」の印そのものが消える
               whyBuried:
                 i === buriedIndex
-                  ? "TODO: この本がなぜ知られていないのかを150〜300字で書く"
+                  ? buried ||
+                    "TODO: この本がなぜ知られていないのかを150〜300字で書く"
                   : undefined,
               _warn: warn.startsWith("要確認") ? warn : "",
             };
@@ -429,17 +673,29 @@ const selectorList = Object.entries(
             title: $("title").value.trim(),
             seoTitle: $("seoTitle").value.trim(),
             slug: $("slug").value.trim(),
-            description: $("description").value.trim(),
+            description: $("description").value.trim() || undefined,
             topic: $("topic").value,
             subtopic: $("subtopic").value,
             tags: [...chosenTags],
             selector: $("selector").value,
             books: books.map(({ _warn, ...b }) => b),
+            body: $("body").value.trim() || undefined,
             // 取得時に食い違いが出た箇所は、ファイル冒頭のコメントに残す
             warnings: books
               .map((b, i) => (b._warn ? `${i + 1}冊目 — ${b._warn}` : null))
               .filter(Boolean),
             overwrite,
+            force,
+            // 編集では公開状態・公開日をそのまま返す。ここを送らないと
+            // 公開済みの記事が draft: true に戻り、サイトから消える
+            editing: Boolean(editing),
+            mtimeMs: editing?.mtimeMs,
+            draft: editing ? editing.draft : undefined,
+            publishedAt: editing ? editing.publishedAt : undefined,
+            // 直した日は編集のときだけ入れる。新規に更新日は要らない
+            updatedAt: editing
+              ? new Date().toISOString().slice(0, 10)
+              : undefined,
           };
 
           status.className = "status";
@@ -452,9 +708,24 @@ const selectorList = Object.entries(
           });
           const data = await res.json();
 
+          if (res.status === 409 && data.stale) {
+            // 読み込んだあとに外で変わっている。上書きすると相手の原稿が消える
+            if (
+              confirm(
+                "読み込んだあとにファイルが変わっています。上書きしますか？",
+              )
+            ) {
+              await save(overwrite, true);
+            } else {
+              status.textContent =
+                "中止しました。一覧から開き直すと最新が読めます。";
+            }
+            return;
+          }
+
           if (res.status === 409) {
             if (confirm(`${data.slug}.md は既にあります。上書きしますか？`)) {
-              await save(true);
+              await save(true, force);
             } else {
               status.textContent = "中止しました。";
             }
@@ -463,17 +734,32 @@ const selectorList = Object.entries(
 
           if (!res.ok) {
             status.className = "status bad";
-            status.textContent = `直してください — ${data.errors.join(" / ")}`;
+            status.textContent = `直してください — ${(data.errors ?? [data.error]).join(" / ")}`;
             return;
           }
 
+          // 保存すると mtime が変わる。持ち直さないと、続けて保存するたびに
+          // 「外で変わっています」と言われる
+          editing = {
+            file: editing?.file ?? data.slug,
+            mtimeMs: data.mtimeMs,
+            draft: payload.draft ?? true,
+            publishedAt:
+              payload.publishedAt || new Date().toISOString().slice(0, 10),
+          };
+          $("editing-note").textContent = `${editing.file}.md を編集中（${
+            editing.draft ? "下書き" : "公開済み"
+          }）`;
+          await loadArticleList();
+          $("open-article").value = editing.file;
+
           status.className = "status ok";
           status.innerHTML =
-            `✓ ${data.path} を作りました。<br />` +
-            "エディタで開いて TODO: を埋めてください。書き上がったら draft: false にします。";
+            `✓ ${data.path} に保存しました。<br />` +
+            "TODO: が残っていれば埋めてください。書き上がったら draft: false にします。";
         }
 
-        $("save").addEventListener("click", () => save(false));
+        $("save").addEventListener("click", () => save(false, false));
       }
     </script>
 
@@ -562,6 +848,21 @@ const selectorList = Object.entries(
       textarea:focus {
         outline: 2px solid #1f6f5c;
         outline-offset: 1px;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 5em;
+        line-height: 1.8;
+      }
+      /* 目安から外れていることだけ伝える。保存は妨げない */
+      .counter {
+        font-weight: 600;
+      }
+      .counter.off {
+        color: #b23b2e;
+      }
+      .buried-field[hidden] {
+        display: none;
       }
       .isbn-row {
         display: flex;
