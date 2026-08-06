@@ -48,6 +48,7 @@ import {
   readArticle,
   writeArticle,
 } from "./article-file.mjs";
+import { lookupAndRemember } from "./cover-lookup.mjs";
 
 const TIMEOUT_MS = 8000;
 const ROOT = process.cwd();
@@ -291,8 +292,20 @@ async function uploadCover(server, body) {
   };
 }
 
+/**
+ * 書影を解決する。**ここが「登録の瞬間」にあたる。**
+ *
+ * まず `lookupAndRemember` で外部APIを引き、結果を `src/data/covers.json` に記録する。
+ * ビルドと dev の表示はこの記録を読むだけなので、**引くのはここだけ**でよい。
+ * 表示のたびに引いていた頃は、Google Books の1日あたりの上限を使い切ると
+ * 書影が一斉に消えていた。
+ *
+ * 記録したあと `cover.ts` に解決させ直すのは、**画面に出る答えと
+ * ビルドで出る答えを必ず一致させる**ため（自前画像の優先も含めて）。
+ */
 async function resolveCoverFor(server, isbn) {
   try {
+    await lookupAndRemember(isbn);
     const { resolveCover } = await loadCoverModule(server);
     return await resolveCover(isbn);
   } catch (err) {

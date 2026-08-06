@@ -17,7 +17,8 @@
     "new:article": "node scripts/new-article.mjs",
     "check:links": "node scripts/check-links.mjs",
     "check:covers": "node scripts/check-covers.mjs",
-    "new:selector": "node scripts/new-selector.mjs"
+    "new:selector": "node scripts/new-selector.mjs",
+    "sync:covers": "node scripts/sync-covers.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
