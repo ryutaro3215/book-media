@@ -400,6 +400,24 @@ const selectorList = Object.entries(
               <label class="field"><span>出版社</span><input class="bpublisher" type="text" /></label>
               <label class="field"><span>刊行年</span><input class="byear" type="number" /></label>
             </div>
+            <div class="cover-panel">
+              <div class="cover-preview"><span class="cover-none">書影<br />未確認</span></div>
+              <div class="cover-side">
+                <p class="cover-state">ISBNの「取得」を押すと、書影が出るかどうかも分かります。</p>
+                <div class="cover-upload" hidden>
+                  <input type="file" class="cover-file" accept="image/*" />
+                  <button type="button" class="ghost small cover-send">この画像を置く</button>
+                  <p class="cover-result"></p>
+                  <p class="cover-legal">
+                    <b>ここに置いた画像は public/covers/ に保存され、自サイトから配信されます。</b>
+                    外部APIのURLを参照するのとは違い、書影（表紙デザイン）の複製・公衆送信にあたるため、
+                    <b>出版社の許諾が要ります</b>（許諾の返信は記録として残すこと）。
+                    許諾が取れていない画像は置かないでください。置かなければ縦組みのフォールバックが出ます。
+                    詳しくは <code>docs/covers.md</code>（運用ルールと削除要請への対応）。
+                  </p>
+                </div>
+              </div>
+            </div>
             <label class="field">
               <span>選書理由</span>
               <textarea class="breason" rows="6" data-count="300,600"></textarea>
@@ -415,6 +433,115 @@ const selectorList = Object.entries(
             </label>
             <p class="warn"></p>`;
           return el;
+        }
+
+        // --- 書影 ----------------------------------------------------------
+        // 書影が出るかどうかは**書き終わってビルドするまで分からなかった**。
+        // 取れない本があると分かるのが遅いほど、許諾を取りに行く時間が無くなる。
+        // ここで見えれば、記事を書いているその場で判断できる
+
+        const COVER_SOURCE_LABEL = {
+          local: "自前（public/covers/）",
+          openbd: "openBD",
+          googlebooks: "Google Books",
+          fallback: "なし",
+        };
+
+        /**
+         * 取得結果を1冊ぶんの表示に反映する。
+         * **自前画像があるかどうかでアップロードの勧め方を変える。**
+         * 外部APIから取れていても、それは差し替わりうるURLなので置く選択肢は残す
+         */
+        function renderCover(row, cover) {
+          const preview = row.querySelector(".cover-preview");
+          const state = row.querySelector(".cover-state");
+          const upload = row.querySelector(".cover-upload");
+          const source = cover?.source ?? "fallback";
+          const url = cover?.url ?? null;
+
+          preview.innerHTML = url
+            ? `<img src="${url}" alt="" />`
+            : '<span class="cover-none">書影<br />なし</span>';
+          preview.classList.toggle("is-local", source === "local");
+
+          if (source === "local") {
+            state.textContent =
+              "自前の画像を使っています（public/covers/）。差し替えるときだけ下から置き直してください。";
+          } else if (url) {
+            state.textContent = `${COVER_SOURCE_LABEL[source]} から取得。このURLは差し替わることがあるので、許諾が取れているなら自前の画像を置いてもかまいません。`;
+          } else {
+            state.textContent =
+              "書影が取得できませんでした。このままだと縦組みのフォールバックが出ます。許諾済みの画像があれば置けます。";
+          }
+          upload.hidden = false;
+          row.querySelector(".cover-result").textContent = "";
+        }
+
+        async function uploadCover(row) {
+          const isbn = row.querySelector(".isbn").value.replace(/[^\d]/g, "");
+          const result = row.querySelector(".cover-result");
+          const file = row.querySelector(".cover-file").files?.[0];
+
+          if (!/^\d{13}$/.test(isbn)) {
+            result.textContent = "先に ISBN を13桁で入れてください";
+            return;
+          }
+          if (!file) {
+            result.textContent = "画像ファイルを選んでください";
+            return;
+          }
+
+          // dataURL の "base64," 以降がそのまま base64 本体
+          const data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result).split(",")[1]);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(file);
+          });
+
+          const post = (overwrite) =>
+            fetch("/api/upload-cover.json", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                isbn,
+                filename: file.name,
+                data,
+                overwrite,
+              }),
+            });
+
+          result.textContent = "置いています…";
+          let res = await post(false);
+          let out = await res.json();
+
+          // 既にある画像を黙って消さない（save-article.json と同じ形）
+          if (res.status === 409 && out.exists) {
+            const ok = confirm(
+              `${out.files.join(" / ")} が既にあります。上書きしますか？\n` +
+                "（同じISBNで拡張子違いのファイルは、表示が入れ替わらない事故になるため削除されます）",
+            );
+            if (!ok) {
+              result.textContent = "中止しました";
+              return;
+            }
+            res = await post(true);
+            out = await res.json();
+          }
+
+          if (!res.ok) {
+            result.textContent = `置けませんでした: ${out.error ?? res.status}`;
+            return;
+          }
+
+          // 直前まで404だった画像をブラウザが握っていることがあるので、URLを変えて読ませる
+          renderCover(row, {
+            ...out.cover,
+            url: out.cover?.url ? `${out.cover.url}?t=${Date.now()}` : null,
+          });
+          result.textContent =
+            `${out.path} に置きました` +
+            (out.replaced?.length ? `（${out.replaced.join(" / ")} は削除）` : "");
         }
 
         function renumber() {
@@ -447,6 +574,19 @@ const selectorList = Object.entries(
             return;
           }
 
+          if (e.target.classList.contains("cover-send")) {
+            e.target.disabled = true;
+            try {
+              await uploadCover(row);
+            } catch (err) {
+              row.querySelector(".cover-result").textContent =
+                `置けませんでした: ${err.message}`;
+            } finally {
+              e.target.disabled = false;
+            }
+            return;
+          }
+
           if (e.target.classList.contains("fetch")) {
             const isbn = row.querySelector(".isbn").value.replace(/[^\d]/g, "");
             const warn = row.querySelector(".warn");
@@ -463,6 +603,8 @@ const selectorList = Object.entries(
                 body: JSON.stringify({ isbn }),
               });
               const data = await res.json();
+              // 書誌が取れない本でも書影は取れることがある。書影の表示は found と無関係に更新する
+              renderCover(row, data.cover);
               if (!data.found) {
                 warn.textContent =
                   "書誌が取得できませんでした。手で入れてください";
@@ -870,6 +1012,59 @@ const selectorList = Object.entries(
       }
       .isbn-row .isbn {
         flex: 1;
+      }
+      /* 書影は「出るか出ないか」が一目で分かればよい。原寸は要らない */
+      .cover-panel {
+        display: flex;
+        gap: 12px;
+        margin: 10px 0;
+      }
+      .cover-preview {
+        flex: 0 0 84px;
+        height: 118px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed #d7d4cd;
+        background: #fff;
+        color: #8b867d;
+        font-size: 11px;
+        text-align: center;
+      }
+      /* 自前画像かどうかは判断が変わる情報なので、枠の見た目でも分かるようにする */
+      .cover-preview.is-local {
+        border: 2px solid #1f6f5c;
+      }
+      .cover-preview img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .cover-side {
+        flex: 1;
+        min-width: 0;
+        font-size: 13px;
+      }
+      .cover-state {
+        margin: 0 0 6px;
+      }
+      .cover-upload[hidden] {
+        display: none;
+      }
+      .cover-file {
+        max-width: 100%;
+      }
+      .cover-result {
+        margin: 6px 0 0;
+        color: #1f6f5c;
+      }
+      /* 警告であって関門ではない。読める大きさで置き、操作は妨げない */
+      .cover-legal {
+        margin: 8px 0 0;
+        padding: 8px 10px;
+        border-left: 3px solid #b23b2e;
+        background: #fdf5f3;
+        font-size: 12px;
+        line-height: 1.7;
       }
       .templates,
       .tag-results,

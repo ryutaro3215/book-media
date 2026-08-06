@@ -50,7 +50,14 @@ export type CoverResult = {
  */
 const COVERS_DIR = path.resolve(process.cwd(), "public/covers");
 
-const LOCAL_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"] as const;
+/**
+ * 自前画像として認める拡張子。**先に書いたものが勝つ。**
+ *
+ * `/admin` のアップロード（scripts/lib/admin-dev-server.mjs）も許可リストとして
+ * これを読む。置ける形式と表示できる形式がずれると、
+ * 「アップロードできたのに書影が変わらない」という気づきにくい状態になる。
+ */
+export const LOCAL_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"] as const;
 
 /**
  * 外部APIの結果のメモ化（値ではなく Promise を保持し、並行呼び出しも1回に畳む）。
