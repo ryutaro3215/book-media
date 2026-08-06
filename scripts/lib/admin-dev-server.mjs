@@ -2,7 +2,9 @@
  * 記事投稿アプリ（/admin）の裏側。**開発サーバーにだけ生える口。**
  *
  *   POST /api/isbn.json          ISBNから書誌を引く
- *   POST /api/save-article.json  記事ファイルを書き出す
+ *   POST /api/articles.json      記事の一覧
+ *   POST /api/article.json       記事を1本読む（編集するため）
+ *   POST /api/save-article.json  記事ファイルを書き出す（新規・上書きの両方）
  *
  * ## なぜ Astro の API ルートではなく Vite のミドルウェアなのか
  * このサイトは静的出力なので、`src/pages/api/` に置いたルートは
@@ -25,7 +27,10 @@ import process from "node:process";
 import {
   articleExists,
   buildArticle,
+  isStale,
   isValidSlug,
+  listArticles,
+  readArticle,
   writeArticle,
 } from "./article-file.mjs";
 
@@ -177,10 +182,17 @@ function saveArticle(data) {
   if (errors.length > 0) return { status: 400, body: { errors } };
 
   const slug = data.slug.trim();
+  const exists = articleExists(slug);
 
-  // 上書きは書き上げた原稿を消しうるので、必ず確認を挟む
-  if (articleExists(slug) && !data.overwrite) {
+  // 新規のつもりで既存の slug を書こうとしている。書き上げた原稿を消しうる
+  if (exists && !data.overwrite && !data.editing) {
     return { status: 409, body: { exists: true, slug } };
+  }
+
+  // 編集中に、読み込んだあとファイルが外で変わっていた。
+  // ビルドが落ちてエディタで直した / git pull した、など。黙って上書きしない
+  if (data.editing && isStale(slug, data.mtimeMs) && !data.force) {
+    return { status: 409, body: { stale: true, slug } };
   }
 
   const filePath = writeArticle(
@@ -199,12 +211,23 @@ function saveArticle(data) {
         isbn: (b.isbn ?? "").trim(),
       })),
       warnings: data.warnings ?? [],
+      body: data.body,
+      // 編集では公開状態と日付を保つ。ここを取りこぼすと
+      // 公開済みの記事が下書きに戻る（実際に一度やった事故）
+      draft: data.draft !== false,
+      publishedAt: data.publishedAt || undefined,
+      updatedAt: data.updatedAt || undefined,
     }),
   );
 
   return {
     status: 200,
-    body: { ok: true, slug, path: path.relative(ROOT, filePath) },
+    body: {
+      ok: true,
+      slug,
+      path: path.relative(ROOT, filePath),
+      mtimeMs: fs.statSync(filePath).mtimeMs,
+    },
   };
 }
 
@@ -253,6 +276,19 @@ export function adminDevServer() {
               return send(400, { error: "ISBN13を指定してください" });
             }
             return send(200, await lookupIsbn(isbn));
+          }
+
+          if (url === "/api/articles.json") {
+            return send(200, { articles: listArticles() });
+          }
+
+          if (url === "/api/article.json") {
+            const slug = String(body.slug ?? "");
+            if (!articleExists(slug)) {
+              return send(404, { error: `${slug}.md がありません` });
+            }
+            const { data, body: md, mtimeMs } = readArticle(slug);
+            return send(200, { data, body: md, mtimeMs });
           }
 
           if (url === "/api/save-article.json") {
