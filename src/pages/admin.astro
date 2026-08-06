@@ -606,10 +606,15 @@ const selectorList = Object.entries(
               // 書誌が取れない本でも書影は取れることがある。書影の表示は found と無関係に更新する
               renderCover(row, data.cover);
               if (!data.found) {
-                warn.textContent =
-                  "書誌が取得できませんでした。手で入れてください";
+                warn.textContent = data.warnings?.length
+                  ? `要確認: ${data.warnings.join(" / ")}`
+                  : "書誌が取得できませんでした。手で入れてください";
               } else {
                 row.querySelector(".isbn").value = isbn;
+                // 空で返ってきた項目は入れない。**既存の値をそのまま残す。**
+                // サーバーは、優先すべき取得先が応答しないとき（429など）に
+                // その項目を空で返す。劣る側の値で埋めると、整った値が
+                // 図書館形式に差し替わる（実際に起きた）
                 if (data.title) row.querySelector(".btitle").value = data.title;
                 if (data.author) row.querySelector(".bauthor").value = data.author;
                 if (data.translator)
