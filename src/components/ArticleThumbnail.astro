@@ -18,9 +18,14 @@
  *
  * ## 手動サムネイルが優先される
  * `public/thumbnails/<slug>.jpg` があればそちらを使う（既存仕様を壊さない）。
+ *
+ * ## 書影の解決は BookCard と同じ入口を通す
+ * ここが独自に書影を引いていたころ、トップページは記事数×冊数を一斉に問い合わせて
+ * Google Books に 429 を返され、記事ページでは映る本がサムネイルでだけ消えていた。
+ * 冊数ぶんを引く操作は `resolveCovers` に持たせ、**この面には並べ方だけを残す。**
  */
 import type { Book } from "../content.config";
-import { resolveCover } from "../lib/cover";
+import { resolveCovers } from "../lib/cover";
 import { hasManualThumbnail, resolveThumbnail } from "../lib/thumbnail";
 
 interface Props {
@@ -38,14 +43,7 @@ const { slug, books, width = 236, height = 150 } = Astro.props;
 const manual = hasManualThumbnail(slug) ? resolveThumbnail(slug) : null;
 
 // 手動サムネイルが無いときだけ書影を引く（ビルド時に解決済みなので追加コストは小さい）
-const covers = manual
-  ? []
-  : await Promise.all(
-      books.map(async (book) => ({
-        title: book.title,
-        url: (await resolveCover(book.isbn)).url,
-      })),
-    );
+const covers = manual ? [] : await resolveCovers(books);
 ---
 
 <div
@@ -68,13 +66,14 @@ const covers = manual
           cover.url ? (
             <img
               class="thumb-cover"
+              data-isbn={cover.isbn}
               src={cover.url}
               alt=""
               loading="lazy"
               decoding="async"
             />
           ) : (
-            <div class="thumb-cover thumb-fallback">
+            <div class="thumb-cover thumb-fallback" data-isbn={cover.isbn}>
               <span class="thumb-fallback-title text-ink">{cover.title}</span>
             </div>
           ),

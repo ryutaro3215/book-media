@@ -82,7 +82,11 @@ const description = `その道に詳しい人が「あまり知られていな�
           {entries.map(({ book, cover, interview, selector }) => (
             <article class="flex gap-6 border-t border-rule py-9 last:border-b">
               <div class="flex-none">
-                <BookCover title={book.title} coverUrl={cover} />
+                <BookCover
+                  title={book.title}
+                  coverUrl={cover}
+                  isbn={book.isbn}
+                />
               </div>
 
               <div class="flex min-w-0 flex-auto flex-col gap-2.5">
