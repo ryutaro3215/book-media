@@ -14,9 +14,16 @@ interface Props {
   title: string;
   /** ビルド時に解決済みの書影URL。解決できなかった場合は null */
   coverUrl?: string | null;
+  /**
+   * 出力HTMLに `data-isbn` として残す。
+   * 同じ本が「記事ページでは映るのにサムネイルでは映らない」不具合を
+   * scripts/check-covers.mjs が dist/ から機械的に見つけられるようにするため。
+   * 表示には使わない。
+   */
+  isbn?: string;
 }
 
-const { title, coverUrl = null } = Astro.props;
+const { title, coverUrl = null, isbn } = Astro.props;
 ---
 
 <div class="cover-frame bg-cover-placeholder">
@@ -24,6 +31,7 @@ const { title, coverUrl = null } = Astro.props;
     coverUrl ? (
       <img
         class="cover-img"
+        data-isbn={isbn}
         src={coverUrl}
         alt={`${title} の書影`}
         width="152"
@@ -32,7 +40,7 @@ const { title, coverUrl = null } = Astro.props;
         decoding="async"
       />
     ) : (
-      <div class="cover-fallback">
+      <div class="cover-fallback" data-isbn={isbn}>
         <div class="cover-fallback-rule border-cover-rule">
           <span class="cover-fallback-title text-ink">{title}</span>
         </div>
