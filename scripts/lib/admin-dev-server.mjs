@@ -62,14 +62,55 @@ function parseYear(value) {
   return m ? Number(m[1]) : undefined;
 }
 
-/** openBD の著者は「Locke,John,1632-1704／田中太郎 著」のような図書館形式 */
+/**
+ * openBD の著者を人が読む形に直す。
+ *
+ * openBD は図書館の目録形式で返す。実測した形:
+ *   「Locke,John,1632-1704／田中太郎 著」   ／ 区切り
+ *   「Christensen,ClaytonM 玉田,俊平太 伊豆原,弓」  全角スペース区切り・姓,名
+ *   「神取,道宏」                           姓,名
+ *
+ * **1人目だけを採る。** 共著・訳者まで並べると `author` が長大になり、
+ * 記事上の表示が崩れる（訳者は translator に入れる想定）。
+ */
 function cleanOpenBdAuthor(raw) {
   if (!raw) return "";
-  return raw
-    .split(/[／/]/)[0]
-    .replace(/,\s*\d{4}-(?:\d{4})?/g, "")
-    .replace(/\s*(著|編|編著|監修)$/, "")
+  const first = String(raw).split(/[／/　]/)[0];
+  return (
+    first
+      // 生没年（Locke,John,1632-1704）
+      .replace(/,\s*\d{4}-(?:\d{4})?/g, "")
+      // 「姓,名」→「姓 名」。区切りのコンマをそのまま残すと日本語として読めない
+      .replace(/,\s*/g, " ")
+      .replace(/\s*(著|編|編著|監修|訳)$/, "")
+      .trim()
+  );
+}
+
+/**
+ * openBD の書名から並列書名を落とす。
+ * 「とにかく仕組み化 = Anyway,Systematize : 人の上に立ち続けるための思考法」の
+ * ような形で返るため、` = ` 以降を捨てて副題（` : `）は残す。
+ */
+function cleanOpenBdTitle(raw) {
+  return String(raw ?? "")
+    .replace(/\s*=\s*[^:：]*?(?=\s*[:：]|$)/, "")
     .trim();
+}
+
+/**
+ * 取得結果は3状態で返す。
+ *
+ *   found       値が取れた
+ *   none        問い合わせたが、その本の情報が無かった
+ *   unavailable 429・タイムアウト・5xx。**今は答えられない**
+ *
+ * `none` と `unavailable` を混ぜると、Google Books の上限に当たった日に
+ * **openBD の図書館形式が黙って正しい値を上書きする**。実際に起きた
+ * （「クレイトン・クリステンセン」→「Christensen,ClaytonM 玉田,俊平太 伊豆原,弓」）。
+ */
+function unavailable() {
+  return { status: "unavailable" };
 }
 
 async function fetchOpenBd(isbn) {
@@ -77,18 +118,22 @@ async function fetchOpenBd(isbn) {
     const res = await fetch(`https://api.openbd.jp/v1/get?isbn=${isbn}`, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    if (!res.ok) return null;
+    if (res.status === 429 || res.status >= 500) return unavailable();
+    if (!res.ok) return { status: "none" };
     const s = (await res.json())?.[0]?.summary;
-    if (!s?.title) return null;
+    if (!s?.title) return { status: "none" };
     return {
-      title: String(s.title).trim(),
-      volume: String(s.volume ?? "").trim(),
-      author: cleanOpenBdAuthor(s.author),
-      publisher: String(s.publisher ?? "").trim(),
-      year: parseYear(s.pubdate),
+      status: "found",
+      data: {
+        title: cleanOpenBdTitle(s.title),
+        volume: String(s.volume ?? "").trim(),
+        author: cleanOpenBdAuthor(s.author),
+        publisher: String(s.publisher ?? "").trim(),
+        year: parseYear(s.pubdate),
+      },
     };
   } catch {
-    return null;
+    return unavailable();
   }
 }
 
@@ -101,29 +146,65 @@ async function fetchGoogleBooks(isbn) {
       url.searchParams.set("key", process.env.GOOGLE_BOOKS_API_KEY);
     }
     const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
-    if (!res.ok) return null;
+    if (res.status === 429 || res.status >= 500) return unavailable();
+    if (!res.ok) return { status: "none" };
     const v = (await res.json())?.items?.[0]?.volumeInfo;
-    if (!v?.title) return null;
+    if (!v?.title) return { status: "none" };
     const authors = v.authors ?? [];
     return {
-      title: String(v.title).trim(),
-      author: authors[0] ?? "",
-      translator: authors[1] ?? "",
-      publisher: String(v.publisher ?? "").trim(),
-      year: parseYear(v.publishedDate),
+      status: "found",
+      data: {
+        title: String(v.title).trim(),
+        author: authors[0] ?? "",
+        translator: authors[1] ?? "",
+        publisher: String(v.publisher ?? "").trim(),
+        year: parseYear(v.publishedDate),
+      },
     };
   } catch {
-    return null;
+    return unavailable();
   }
 }
 
+/**
+ * 項目ごとに良い方を採る。実測にもとづく優先順位:
+ *   書名・著者 → Google Books（openBD は叢書名・巻次・図書館形式が混ざる）
+ *   出版社     → openBD（Google Books は返さない）
+ *
+ * **優先する側が `unavailable` のときは、劣る側で埋めない。**
+ * 埋めてしまうと、既に整った値が図書館形式に差し替わる。
+ * その場合は `degraded` を立て、画面側で**既存の値を残す**。
+ */
 async function lookupIsbn(isbn) {
-  const [o, g] = await Promise.all([fetchOpenBd(isbn), fetchGoogleBooks(isbn)]);
-  if (!o && !g) {
-    return { found: false, warnings: ["書誌が取得できませんでした"] };
-  }
+  const [ores, gres] = await Promise.all([
+    fetchOpenBd(isbn),
+    fetchGoogleBooks(isbn),
+  ]);
+  const o = ores.status === "found" ? ores.data : null;
+  const g = gres.status === "found" ? gres.data : null;
 
   const warnings = [];
+  const degraded = [];
+
+  if (gres.status === "unavailable") {
+    warnings.push(
+      "Google Books が応答しません（1日あたりの上限の可能性）。書名・著者は今回更新しません",
+    );
+    degraded.push("title", "author");
+  }
+  if (ores.status === "unavailable") {
+    warnings.push("openBD が応答しません。出版社は今回更新しません");
+    degraded.push("publisher");
+  }
+
+  if (!o && !g) {
+    return {
+      found: false,
+      warnings: warnings.length > 0 ? warnings : ["書誌が取得できませんでした"],
+      degraded,
+    };
+  }
+
   if (o && g && o.title !== g.title) {
     warnings.push(
       `書名の候補が2つ — openBD「${o.title}」/ Google「${g.title}」`,
@@ -133,17 +214,23 @@ async function lookupIsbn(isbn) {
   if (o?.year && g?.year && o.year !== g.year) {
     warnings.push(`刊行年が食い違う — openBD ${o.year} / Google ${g.year}`);
   }
-  if (!o?.publisher) warnings.push("出版社が取得できませんでした");
+  if (!o?.publisher && ores.status !== "unavailable") {
+    warnings.push("出版社が取得できませんでした");
+  }
 
   return {
     found: true,
     isbn,
-    title: g?.title || o?.title || "",
-    author: g?.author || o?.author || "",
+    // degraded に入れた項目は空で返す。画面側が既存の値を残す
+    title: degraded.includes("title") ? "" : g?.title || o?.title || "",
+    author: degraded.includes("author") ? "" : g?.author || o?.author || "",
     translator: g?.translator || "",
-    publisher: o?.publisher || g?.publisher || "",
+    publisher: degraded.includes("publisher")
+      ? ""
+      : o?.publisher || g?.publisher || "",
     year: o?.year ?? g?.year ?? "",
     warnings,
+    degraded,
   };
 }
 
