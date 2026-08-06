@@ -71,7 +71,9 @@ jobs:
           fi
 
           echo "→ 記事ごとのOGP画像が生成されていること"
-          articles=$(find src/content/interviews -name '*.md' -o -name '*.mdx' | wc -l | tr -d ' ')
+          # 下書き（draft: true）は本番ビルドに出ないので、OGP画像も作られない。
+          # 全ファイルを数えると下書きを1本置いた時点で落ちるため、公開分だけ数える
+          articles=$(grep -rLE '^draft:[[:space:]]*true' --include='*.md' --include='*.mdx' src/content/interviews | wc -l | tr -d ' ')
           ogimages=$(find dist/og -name '*.png' | wc -l | tr -d ' ')
           if [ "$articles" -ne "$ogimages" ]; then
             echo "::error::記事数（$articles）とOGP画像の数（$ogimages）が一致しません"
