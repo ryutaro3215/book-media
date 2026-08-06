@@ -4,6 +4,9 @@ dist/
 # generated types
 .astro/
 
+# 取得済みの書影URL（src/lib/cover.ts）。消しても引き直されるだけ
+.cache/
+
 # dependencies
 node_modules/
 
