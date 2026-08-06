@@ -128,7 +128,9 @@ const others = (await getAllInterviews())
         >
           {selector.name}
         </a>
-        <div class="text-[13px] text-muted">{selector.affiliation}</div>
+        {selector.affiliation && (
+          <div class="text-[13px] text-muted">{selector.affiliation}</div>
+        )}
       </div>
       {
         xUrl && (

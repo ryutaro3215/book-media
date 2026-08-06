@@ -256,7 +256,7 @@ async function main() {
   const selectorChoice = await chooseFromList(
     "\n■ 選者を選んでください",
     Object.entries(selectors).map(([id, s]) => ({
-      label: `${s.name}（${s.affiliation}）  [${id}]`,
+      label: `${s.name}${s.affiliation ? `（${s.affiliation}）` : ""}  [${id}]`,
       value: id,
     })),
     { allowNew: true },

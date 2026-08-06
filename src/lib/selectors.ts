@@ -14,7 +14,18 @@ import selectorsJson from "../data/selectors.json";
 export type Selector = {
   name: string;
   reading?: string;
-  affiliation: string;
+  /**
+   * 所属（任意）。
+   *
+   * **必須にしない。** 選者は大学の教員だけではなく、在野の研究者や
+   * X で学術書を読み続けている人も含める、と決めている
+   * （`.dev/business-plan.md` の選者資格）。所属を必須にすると
+   * その母数を最初から締め出すことになる。
+   *
+   * 誰であるかの根拠は `credentials`（この人が詳しい理由）が担う。
+   * 匿名でも「何に詳しいか」は書ける。
+   */
+  affiliation?: string;
   bio: string;
   /**
    * この人が詳しい理由。「なぜこの人の推薦を信じるのか」の根拠。

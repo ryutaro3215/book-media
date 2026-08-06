@@ -25,7 +25,13 @@ const handle = toXHandleLabel(selector.links?.x);
   <SelectorAvatar id={group.id} name={selector.name} size={56} />
   <div class="flex min-w-0 flex-auto flex-col gap-2">
     <div class="text-[19px] leading-[1.5] font-bold">{selector.name}</div>
-    <div class="text-sm leading-[1.7] text-muted">{selector.affiliation}</div>
+    {
+      /* 所属は任意。無い選者では、代わりに詳しい理由を出す
+         （空行が空くと「情報が欠けている」ように見えるため） */
+    }
+    <div class="text-sm leading-[1.7] text-muted">
+      {selector.affiliation ?? selector.credentials}
+    </div>
     <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-sm">
       {topics.map((topic) => <span class="text-ink">{topic}</span>)}
       <span class="text-muted">記事{articles.length}本</span>

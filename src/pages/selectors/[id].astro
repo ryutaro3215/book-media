@@ -41,7 +41,7 @@ const xHandle = toXHandleLabel(selector.links?.x);
 const siteUrl = selector.links?.site?.trim() || null;
 
 const title = `${selector.name} | ${SITE.name}`;
-const description = `${selector.name}（${selector.affiliation}）が選んだ本の記事一覧。${selector.credentials}`;
+const description = `${selector.name}${selector.affiliation ? `（${selector.affiliation}）` : ""}が選んだ本の記事一覧。${selector.credentials}`;
 ---
 
 <BaseLayout headSlot>
@@ -75,7 +75,8 @@ const description = `${selector.name}（${selector.affiliation}）が選んだ�
       }
       <div class="text-sm leading-[1.7] text-muted">
         {selector.affiliation}
-        {topics.length > 0 && <> ／ {topics.join("・")}</>}
+        {selector.affiliation && topics.length > 0 && " ／ "}
+        {topics.length > 0 && topics.join("・")}
       </div>
       {
         (xUrl || siteUrl) && (

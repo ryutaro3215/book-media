@@ -44,7 +44,7 @@ async function main() {
   const choice = await chooseFromList(
     "\n■ 新しく登録するか、既存の選者を編集するかを選んでください",
     ids.map((id) => ({
-      label: `${selectors[id].name}（${selectors[id].affiliation}）  [${id}]`,
+      label: `${selectors[id].name}${selectors[id].affiliation ? `（${selectors[id].affiliation}）` : ""}  [${id}]`,
       value: id,
     })),
     { allowNew: true, newLabel: "新しい選者を登録する" },
@@ -74,7 +74,13 @@ async function main() {
       `  ふりがな（任意）${current.reading ? `（現在: ${current.reading}）` : ""}: `,
     )
   ).trim();
-  const affiliation = await askRequired("  所属", current.affiliation);
+  // 所属は任意。大学の教員だけを選者にするわけではないので、
+  // ここを必須にすると在野の書き手を最初から締め出すことになる
+  const affiliation = (
+    await ask(
+      `  所属（任意）${current.affiliation ? `（現在: ${current.affiliation}）` : ""}: `,
+    )
+  ).trim();
   const bio = await askRequired("  略歴", current.bio);
   const credentials = await askRequired(
     "  この人が詳しい理由",
@@ -104,7 +110,7 @@ async function main() {
   selectors[id] = {
     name,
     ...(nextReading ? { reading: nextReading } : {}),
-    affiliation,
+    ...(affiliation ? { affiliation } : {}),
     bio,
     credentials,
     ...(nextAvatar ? { avatar: nextAvatar } : {}),
@@ -127,7 +133,7 @@ function report(id, selector) {
   console.log(`\n✓ src/data/selectors.json に保存しました\n`);
   console.log(`  ID    : ${id}`);
   console.log(`  氏名  : ${selector.name}`);
-  console.log(`  所属  : ${selector.affiliation}`);
+  if (selector.affiliation) console.log(`  所属  : ${selector.affiliation}`);
   console.log(`  URL   : /selectors/${id}/`);
   if (selector.avatar) {
     console.log(`  写真  : public/selectors/${selector.avatar}`);

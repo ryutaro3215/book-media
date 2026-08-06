@@ -91,7 +91,7 @@ const selector = selectorOf(entry);
     {
       showSelector && (
         <div class="mt-2.5 text-sm leading-relaxed text-muted">
-          {selector.name}（{selector.affiliation}）
+          {selector.name}{selector.affiliation && `（${selector.affiliation}）`}
         </div>
       )
     }
