@@ -64,12 +64,25 @@ const selectorList = Object.entries(
 
           <section class="card">
             <h2>編集する記事</h2>
+            <label class="field">
+              <span>絞り込み</span>
+              <input
+                id="article-filter"
+                type="search"
+                placeholder="タイトル・分野・タグ・選者で絞る"
+                autocomplete="off"
+              />
+              <small id="article-count" />
+            </label>
             <div class="row">
               <label class="field">
                 <span>書きかけ・公開済みの記事</span>
-                <select id="open-article">
+                <select id="open-article" size="10">
                   <option value="">新しく作る</option>
                 </select>
+                <small>
+                  下書きは<strong>最後に触った順</strong>、公開済みは公開日の順
+                </small>
               </label>
               <div class="field">
                 <span>&nbsp;</span>
@@ -691,6 +704,50 @@ const selectorList = Object.entries(
           updateAllCounts();
         }
 
+        /**
+         * 記事一覧。**下書きと公開済みを optgroup で分ける。**
+         *
+         * 45本を1列に並べていたときは、開きたい記事を探すこと自体が作業だった。
+         * 書きかけの続きを書くのが作業の大半で、公開済みを開くのは直しのときだけなので、
+         * 頻度の違うものを同じ場所に置かない。
+         *
+         * 件数が増えれば区切っても結局スクロールするため、**絞り込みと併用する。**
+         */
+        let allArticles = [];
+
+        function renderArticleList() {
+          const q = $("article-filter").value.trim().toLowerCase();
+          const hit = (a) =>
+            !q ||
+            [a.title, a.topic, a.subtopic, a.selector, ...(a.tags ?? [])]
+              .join(" ")
+              .toLowerCase()
+              .includes(q);
+
+          const shown = allArticles.filter(hit);
+          const drafts = shown.filter((a) => a.draft);
+          const published = shown.filter((a) => !a.draft);
+
+          const option = (a) =>
+            `<option value="${a.file}">${a.title}${a.topic ? `　— ${a.topic}` : ""}</option>`;
+          const group = (label, items) =>
+            items.length > 0
+              ? `<optgroup label="${label}（${items.length}）">${items.map(option).join("")}</optgroup>`
+              : "";
+
+          const keep = $("open-article").value;
+          $("open-article").innerHTML =
+            '<option value="">新しく作る</option>' +
+            group("下書き", drafts) +
+            group("公開済み", published);
+          // 絞り込みで消えた記事を選んだままにしない（開いている記事は別で持っている）
+          $("open-article").value = keep;
+
+          $("article-count").textContent = q
+            ? `${shown.length} 件（下書き ${drafts.length} / 公開済み ${published.length}）`
+            : `下書き ${drafts.length} / 公開済み ${published.length}`;
+        }
+
         async function loadArticleList() {
           const res = await fetch("/api/articles.json", {
             method: "POST",
@@ -698,16 +755,8 @@ const selectorList = Object.entries(
             body: "{}",
           });
           const { articles } = await res.json();
-          const keep = $("open-article").value;
-          $("open-article").innerHTML =
-            '<option value="">新しく作る</option>' +
-            articles
-              .map(
-                (a) =>
-                  `<option value="${a.file}">${a.draft ? "[下書き] " : ""}${a.title}（${a.publishedAt}）</option>`,
-              )
-              .join("");
-          $("open-article").value = keep;
+          allArticles = articles;
+          renderArticleList();
         }
 
         async function openArticle(file) {
@@ -782,6 +831,7 @@ const selectorList = Object.entries(
           else resetForm();
         });
         $("reload").addEventListener("click", loadArticleList);
+        $("article-filter").addEventListener("input", renderArticleList);
         loadArticleList();
 
         // --- 保存 --------------------------------------------------------
