@@ -129,7 +129,8 @@ export async function promptSelector(existingIds = []) {
   }
 
   const reading = (await ask("  ふりがな（任意）: ")).trim();
-  const affiliation = await askRequired("  所属");
+  // 所属は任意。誰であるかの根拠は「詳しい理由」が担う
+  const affiliation = (await ask("  所属（任意）: ")).trim();
   const bio = await askRequired("  略歴（何をしている人か、1〜2文）");
 
   console.log(
@@ -157,7 +158,7 @@ export async function promptSelector(existingIds = []) {
   const selector = {
     name,
     ...(reading ? { reading } : {}),
-    affiliation,
+    ...(affiliation ? { affiliation } : {}),
     bio,
     credentials,
     ...(avatar ? { avatar } : {}),

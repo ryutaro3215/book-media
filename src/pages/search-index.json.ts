@@ -24,7 +24,7 @@ export const GET: APIRoute = async () => {
       subtopic: entry.data.subtopic ?? "",
       tags: entry.data.tags ?? [],
       selector: selectorOf(entry).name,
-      affiliation: selectorOf(entry).affiliation,
+      affiliation: selectorOf(entry).affiliation ?? "",
       publishedAt: entry.data.publishedAt.toISOString().slice(0, 10),
       books: entry.data.books.map((b) => b.title),
       authors: entry.data.books.map((b) => b.author),

@@ -151,8 +151,9 @@ const topics = await getTopicGroups();
                 >
                   <SelectorAvatar id={s.id} name={s.selector.name} size={48} />
                   <div class="text-base font-bold">{s.selector.name}</div>
+                  {/* 所属は任意。無い選者では詳しい理由を出す */}
                   <div class="text-[13px] leading-[1.7] text-muted">
-                    {s.selector.affiliation}
+                    {s.selector.affiliation ?? s.selector.credentials}
                   </div>
                   <div class="text-[13px] text-muted">
                     記事{s.articles.length}本

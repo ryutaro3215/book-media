@@ -21,7 +21,7 @@ export type JsonLdBook = {
 
 export type JsonLdSelector = {
   name: string;
-  affiliation: string;
+  affiliation?: string;
   bio?: string;
   links?: { x?: string; site?: string };
 };
@@ -59,7 +59,16 @@ function personNode(selector: JsonLdSelector) {
   return {
     "@type": "Person",
     name: selector.name,
-    affiliation: { "@type": "Organization", name: selector.affiliation },
+    // 所属は任意。無い選者に空の Organization を出すと、
+    // 構造化データとしては「所属不明の組織がある」ことになってしまう
+    ...(selector.affiliation
+      ? {
+          affiliation: {
+            "@type": "Organization",
+            name: selector.affiliation,
+          },
+        }
+      : {}),
     ...(selector.bio ? { description: selector.bio } : {}),
     ...(sameAs.length > 0 ? { sameAs } : {}),
   };
