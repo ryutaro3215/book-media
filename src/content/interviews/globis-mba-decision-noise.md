@@ -5,6 +5,7 @@ slug: "globis-mba-decision-noise"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
 draft: true
 publishedAt: 2026-08-06
+updatedAt: 2026-08-06
 description: "TODO: 検索結果に出る100〜120字の説明"
 topic: "経営学"
 tags:
@@ -12,8 +13,8 @@ tags:
   - "ノイズ排除"
 selector: "rmatsuba"
 books:
-  - title: "とにかく仕組み化 : 人の上に立ち続けるための思考法"
-    author: "安藤"
+  - title: "とにかく仕組み化 = Anyway,Systematize : 人の上に立ち続けるための思考法"
+    author: "安藤,広大"
     publisher: "ダイヤモンド社"
     year: 2023
     isbn: "9784478117743"
@@ -29,10 +30,10 @@ books:
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
   - title: "世界一流エンジニアの思考法"
-    author: "牛尾 剛"
-    publisher: "東洋経済新報社"
+    author: "牛尾剛"
+    publisher: "文藝春秋"
     year: 2023
-    isbn: "9784492048320"
+    isbn: "9784163917689"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
   - title: "経済評論家の父から息子への手紙"
@@ -50,8 +51,6 @@ books:
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
 ---
-
-<!-- 導入文をここに書く -->
 
 <!--
   出典: 嶋田 毅（グロービス経営大学院教授。グロービス出版局長。多数のMBA書籍を執筆・プロデュース。）による推薦。
