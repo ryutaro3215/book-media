@@ -49,9 +49,26 @@ import {
   writeArticle,
 } from "./article-file.mjs";
 import { lookupAndRemember } from "./cover-lookup.mjs";
+import { loadEnv } from "./prompt.mjs";
 
 const TIMEOUT_MS = 8000;
 const ROOT = process.cwd();
+
+/**
+ * `.env` を `process.env` に読み込む。
+ *
+ * **`astro dev` は `.env` を `import.meta.env` にしか入れない。**
+ * このファイルは Vite プラグインとして Node 側で動くので `process.env` を見るが、
+ * そこには何も入っていなかった。結果、**Google Books をキー無しで叩いていた。**
+ *
+ * キー無しのリクエストは共有の枠を使うため、すぐ 429 が返る。
+ * 画面には「1日あたりの上限の可能性」と出ていたが、実際には
+ * **こちらの上限は余っていて、キーが渡っていなかっただけ**だった。
+ *
+ * `src/lib/cover.ts` でも同じ罠を踏んでいる（`import.meta.env` を先に見て
+ * `process.env` にフォールバックする形で回避した）。
+ */
+loadEnv(path.join(ROOT, ".env"));
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8"));
@@ -187,8 +204,13 @@ async function lookupIsbn(isbn) {
   const degraded = [];
 
   if (gres.status === "unavailable") {
+    // 原因を分けて出す。「キーが渡っていない」と「自分の枠を使い切った」は
+    // どちらも 429 になるが、直し方がまったく違う。実際に、キー未設定を
+    // 上限超過だと誤解して1日待つ、ということが起きた
     warnings.push(
-      "Google Books が応答しません（1日あたりの上限の可能性）。書名・著者は今回更新しません",
+      process.env.GOOGLE_BOOKS_API_KEY
+        ? "Google Books が応答しません（1日あたりの上限の可能性）。書名・著者は今回更新しません"
+        : "GOOGLE_BOOKS_API_KEY が設定されていません（.env を確認してください）。書名・著者は今回更新しません",
     );
     degraded.push("title", "author");
   }
@@ -529,6 +551,15 @@ export function adminDevServer() {
     // 開発サーバーでのみ読み込まれる。ビルドには一切関与しない
     apply: "serve",
     configureServer(server) {
+      // キーが無いと Google Books は共有枠になり、すぐ 429 で落ちる。
+      // 書誌も書影も静かに劣化するので、起動時に気づけるようにしておく
+      if (!process.env.GOOGLE_BOOKS_API_KEY) {
+        console.warn(
+          "[admin] GOOGLE_BOOKS_API_KEY がありません。" +
+            "書名・著者・書影が取得できません（.env を確認してください）",
+        );
+      }
+
       server.middlewares.use(async (req, res, next) => {
         const url = (req.url ?? "").split("?")[0];
         if (!url.startsWith("/api/")) return next();
