@@ -5,6 +5,7 @@ slug: "hosei-career-design-5-books"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
 draft: true
 publishedAt: 2026-08-06
+updatedAt: 2026-08-06
 description: "TODO: 検索結果に出る100〜120字の説明"
 topic: "社会学"
 subtopic: "文化社会学"
@@ -45,15 +46,13 @@ books:
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
   - title: "ミライの授業"
-    author: "瀧本"
+    author: "瀧本哲史"
     publisher: "講談社"
     year: 2016
     isbn: "9784062200172"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
 ---
-
-<!-- 導入文をここに書く -->
 
 <!--
   出典: 法政大学キャリアデザイン学部 職員（法政大学キャリアデザイン学部事務室の公式note運営担当職員。先生方が学生のために推薦した28冊の図書を自ら読み進め、その魅力を発信している。）による推薦。

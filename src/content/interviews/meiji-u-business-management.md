@@ -5,6 +5,7 @@ slug: "meiji-u-business-management"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
 draft: true
 publishedAt: 2026-08-06
+updatedAt: 2026-08-06
 description: "TODO: 検索結果に出る100〜120字の説明"
 topic: "経営学"
 tags:
@@ -29,11 +30,11 @@ books:
     isbn: "9784478012031"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
-  - title: "稲盛和夫の実学―経営と会計"
-    author: "稲盛和夫"
-    publisher: "日本経済新聞出版社"
-    year: 1998
-    isbn: "9784532191542"
+  - title: "稲盛和夫の実学 : 経営と会計"
+    author: "稲盛,和夫"
+    publisher: "日本経済新聞社"
+    year: 2000
+    isbn: "9784532190064"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
   - title: "人生を豊かにする簿記"
@@ -51,8 +52,6 @@ books:
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
 ---
-
-<!-- 導入文をここに書く -->
 
 <!--
   出典: 明治大学経営学部推薦図書委員会（経営学・会計学・起業家精神の教育を牽引する専門教員グループ。）による推薦。

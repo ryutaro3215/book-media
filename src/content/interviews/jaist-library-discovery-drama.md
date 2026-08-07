@@ -5,6 +5,7 @@ slug: "jaist-library-discovery-drama"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
 draft: true
 publishedAt: 2026-08-06
+updatedAt: 2026-08-06
 description: "TODO: 検索結果に出る100〜120字の説明"
 topic: "歴史学"
 tags:
@@ -28,11 +29,11 @@ books:
     isbn: "9784101228013"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
-  - title: "イノベーションのジレンマ"
-    author: "クレイトン・クリステンセン"
+  - title: "イノベーションのジレンマ : 技術革新が巨大企業を滅ぼすとき"
+    author: "Christensen,ClaytonM 玉田,俊平太 伊豆原,弓"
     publisher: "翔泳社"
     year: 2001
-    isbn: "9784881359334"
+    isbn: "9784798100234"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
   - title: "二重螺旋完全版"
@@ -50,8 +51,6 @@ books:
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
 ---
-
-<!-- 導入文をここに書く -->
 
 <!--
   出典: JAIST図書館委員会（大学院生および研究者のための蔵書構築と学術情報発信を行う専門組織。）による推薦。

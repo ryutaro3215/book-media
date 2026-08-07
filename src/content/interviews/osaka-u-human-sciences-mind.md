@@ -5,6 +5,7 @@ slug: "osaka-u-human-sciences-mind"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
 draft: true
 publishedAt: 2026-08-06
+updatedAt: 2026-08-06
 description: "TODO: 検索結果に出る100〜120字の説明"
 topic: "心理学"
 tags:
@@ -22,36 +23,41 @@ books:
     whyBuried: |-
       TODO: この本がなぜ知られていないのかを150〜300字で書く
   - title: "服従の心理"
-    author: "スタンレー・ミルグラム"
+    author: "Milgram,Stanley 山形,浩生"
     publisher: "河出書房新社"
     year: 2012
-    isbn: "9784309245843"
+    isbn: "9784309463698"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
   - title: "ヒトはなぜ協力するのか"
-    author: "マイケル・トマセロ"
+    author: "Tomasello,Michael 橋彌,和秀"
     publisher: "勁草書房"
     year: 2013
-    isbn: "9784326250912"
+    isbn: "9784326154265"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
-  - title: "ネガティブ・ケイパビリティ"
-    author: "帚木 蓬生"
+  - title: "ネガティブ・ケイパビリティ : 答えの出ない事態に耐える力"
+    author: "帚木,蓬生"
     publisher: "朝日新聞出版"
     year: 2017
-    isbn: "9784022619082"
+    isbn: "9784022630582"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
-  - title: "木を見る西洋人 森を見る東洋人"
-    author: "リチャード・E・ニスベット"
+  - title: "木を見る西洋人森を見る東洋人 : 思考の違いはいかにして生まれるか"
+    author: "Nisbett,RichardE 村本,由紀子"
     publisher: "ダイヤモンド社"
     year: 2004
-    isbn: "9784478850534"
+    isbn: "9784478910184"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
 ---
 
-<!-- 導入文をここに書く -->
+<!--
+  要確認（自動取得で判断できなかった箇所）:
+    - 2冊目 — 要確認: openBD の巻次「ミ1-1」が混ざる可能性
+    - 4冊目 — 要確認: openBD の巻次「958」が混ざる可能性
+  確認して直したら、このコメントは消してよい
+-->
 
 <!--
   出典: 大阪大学人間科学部教員有志（心理学・社会学・教育学・人類学の融合領域である「人間科学」を専門とする教員たち。）による推薦。

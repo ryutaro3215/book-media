@@ -5,6 +5,7 @@ slug: "kyoto-u-economics-senior"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
 draft: true
 publishedAt: 2026-08-06
+updatedAt: 2026-08-06
 description: "TODO: 検索結果に出る100〜120字の説明"
 topic: "経済学"
 tags:
@@ -12,20 +13,20 @@ tags:
   - "ゲーム理論"
 selector: "rmatsuba"
 books:
-  - title: "ゆたかな社会"
-    author: "J・K・ガルブレイス"
+  - title: "ゆたかな社会 : 決定版"
+    author: "Galbraith,JohnKenneth 鈴木,哲太郎"
     publisher: "岩波書店"
     year: 2006
-    isbn: "9784004120339"
+    isbn: "9784006031374"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
     whyBuried: |-
       TODO: この本がなぜ知られていないのかを150〜300字で書く
-  - title: "ミクロ経済学の力"
-    author: "神取 道宏"
+  - title: "ミクロ経済学の力 = MICRO ECONOMICS"
+    author: "神取,道宏"
     publisher: "日本評論社"
-    year: 2015
-    isbn: "9784535558267"
+    year: 2014
+    isbn: "9784535557567"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
   - title: "「ココロ」の経済学"
@@ -36,22 +37,27 @@ books:
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
   - title: "プラットフォーム戦略 : 21世紀の競争を支配する「場をつくる」技術"
-    author: "平野 雅人 ほか"
+    author: "平野,敦士カール Hagiu,Andrei"
     publisher: "東洋経済新報社"
     year: 2010
-    isbn: "9784492532782"
+    isbn: "9784492532744"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
   - title: "福祉資本主義の三つの世界 : 比較福祉国家の理論と動態"
-    author: "エスピン・アンデルセン"
-    publisher: "弘文堂"
+    author: "Esping-Andersen,Gøsta 岡沢,憲芙 宮本,太郎"
+    publisher: "ミネルヴァ書房"
     year: 2001
-    isbn: "9784335550829"
+    isbn: "9784623033232"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
 ---
 
-<!-- 導入文をここに書く -->
+<!--
+  要確認（自動取得で判断できなかった箇所）:
+    - 1冊目 — 要確認: openBD の巻次「社会」が混ざる可能性
+    - 5冊目 — 要確認: openBD の巻次「47」が混ざる可能性
+  確認して直したら、このコメントは消してよい
+-->
 
 <!--
   出典: 京都大学経済学部先輩有志（京都大学経済学部を卒業・在籍し、後輩の知的な指針として選書を遺した先輩たち。）による推薦。
