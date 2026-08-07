@@ -151,16 +151,22 @@ export function readArticle(slug) {
   };
 }
 
-/** 記事の一覧。編集する記事を選ぶために使う */
+/**
+ * 記事の一覧。編集する記事を選ぶために使う。
+ *
+ * **下書きは「最後に触った順」、公開済みは「公開日の降順」**で返す。
+ * 書きかけを探すときに効くのは更新の新しさで、公開済みを探すときは
+ * いつ出した記事かで思い出す。並べ方が違うのは、探し方が違うため。
+ */
 export function listArticles() {
   if (!fs.existsSync(ARTICLES_DIR)) return [];
-  return fs
+  const items = fs
     .readdirSync(ARTICLES_DIR)
     .filter((f) => f.endsWith(".md"))
     .map((f) => {
       const slug = f.replace(/\.md$/, "");
       try {
-        const { data } = readArticle(slug);
+        const { data, mtimeMs } = readArticle(slug);
         return {
           slug: data.slug ?? slug,
           file: slug,
@@ -168,7 +174,11 @@ export function listArticles() {
           draft: data.draft !== false,
           publishedAt: String(data.publishedAt ?? ""),
           topic: data.topic ?? "",
+          subtopic: data.subtopic ?? "",
+          tags: Array.isArray(data.tags) ? data.tags : [],
+          selector: data.selector ?? "",
           books: Array.isArray(data.books) ? data.books.length : 0,
+          mtimeMs,
         };
       } catch {
         // 壊れた記事があっても一覧そのものは出す
@@ -176,11 +186,18 @@ export function listArticles() {
           slug,
           file: slug,
           title: `（読めません）${slug}`,
+          draft: true,
           broken: true,
+          mtimeMs: 0,
         };
       }
-    })
-    .sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
+    });
+
+  return items.sort((a, b) => {
+    if (a.draft !== b.draft) return a.draft ? -1 : 1; // 下書きを先に
+    if (a.draft) return (b.mtimeMs ?? 0) - (a.mtimeMs ?? 0);
+    return String(b.publishedAt).localeCompare(String(a.publishedAt));
+  });
 }
 
 /** 読み込んだあとに外でファイルが変わっていないか */
