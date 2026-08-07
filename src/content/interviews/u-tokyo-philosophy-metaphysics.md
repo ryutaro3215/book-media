@@ -11,6 +11,8 @@ subtopic: "哲学史"
 tags:
   - "現代思想"
   - "形而上学"
+  - "プラトン"
+  - "カント"
 selector: "rmatsuba"
 books:
   - title: "饗宴"
