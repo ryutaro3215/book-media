@@ -36,10 +36,8 @@
  *   npm run sync:covers -- --force   記録済みも引き直す
  * この2つのコマンドを叩いたときだけ外部APIに触れる。
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-
-import registry from "../data/covers.json";
 
 export type CoverSource = "local" | "openbd" | "googlebooks" | "fallback";
 
@@ -117,7 +115,38 @@ function findLocalCover(isbn: string): string | null {
  */
 type RegistryEntry = { url: string | null; source: CoverSource; at: string };
 
-const REGISTRY = registry as Record<string, RegistryEntry>;
+/**
+ * **`import` せず、ファイルとして読む。**
+ *
+ * `import registry from "../data/covers.json"` にすると、このJSONが
+ * Vite のモジュールグラフに入る。すると `/admin` で「取得」を押して
+ * 記録を書き足すたびに **HMR が画面をまるごとリロードし、
+ * 入力中の記事が全部消えた。** 2冊目で必ず起きる（1冊目は記録済みになるので
+ * 2回目は起きない）という分かりにくい壊れ方をしていた。
+ *
+ * 監視対象から外す（`astro.config.mjs` の `server.watch.ignored`）だけでは
+ * 止まらなかった。**モジュールグラフに載せないのが確実。**
+ *
+ * ビルドでは1回読むだけ。dev では `/admin` が書いた直後の値を
+ * `/admin` 側が自分で返すので（`admin-dev-server.mjs`）、
+ * ここが古いままでも画面の表示は合う。
+ */
+const REGISTRY_FILE = path.resolve(process.cwd(), "src/data/covers.json");
+
+let registryCache: Record<string, RegistryEntry> | null = null;
+
+function loadRegistry(): Record<string, RegistryEntry> {
+  if (registryCache) return registryCache;
+  let loaded: Record<string, RegistryEntry>;
+  try {
+    loaded = JSON.parse(readFileSync(REGISTRY_FILE, "utf8"));
+  } catch {
+    // 無い・壊れていてもビルドは通す。書影がフォールバックになるだけ
+    loaded = {};
+  }
+  registryCache = loaded;
+  return loaded;
+}
 
 /**
  * ISBNから書影URLを解決する。ビルド時専用。
@@ -136,7 +165,7 @@ export function resolveCover(isbn: string): Promise<CoverResult> {
     return Promise.resolve(result);
   }
 
-  const entry = REGISTRY[isbn];
+  const entry = loadRegistry()[isbn];
   const result: CoverResult = entry?.url
     ? { url: entry.url, source: entry.source }
     : { url: null, source: "fallback" };
