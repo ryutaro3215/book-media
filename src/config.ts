@@ -16,7 +16,7 @@ export const SITE = {
   description:
     "その領域に詳しい人が、その領域を学ぶための数冊を選んで紹介するメディアです。あまり知られていない良書も積極的に取り上げます。",
   /** 取材依頼・削除要請の窓口 */
-  contactEmail: "contact@example.com",
+  contactEmail: "skrinia.contact@gmail.com",
   /** 選者応募フォーム（外部サービス。未確定なので暫定） */
   applyFormUrl: "",
   /** メール登録フォーム（外部サービス。未確定なので暫定） */
