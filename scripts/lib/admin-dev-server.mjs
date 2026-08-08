@@ -48,7 +48,7 @@ import {
   readArticle,
   writeArticle,
 } from "./article-file.mjs";
-import { lookupAndRemember } from "./cover-lookup.mjs";
+import { hasLocalCover, lookupAndRemember } from "./cover-lookup.mjs";
 import { loadEnv } from "./prompt.mjs";
 
 const TIMEOUT_MS = 8000;
@@ -414,9 +414,23 @@ async function uploadCover(server, body) {
  */
 async function resolveCoverFor(server, isbn) {
   try {
-    await lookupAndRemember(isbn);
-    const { resolveCover } = await loadCoverModule(server);
-    return await resolveCover(isbn);
+    // 自前画像が最優先。ここは cover.ts に任せる
+    // （findLocalCover はメモ化の外なので、置いた直後でも拾える）
+    if (hasLocalCover(isbn)) {
+      const { resolveCover } = await loadCoverModule(server);
+      return await resolveCover(isbn);
+    }
+
+    // **書いた直後の値を自分で返す。**
+    // src/data/covers.json は Vite の監視から外してある（astro.config.mjs）。
+    // 外さないと書き込みのたびに画面がリロードされて入力が消えるが、
+    // 外したぶん cover.ts が静的 import している記録は古いままになる。
+    // ここで cover.ts に解決させ直すと、**いま記録した本が「書影なし」に見える。**
+    const entry = await lookupAndRemember(isbn);
+    if (entry) return { url: entry.url, source: entry.source };
+
+    // 429・タイムアウトで結論が出なかった。記録もしていない
+    return { url: null, source: "fallback" };
   } catch (err) {
     // 書影が引けなくても書誌の入力は続けられる。画面には「分からない」と出す
     return {

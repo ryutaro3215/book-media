@@ -23,5 +23,28 @@ export default defineConfig({
     // adminDevServer は apply: "serve" なので、開発サーバーにしか生えない。
     // 記事ファイルを書く口を持つため、ビルドに混ざらないことが構造で保証される
     plugins: [tailwindcss(), adminDevServer()],
+    server: {
+      watch: {
+        /**
+         * `/admin` が書き込むファイルを、監視から外す。
+         *
+         * `/admin` で ISBN の「取得」を押すと、書影URLが
+         * `src/data/covers.json` に記録される。ところがこれは `src/` の中なので
+         * Vite が変更を検知して**画面をリロードし、入力中の記事が全部消えていた。**
+         * 2冊目で必ず起きる（1冊目は記録済みになるので2回目は起きない）という
+         * 分かりにくい壊れ方をしていた。
+         *
+         * 記録を `.cache/` から `src/data/` へ移したとき（T28）の見落とし。
+         * git 管理下に置く判断は変えたくないので、監視の方を外す。
+         *
+         * `public/covers/` も同じ。`/admin` から書影を置くとリロードが起きる。
+         *
+         * **失うもの:** エディタやFinderから `public/covers/` に画像を置いても
+         * 自動では反映されなくなる。ブラウザを手で再読み込みすれば出る
+         * （`findLocalCover` はメモ化の外にあるため、再描画されれば拾う）。
+         */
+        ignored: ["**/src/data/covers.json", "**/public/covers/**"],
+      },
+    },
   },
 });
