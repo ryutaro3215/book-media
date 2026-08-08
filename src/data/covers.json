@@ -14,8 +14,18 @@
     "source": "googlebooks",
     "at": "2026-08-06"
   },
+  "9784003318522": {
+    "url": null,
+    "source": "fallback",
+    "at": "2026-08-08"
+  },
   "9784003360118": {
     "url": "https://books.google.com/books/content?id=YOm3AAAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-08"
+  },
+  "9784003360132": {
+    "url": "https://books.google.com/books/content?id=ny0iRAAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",
     "at": "2026-08-08"
   },
@@ -279,6 +289,16 @@
     "source": "googlebooks",
     "at": "2026-08-06"
   },
+  "9784130100742": {
+    "url": null,
+    "source": "fallback",
+    "at": "2026-08-08"
+  },
+  "9784130100748": {
+    "url": null,
+    "source": "fallback",
+    "at": "2026-08-08"
+  },
   "9784130120586": {
     "url": "https://cover.openbd.jp/9784130120586.jpg",
     "source": "openbd",
@@ -383,6 +403,16 @@
     "url": "https://books.google.com/books/content?id=UYd5uQEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",
     "at": "2026-08-06"
+  },
+  "9784272331031": {
+    "url": "https://books.google.com/books/content?id=v22LzgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-08"
+  },
+  "9784272930364": {
+    "url": null,
+    "source": "fallback",
+    "at": "2026-08-08"
   },
   "9784296103300": {
     "url": "https://books.google.com/books/content?id=05BQyQEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
@@ -528,6 +558,11 @@
     "url": "https://cover.openbd.jp/9784480071873.jpg",
     "source": "openbd",
     "at": "2026-08-06"
+  },
+  "9784480081407": {
+    "url": null,
+    "source": "fallback",
+    "at": "2026-08-08"
   },
   "9784480084811": {
     "url": "https://books.google.com/books/content?id=9o8NAQAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
