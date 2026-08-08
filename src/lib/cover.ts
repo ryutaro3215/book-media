@@ -137,13 +137,15 @@ let registryCache: Record<string, RegistryEntry> | null = null;
 
 function loadRegistry(): Record<string, RegistryEntry> {
   if (registryCache) return registryCache;
+  let loaded: Record<string, RegistryEntry>;
   try {
-    registryCache = JSON.parse(readFileSync(REGISTRY_FILE, "utf8"));
+    loaded = JSON.parse(readFileSync(REGISTRY_FILE, "utf8"));
   } catch {
     // 無い・壊れていてもビルドは通す。書影がフォールバックになるだけ
-    registryCache = {};
+    loaded = {};
   }
-  return registryCache;
+  registryCache = loaded;
+  return loaded;
 }
 
 /**
