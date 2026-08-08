@@ -101,7 +101,7 @@ design/ 指定の `#787878` は白背景でコントラスト比 **4.42:1** で�
 - **Cloudflare Pages へのデプロイ**（アカウント接続が必要）
 - **`src/config.ts` の設定値**:
   - `SITE.url` — 本番URL（OGPの絶対URL生成に使う。現在は仮の値）
-  - `SITE.name` — サービス名（**未確定**。現在は design 準拠で "Skrinia"）
+  - `SITE.name` — サービス名（**Skrinia に確定**・2026-08-08）
   - `SITE.contactEmail` — 取材依頼・削除要請の窓口
   - `SITE.applyFormUrl` — 選者応募フォーム（Tally 等）
   - `SITE.newsletterActionUrl` — メール配信サービス
