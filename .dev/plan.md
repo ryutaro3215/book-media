@@ -1,4 +1,4 @@
-# Plan — fivebooks（仮称・名称選定中）
+# Plan — Skrinia
 status: approved
 updated: 2026-08-04
 stack: Astro（Content Collections + MDX）/ TypeScript / Zod / **Tailwind CSS v4**（`@tailwindcss/vite`。CSS-firstの `@theme` でデザイントークンを定義）/ Satori + resvg-js（OGP画像のビルド時生成）/ Cloudflare Pages（ホスティング）/ Cloudflare Web Analytics
@@ -702,7 +702,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 
 ## 未確定事項（実装開始前に解決が望ましい）
 
-- **サービス名**（Skrinia / Matenaria / Panchaka が候補）— T1のプロジェクト名・T3のヘッダー表示に影響するが、**コード内にハードコードせず設定値として1箇所に置く**ことで後から変更可能にする
+- ~~**サービス名**~~ — **Skrinia に確定**（2026-08-08）。`src/config.ts` の `SITE.name` 1箇所で管理している
 - **メール配信サービスの選定**（Buttondown / Substack 等）— T10で確定
 - **フォームサービスの選定**（Tally / Google Forms 等）— T15で確定。**Tally を推奨**（無料枠で項目数の制限が緩く、埋め込みの見た目を調整でき、Google Forms より本文のトーンに馴染ませやすい）
 - **書影APIのカバレッジ実測結果** — T5 の「APIをどこまで当てにするか」の判断材料。実測が低ければ `public/covers/` への手動登録が主経路になる

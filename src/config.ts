@@ -1,12 +1,15 @@
 /**
  * サイト全体の設定。
  *
- * サービス名は選定中（.dev/requirements.md 参照）。
  * ここ1箇所を書き換えれば全ページに反映されるようにしてある。
  * コード中にサイト名をハードコードしないこと。
  */
 export const SITE = {
-  /** 表示名。design/ のデザイン上は "Skrinia" が入っている（仮） */
+  /**
+   * 表示名。**Skrinia（スクリニア）に確定**（2026-08-08）。
+   * ラテン語 scrinium（巻物や書物を収める箱）から。
+   * 経緯は .dev/business-plan.md の「サービス名」を参照。
+   */
   name: "Skrinia",
   /** 本番の公開URL。OGPの絶対URL生成に使う */
   url: "https://book-media.pages.dev",
