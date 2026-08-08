@@ -14,6 +14,36 @@
     "source": "googlebooks",
     "at": "2026-08-06"
   },
+  "9784003360118": {
+    "url": "https://books.google.com/books/content?id=YOm3AAAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-08"
+  },
+  "9784003360316": {
+    "url": null,
+    "source": "fallback",
+    "at": "2026-08-08"
+  },
+  "9784003360415": {
+    "url": "https://books.google.com/books/content?id=41Y9AAAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-08"
+  },
+  "9784003360514": {
+    "url": null,
+    "source": "fallback",
+    "at": "2026-08-08"
+  },
+  "9784003360712": {
+    "url": "https://books.google.com/books/content?id=nmV0PAAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-08"
+  },
+  "9784003361016": {
+    "url": "https://books.google.com/books/content?id=MCV1PQAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-08"
+  },
   "9784004130017": {
     "url": "https://books.google.com/books/content?id=RRFJVefDV3UC&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",
@@ -168,6 +198,21 @@
     "url": "https://books.google.com/books/content?id=PmV1swEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",
     "at": "2026-08-06"
+  },
+  "9784065215845": {
+    "url": "https://books.google.com/books/content?id=LNYUzgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-07"
+  },
+  "9784065273241": {
+    "url": "https://books.google.com/books/content?id=qTXnzgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-07"
+  },
+  "9784065342763": {
+    "url": "https://books.google.com/books/content?id=Xv080AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-08"
   },
   "9784065387719": {
     "url": "https://books.google.com/books/content?id=CHAZ0QEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
@@ -449,6 +494,11 @@
     "source": "googlebooks",
     "at": "2026-08-06"
   },
+  "9784480018229": {
+    "url": "https://cover.openbd.jp/9784480018229.jpg",
+    "source": "openbd",
+    "at": "2026-08-07"
+  },
   "9784480063847": {
     "url": "https://books.google.com/books/content?id=kkI1AQAAIAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",
@@ -533,6 +583,11 @@
     "url": "https://books.google.com/books/content?id=XW0Q0QEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",
     "at": "2026-08-06"
+  },
+  "9784532190064": {
+    "url": "https://books.google.com/books/content?id=7nK6AAAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-08"
   },
   "9784532191542": {
     "url": "https://books.google.com/books/content?id=xhDGQgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
@@ -843,6 +898,11 @@
     "url": "https://cover.openbd.jp/9784905158790.jpg",
     "source": "openbd",
     "at": "2026-08-06"
+  },
+  "9784906502059": {
+    "url": "https://books.google.com/books/content?id=Rk8eg7Y2n48C&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-08"
   },
   "9784910024028": {
     "url": "https://cover.openbd.jp/9784910024028.jpg",
