@@ -220,10 +220,110 @@ function template(input: OgImageInput) {
   });
 }
 
-/** 1200×630 の PNG バイナリを返す */
-export async function renderOgImage(input: OgImageInput): Promise<Uint8Array> {
+/**
+ * サイト共通の面（トップ・固定ページ・Xでの紹介用）。
+ *
+ * **記事用テンプレートを流用しない。** 流用していたときは
+ * 「その道の人しか知らない本 ｜ 1冊」という見出しが出ていた。
+ * 1冊は `bookTitles` の要素数（説明文1つ）を数えたもので、意味が無い。
+ * サイト名も見出しと足元で二重に出ていた。
+ *
+ * ここは「何のメディアか」だけを伝える面にする。
+ */
+export type SiteOgInput = {
+  siteName: string;
+  /** 一言。長いと読まれないので、呼び出し側で短く渡す */
+  tagline: string;
+  /** 足元に出す補助行（公開中の分野など）。省略可 */
+  footnote?: string;
+};
+
+function siteTemplate(input: SiteOgInput) {
+  const el = (type: string, props: Record<string, unknown>) => ({
+    type,
+    props,
+  });
+
+  return el("div", {
+    style: {
+      width: OG_WIDTH,
+      height: OG_HEIGHT,
+      backgroundColor: COLOR.canvas,
+      color: COLOR.ink,
+      fontFamily: FONT_FAMILY,
+      padding: "84px 88px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+    },
+    children: [
+      el("div", {
+        style: { display: "flex", flexDirection: "column" },
+        children: [
+          // サイト名（最大要素）。ブランドの点を添える
+          el("div", {
+            style: {
+              display: "flex",
+              alignItems: "center",
+              gap: 22,
+              marginBottom: 36,
+            },
+            children: [
+              el("div", {
+                style: {
+                  display: "flex",
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  backgroundColor: COLOR.brand,
+                },
+              }),
+              el("div", {
+                style: {
+                  display: "flex",
+                  fontSize: 96,
+                  fontWeight: 900,
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.02em",
+                },
+                children: input.siteName,
+              }),
+            ],
+          }),
+          el("div", {
+            style: {
+              display: "flex",
+              fontSize: 38,
+              fontWeight: 500,
+              lineHeight: 1.6,
+              color: COLOR.ink,
+            },
+            children: input.tagline,
+          }),
+        ],
+      }),
+      ...(input.footnote
+        ? [
+            el("div", {
+              style: {
+                display: "flex",
+                fontSize: 26,
+                fontWeight: 400,
+                color: COLOR.muted,
+                letterSpacing: "0.04em",
+              },
+              children: input.footnote,
+            }),
+          ]
+        : []),
+    ],
+  });
+}
+
+/** satori → PNG。面が2種類あるので描画部分だけ共通にしておく */
+async function toPng(node: unknown): Promise<Uint8Array> {
   const fonts = await getFonts();
-  const svg = await satori(template(input) as never, {
+  const svg = await satori(node as never, {
     width: OG_WIDTH,
     height: OG_HEIGHT,
     fonts,
@@ -233,4 +333,186 @@ export async function renderOgImage(input: OgImageInput): Promise<Uint8Array> {
     font: { loadSystemFonts: false },
   });
   return resvg.render().asPng();
+}
+
+/* ------------------------------------------------------------------ *
+ * X 添付用の紹介画像（16:9）
+ * ------------------------------------------------------------------ */
+
+export const SHARE_WIDTH = 1200;
+export const SHARE_HEIGHT = 675;
+
+export type ShareImageInput = {
+  siteName: string;
+  /**
+   * 何をやっているのかの説明（複数行）。
+   *
+   * **記事の紹介より先に置く。** いきなり個別の記事タイトルを並べると、
+   * 「本の紹介がいくつかある」までしか伝わらない。
+   * 分野をまたいで積み上げていく場だ、というところを先に言う。
+   */
+  lead: string[];
+  /** 例として出す記事。「こんな記事があります」の位置づけ */
+  articles: Array<{ topic: string; title: string }>;
+  footnote: string;
+};
+
+/** タイトルが長いと3本が入らないので、行に収まる長さで畳む */
+function clip(text: string, max: number): string {
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+function shareTemplate(input: ShareImageInput) {
+  const el = (type: string, props: Record<string, unknown>) => ({
+    type,
+    props,
+  });
+
+  return el("div", {
+    style: {
+      width: SHARE_WIDTH,
+      height: SHARE_HEIGHT,
+      backgroundColor: COLOR.canvas,
+      color: COLOR.ink,
+      fontFamily: FONT_FAMILY,
+      padding: "64px 80px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+    },
+    children: [
+      // サイト名 + 説明
+      el("div", {
+        style: { display: "flex", flexDirection: "column" },
+        children: [
+          el("div", {
+            style: { display: "flex", alignItems: "center", gap: 16 },
+            children: [
+              el("div", {
+                style: {
+                  display: "flex",
+                  width: 14,
+                  height: 14,
+                  borderRadius: 7,
+                  backgroundColor: COLOR.brand,
+                },
+              }),
+              el("div", {
+                style: {
+                  display: "flex",
+                  fontSize: 52,
+                  fontWeight: 900,
+                  letterSpacing: "-0.02em",
+                },
+                children: input.siteName,
+              }),
+            ],
+          }),
+          el("div", {
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              marginTop: 28,
+            },
+            children: input.lead.map((line, i) =>
+              el("div", {
+                style: {
+                  display: "flex",
+                  fontSize: i === 0 ? 38 : 28,
+                  fontWeight: i === 0 ? 700 : 400,
+                  lineHeight: 1.5,
+                  color: i === 0 ? COLOR.ink : COLOR.muted,
+                },
+                children: line,
+              }),
+            ),
+          }),
+        ],
+      }),
+
+      // 例として出す記事
+      el("div", {
+        style: { display: "flex", flexDirection: "column", gap: 14 },
+        children: [
+          el("div", {
+            style: {
+              display: "flex",
+              fontSize: 22,
+              fontWeight: 500,
+              color: COLOR.muted,
+              letterSpacing: "0.08em",
+            },
+            children: "たとえば、こんな記事があります",
+          }),
+          ...input.articles.map((a) =>
+            el("div", {
+              style: { display: "flex", alignItems: "baseline", gap: 20 },
+              children: [
+                el("div", {
+                  style: {
+                    display: "flex",
+                    width: 110,
+                    fontSize: 22,
+                    fontWeight: 500,
+                    color: COLOR.brand,
+                  },
+                  children: a.topic,
+                }),
+                el("div", {
+                  style: {
+                    display: "flex",
+                    fontSize: 26,
+                    fontWeight: 500,
+                    lineHeight: 1.4,
+                  },
+                  children: clip(a.title, 34),
+                }),
+              ],
+            }),
+          ),
+        ],
+      }),
+
+      el("div", {
+        style: {
+          display: "flex",
+          fontSize: 22,
+          fontWeight: 400,
+          color: COLOR.muted,
+          letterSpacing: "0.04em",
+        },
+        children: input.footnote,
+      }),
+    ],
+  });
+}
+
+/** X 添付用（1200×675）。OGPカードとは別の面 */
+export async function renderShareImage(
+  input: ShareImageInput,
+): Promise<Uint8Array> {
+  const fonts = await getFonts();
+  const svg = await satori(shareTemplate(input) as never, {
+    width: SHARE_WIDTH,
+    height: SHARE_HEIGHT,
+    fonts,
+  });
+  const resvg = new Resvg(svg, {
+    fitTo: { mode: "width", value: SHARE_WIDTH },
+    font: { loadSystemFonts: false },
+  });
+  return resvg.render().asPng();
+}
+
+/** サイト共通の面を 1200×630 の PNG で返す */
+export async function renderSiteOgImage(
+  input: SiteOgInput,
+): Promise<Uint8Array> {
+  return toPng(siteTemplate(input));
+}
+
+/** 1200×630 の PNG バイナリを返す */
+export async function renderOgImage(input: OgImageInput): Promise<Uint8Array> {
+  return toPng(template(input));
 }
