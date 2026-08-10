@@ -11,13 +11,62 @@ import { SITE } from "../config";
   <section>
     <h2>このメディアについて</h2>
     <p>
-      {SITE.name}は、本当に良い本をもっと世の中に出すことを目指して本の紹介を行っているメディアです。
+      {SITE.name}は、<strong
+        >何かを一から学びたい人が、最初に開くべき数冊にたどり着くための地図</strong
+      >をつくるメディアです。その領域に詳しい人に、その領域を学ぶための本を選んでもらい、選んだ理由とともに記録しています。
     </p>
     <p>
-      年間7万点以上の新刊が出るなかで、書店の平台やオンライン書店のランキングに現れるのはごく一部。そのため、とてもいい本なのにあまり話題にならなかったり、有名にならない本もたくさんあります。このメディアでは「自分の知らない本に出会う」ことを目的にし、その領域の専門家の方や、本を読むのが好きな人が勧める「本当に良い本」を紹介していきます。
+      1本の記事は、1人の選者による3冊以上の本で構成されます。書名の羅列ではなく、誰が、どういう理由でその本を薦めたのかまでを残します。本の良し悪しは、薦めた人が誰でどこを見て薦めたのかと切り離せないと考えているためです。
+    </p>
+  </section>
+
+  <section>
+    <h2>なぜ作ったのか</h2>
+    <p>
+      何かを独学で始めようとしたとき、「まず何を読めばいいのか」に答えてくれる場所がほとんどありません。
     </p>
     <p>
-      1本の記事は、1人の選者に3冊以上の本で構成されます。書名の羅列ではなく、誰がどういう理由でその本を薦めたのかを記録として残します。
+      情報が<strong>散らばっている</strong>という問題があります。おすすめの本を挙げた記事は個人ブログ・SNS・書店のフェア・大学のシラバスなどに点在していて、どれがどういう立場から書かれたものなのか比べようがありません。しかも分野によって偏りが激しく、人気のある領域には記事が溢れている一方で、少し専門に寄った領域では手がかりになる記事が一つも見つからないこともあります。学び始めの、いちばん判断材料がない時期に、いちばん探しにくい。
+    </p>
+    <figure class="my-10">
+      <picture>
+        <source srcset="/about-1.webp" type="image/webp" />
+        <img
+          src="/about-1.png"
+          alt="おすすめ本の情報が、個人ブログ・SNS・大学のシラバス・書店のフェア・ランキング記事などにばらばらに散らばっていて、どれを信じればいいのかわからずに立ち尽くしている人のイラスト"
+          width="1536"
+          height="1024"
+          loading="lazy"
+          decoding="async"
+          class="h-auto w-full rounded-lg"
+        />
+      </picture>
+    </figure>
+    <p>
+      もうひとつ、ネット上で薦められる本は<strong>「わかりやすさ」に重心が傾きすぎている</strong
+      >という問題があります。厳密な議論をいったん脇に置いて読みやすさに振った入門書は、確かに最初の一歩としては有効です。けれど、その先に進むための骨太な本——議論の筋を省略せずに書かれた本、その分野の考え方そのものを組み替えてくれる本——は、読み通すのに骨が折れるぶん、おすすめとして紹介されにくい。結果として、本当はもっと早く出会えたはずの本に、いつまでも出会えないままになります。
+    </p>
+    <figure class="my-10">
+      <picture>
+        <source srcset="/about-2.webp" type="image/webp" />
+        <img
+          src="/about-2.png"
+          alt="天秤の左側に「わかりやすい・読みやすい」入門書が積み上がって傾き、右側の「骨太で深い本」は紹介されにくいまま浮き上がっている様子を表したイラスト"
+          width="1536"
+          height="1024"
+          loading="lazy"
+          decoding="async"
+          class="h-auto w-full rounded-lg"
+        />
+      </picture>
+    </figure>
+    <p>
+      この二つ——<strong>そもそも情報がまとまっていないこと</strong>と、<strong
+        >まとまっていても入りやすい本に偏ること</strong
+      >——を解きたい、というのがこのメディアの動機です。だから{SITE.name}は、その領域を実際に歩いてきた人に選書をお願いし、易しい本も歯ごたえのある本も、「なぜこれを読むべきか」の理由をつけて並べます。読者が自分の段階に合わせて選べるように、順番と難易度も含めて語ってもらいます。
+    </p>
+    <p>
+      年間7万点以上の新刊が出るなかで、書店の平台やオンライン書店のランキングに現れるのはごく一部です。話題にならなかった良い本を、話題性ではなく「学ぶのに効くかどうか」で拾い上げることも、このメディアの役割だと考えています。
     </p>
   </section>
 
@@ -27,7 +76,7 @@ import { SITE } from "../config";
       選者は<strong>その領域に詳しい方</strong>にお願いしています。肩書きは問いません。研究者だけでなく、在野で研究を続けている方、編集者・翻訳者・書店員、その領域を長く読み続けている方も含みます。ただし<strong>「なぜその領域に詳しいのか」は必ず書いていただきます</strong>。読者が「この人の話なら聞いてみたい」と判断する材料が要るためです。
     </p>
     <p>
-      定番の名著も、あまり知られていない良書も扱います。とくに<strong>広告や話題性では世に出ないけれど良い本</strong>を紹介していくことが、このメディアを作った動機です。ただし「有名でないこと」を選書の条件にはしていません。条件にすると選べる本が狭まりすぎ、かえって良い記事が出なくなるためです。</p>
+      定番の名著も、あまり知られていない良書も扱います。読みやすい入門書を外すこともしません。大事なのは「わかりやすいかどうか」ではなく「その領域を理解するのに効くかどうか」で、どちらに寄せるかは選者の判断です。ただし<strong>広告や話題性では世に出ないけれど良い本</strong>には意識的に光を当てます。とはいえ「有名でないこと」を選書の条件にはしていません。条件にすると選べる本が狭まりすぎ、かえって良い記事が出なくなるためです。</p>
     <p>
       あわせて各記事で、選者に「この中でいちばん知られていない本はどれですか」と伺っています。挙げていただいた本は<a href="/hidden/">知る人ぞ知る本</a>に分野を横断して集めています。売れている順でも話題になった順でもない並びは、ランキングでは作れません。
     </p>
@@ -41,11 +90,71 @@ import { SITE } from "../config";
 
   <section>
     <h2>運営者</h2>
-    <p>
-      {/* TODO: 運営者情報を記入 — 氏名・所属・経歴・Xアカウント */}
-      TODO: 運営者情報を記入（氏名／所属／経歴。面識のない方に取材や寄稿をお願いする以上、実名と所属を明示します）。
-    </p>
-    <p>TODO: 運営者情報を記入（Xアカウントへのリンク）。</p>
+    <p>運営者：松葉隆太郎（早稲田大学大学院商学研究科）</p>
+    <ul class="!m-0 !list-none !p-0 flex flex-wrap items-center gap-x-6 gap-y-3">
+      <li>
+        <a
+          href={SITE.xUrl}
+          target="_blank"
+          rel="me noopener noreferrer"
+          class="inline-flex items-center gap-2 text-[15px] no-underline hover:underline"
+        >
+          <img
+            src="/X-logo-black.png"
+            alt=""
+            width="16"
+            height="16"
+            loading="lazy"
+            decoding="async"
+            class="h-4 w-4 shrink-0 object-contain"
+          />
+          <span>X（@dokugaku_zin）</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href={SITE.noteUrl}
+          target="_blank"
+          rel="me noopener noreferrer"
+          class="inline-flex items-center gap-2 text-[15px] no-underline hover:underline"
+        >
+          <img
+            src="/note_icon.svg"
+            alt=""
+            width="18"
+            height="18"
+            loading="lazy"
+            decoding="async"
+            class="h-[18px] w-[18px] shrink-0 object-contain"
+          />
+          <span>note</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href={SITE.ownerSiteUrl}
+          target="_blank"
+          rel="me noopener noreferrer"
+          class="inline-flex items-center gap-2 text-[15px] no-underline hover:underline"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            aria-hidden="true"
+            class="h-[18px] w-[18px] shrink-0"
+          >
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"
+            ></path>
+          </svg>
+          <span>個人サイト（rmatsuba.com）</span>
+        </a>
+      </li>
+    </ul>
   </section>
 
   <section>
@@ -56,6 +165,13 @@ import { SITE } from "../config";
       >のページをご覧ください。選者として参加をご希望の方は<a href="/apply"
         >選者として参加する</a
       >からご応募いただけます。
+    </p>
+    <p>
+      上記のフォームに当てはまらない個別のご連絡は、Xのダイレクトメッセージ（<a
+        href={SITE.xUrl}
+        target="_blank"
+        rel="me noopener noreferrer">@dokugaku_zin</a
+      >）へお願いします。
     </p>
   </section>
 </DocumentLayout>
