@@ -43,7 +43,7 @@ export function isValidSlug(slug) {
 /**
  * frontmatter + 本文を組み立てて文字列を返す。
  *
- * 長文（description / reason / whyBuried / 本文）は、渡されなければ
+ * 長文（description / reason / bestReason / 本文）は、渡されなければ
  * `TODO:` のまま出す。`draft: true` のあいだは `TODO:` が残っていても
  * ビルドが通るので、途中の状態でも保存できる。
  */
@@ -96,8 +96,8 @@ export function buildArticle(data) {
     lines.push(
       `    reason: ${block(b.reason || "TODO: この本を薦める理由を300〜600字で書く", 6)}`,
     );
-    if (b.whyBuried) {
-      lines.push(`    whyBuried: ${block(b.whyBuried, 6)}`);
+    if (b.bestReason) {
+      lines.push(`    bestReason: ${block(b.bestReason, 6)}`);
     }
   }
 

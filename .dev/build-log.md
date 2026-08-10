@@ -202,7 +202,7 @@ frontmatter と本文を分けて読む `readArticle` を足すまで、
 空文字を送ると `buildArticle` の `TODO:` の枠が消え、
 `draft: false` にしたときに `reason` が `min(1)` で落ちる。
 未入力は `undefined` にして、枠はサーバー側に入れさせている。
-**`whyBuried` だけは事情が違い**、値が無いと項目ごと出力されないので、
+**`bestReason`（旧 `whyBuried`）だけは事情が違い**、値が無いと項目ごと出力されないので、
 印だけ付いて未記入のときは `TODO:` の文字列を明示的に送る。
 そうしないと「知る人ぞ知る本」の印そのものが消える。
 

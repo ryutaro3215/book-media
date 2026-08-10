@@ -205,7 +205,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - files: `src/pages/apply.astro`
 - acceptance:
   - `/apply` に応募の説明・応募いただく内容の項目一覧・外部フォームへの導線が表示される
-  - 応募項目に「氏名 / 所属 / 専門分野 / Xアカウント（任意）/ 推薦する本（3冊以上）（書名・著者・出版社）/ 各冊の選書理由」が明示されている（requirements R16a）
+  - 応募項目に「氏名 / 所属 / 専門分野 / Xアカウント（任意）/ 推薦する本（3冊以上）（書名・著者）/ 各冊の概要や選んだ理由 / いちばんよかった1冊とその理由（任意）」が明示されている（requirements R16a）。出版社・ISBN は聞かず、こちらで調べる（`docs/apply-form.md`）
   - **「掲載を確約しない」旨が本文中に記載されている**（requirements R16b）
   - 外部フォームサービス（Tally / Google Forms 等）が埋め込まれている、または外部フォームへのボタンが1つある
   - **フォームを自前実装していない**（`src/` に `<form>` の `action` が自サイト内を指す実装が存在しない）
@@ -450,7 +450,7 @@ inputs: business-plan.md (approved) / requirements.md (approved) / design-brief.
 - 対象:
   - `description`（100〜120字）
   - 各冊の `reason`（300〜600字）
-  - `whyBuried`（150〜300字。印を付けた1冊のみ）
+  - `bestReason`（150〜300字。印を付けた1冊のみ）
   - **導入文・まとめ**（frontmatter の外の Markdown 本文）
 - **これは「生成」から「編集」への変更である**（段階1との決定的な違い）:
   - 段階1の `/admin` は**新規ファイルを作るだけ**で、既存ファイルを読まない。

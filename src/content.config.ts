@@ -26,7 +26,7 @@ const bookSchema = z.object({
   /** 選書理由。draft のあいだは `TODO: …` のままでよい */
   reason: z.string().min(1),
   /**
-   * **この本があまり知られていない理由**（任意）。
+   * **この1冊を「いちばんよかった」として選んだ理由**（任意）。
    *
    * 書くとその本に「知る人ぞ知る本」の印が付き、`/hidden` に集まる。
    * 書かなければ何も起きない。
@@ -41,10 +41,12 @@ const bookSchema = z.object({
    * **記事は定番でよい。そのうち1冊だけ印を付ける**なら、負担はほぼゼロで、
    * 印が溜まれば分野を横断した資産（`/hidden`）になる。
    *
-   * 「知られていない」の判定は**選者本人の主観**でよい。
-   * 「この5冊のうち、いちばん知られていないのはどれですか」には必ず答えられる。
+   * 判定は**選者本人の主観**でよい。知名度は選者にも答えにくいので、
+   * 聞くのは「挙げた中でいちばんよかった1冊はどれですか」。
+   * そのうえで、迷ったらあまり知られていない本を選んでほしいと**お願い**する
+   * （条件ではない）。答えやすい問いにしつつ、拾いたい本が集まるようにしている。
    */
-  whyBuried: z.string().min(1).optional(),
+  bestReason: z.string().min(1).optional(),
 });
 
 /**
@@ -195,11 +197,11 @@ const interviews = defineCollection({
           });
         }
         // 印を付けたなら理由は必須。付けないのは自由
-        if (book.whyBuried && isPlaceholder(book.whyBuried)) {
+        if (book.bestReason && isPlaceholder(book.bestReason)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            path: ["books", i, "whyBuried"],
-            message: `${i + 1}冊目の「なぜ知られていないか」が未記入です（TODO: のまま）。書かないなら whyBuried の行ごと消してください`,
+            path: ["books", i, "bestReason"],
+            message: `${i + 1}冊目の「この1冊を選んだ理由」が未記入です（TODO: のまま）。書かないなら bestReason の行ごと消してください`,
           });
         }
       });

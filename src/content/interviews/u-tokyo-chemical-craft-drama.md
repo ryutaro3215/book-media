@@ -21,8 +21,8 @@ books:
     isbn: "9784774131146"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
-    whyBuried: |-
-      TODO: この本がなぜ知られていないのかを150〜300字で書く
+    bestReason: |-
+      TODO: この1冊をいちばんよかったとして選んだ理由を150〜300字で書く
   - title: "究極のシンメトリー : フラーレン発見物語"
     author: "Baggott"
     publisher: "白揚社"

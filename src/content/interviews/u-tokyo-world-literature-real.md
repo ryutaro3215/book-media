@@ -21,8 +21,8 @@ books:
     isbn: "9784480084811"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
-    whyBuried: |-
-      TODO: この本がなぜ知られていないのかを150〜300字で書く
+    bestReason: |-
+      TODO: この1冊をいちばんよかったとして選んだ理由を150〜300字で書く
   - title: "変身"
     author: "フランツ カフカ"
     publisher: "新潮文庫"

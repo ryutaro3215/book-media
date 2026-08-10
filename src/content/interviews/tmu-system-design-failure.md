@@ -20,8 +20,8 @@ books:
     isbn: "9784062751339"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
-    whyBuried: |-
-      TODO: この本がなぜ知られていないのかを150〜300字で書く
+    bestReason: |-
+      TODO: この1冊をいちばんよかったとして選んだ理由を150〜300字で書く
   - title: "ヤモリの指"
     author: "諸貫 信行"
     publisher: "筑摩書房"

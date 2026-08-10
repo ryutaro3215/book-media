@@ -2,15 +2,16 @@
 /**
  * 「知る人ぞ知る本」の一覧（plan.md T23）。
  *
- * 各記事の `whyBuried` が書かれた本だけを、分野を横断して集める。
+ * 各記事の `bestReason` が書かれた本だけを、分野を横断して集める。
  *
  * ## なぜこのページが要るか
  * このメディアの出発点は「良い本を広めたい、埋もれた本を発掘したい」という
  * オーナーの動機だが、記事は**テーマごとに縦に切られている**ため、
  * その分野に興味がない読者には届かない。
  *
- * このページは**横に切る**。分野を問わず「その道の人が挙げた、あまり
- * 知られていない本」だけが並ぶので、分野に興味がなくても読める。
+ * このページは**横に切る**。分野を問わず「その道の人が、挙げた中で
+ * いちばんよかったとして選んだ1冊」だけが並ぶので、分野に興味がなくても読める。
+ * 選ぶ際は、迷ったらあまり知られていない本をとお願いしている。
  *
  * そして**Amazon にも書店の平台にも作れない**。ランキングは売れている順なので、
  * 原理的に埋もれた本を出せない。記事が増えるほど、ここが資産になる。
@@ -32,11 +33,11 @@ import { resolveCover } from "../lib/cover";
 
 const interviews = await getAllInterviews();
 
-// whyBuried が書かれた本だけを集める（記事の公開日が新しい順）
+// bestReason が書かれた本だけを集める（記事の公開日が新しい順）
 const entries = [];
 for (const interview of interviews) {
   for (const book of interview.data.books) {
-    if (!book.whyBuried) continue;
+    if (!book.bestReason) continue;
     entries.push({
       book,
       cover: (await resolveCover(book.isbn)).url,
@@ -47,7 +48,7 @@ for (const interview of interviews) {
 }
 
 const title = "知る人ぞ知る本";
-const description = `その道に詳しい人が「あまり知られていない」として挙げた本の一覧。分野を横断して${entries.length}冊。`;
+const description = `その道に詳しい人が「挙げた中でいちばんよかった1冊」として選んだ本の一覧。分野を横断して${entries.length}冊。`;
 ---
 
 <BaseLayout headSlot>
@@ -68,7 +69,7 @@ const description = `その道に詳しい人が「あまり知られていな�
     </h1>
 
     <p class="m-0 mb-3 text-[15px] leading-[1.9] text-ink text-pretty">
-      各記事の選者が「この中でいちばん知られていない」として挙げた本を、分野を横断して集めています。売れている順でも、話題になった順でもありません。
+      各記事の選者が「挙げた中でいちばんよかった1冊」として選んだ本を、分野を横断して集めています。選ぶときは、迷ったらあまり知られていない本をとお願いしています。売れている順でも、話題になった順でもありません。
     </p>
     <p class="m-0 mb-14 text-sm text-muted">{entries.length}冊</p>
 
@@ -103,7 +104,7 @@ const description = `その道に詳しい人が「あまり知られていな�
                 </div>
 
                 <p class="m-0 mt-1.5 text-[15px] leading-[1.9] text-ink text-pretty">
-                  {book.whyBuried}
+                  {book.bestReason}
                 </p>
 
                 <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-muted">

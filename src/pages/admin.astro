@@ -11,7 +11,7 @@
  * どちらも「画面がある」だけで解けるので、frontmatter の入力だけを画面にした。
  *
  * ## 長文もここで書く（段階2）
- * description / 選書理由 / 知られていない理由 / 本文を、この画面で書けるようにした。
+ * description / 選書理由 / いちばんよかった1冊の理由 / 本文を、この画面で書けるようにした。
  * 既存の記事を開いて直せるので、書きかけのまま閉じてよい。
  *
  * **導入文とまとめは1つの入力欄**にしてある。記事ページは frontmatter の外の
@@ -205,7 +205,7 @@ const selectorList = Object.entries(
               + 1冊ふやす
             </button>
             <p class="note">
-              「知る人ぞ知る本」の印は<strong>1冊だけ</strong>付けられます。
+              「知る人ぞ知る本」の印は<strong>1冊だけ</strong>付けられます。選者が「挙げた中でいちばんよかった」とした1冊に付けてください。
               付けた本は /hidden に集まります。付けなくても構いません。
             </p>
           </section>
@@ -389,8 +389,8 @@ const selectorList = Object.entries(
           el.innerHTML = `
             <div class="book-head">
               <strong>${index + 1}冊目</strong>
-              <label class="buried">
-                <input type="radio" name="buried" value="${index}" />
+              <label class="best">
+                <input type="radio" name="best" value="${index}" />
                 知る人ぞ知る本にする
               </label>
               <button type="button" class="ghost small remove">削除</button>
@@ -436,11 +436,11 @@ const selectorList = Object.entries(
               <textarea class="breason" rows="6" data-count="300,600"></textarea>
               <small>なぜこの本を薦めるのか。<b class="counter"></b></small>
             </label>
-            <label class="field buried-field" hidden>
-              <span>なぜ知られていないのか</span>
-              <textarea class="bburied" rows="4" data-count="150,300"></textarea>
+            <label class="field best-field" hidden>
+              <span>この1冊を選んだ理由</span>
+              <textarea class="bbest" rows="4" data-count="150,300"></textarea>
               <small>
-                絶版・専門書として出た・訳が古い・分野をまたぐので棚に置かれにくい など。
+                この1冊を挙げた決め手。上の選書理由と重なっても構いません。
                 <b class="counter"></b>
               </small>
             </label>
@@ -560,7 +560,7 @@ const selectorList = Object.entries(
         function renumber() {
           document.querySelectorAll(".book").forEach((el, i) => {
             el.querySelector(".book-head strong").textContent = `${i + 1}冊目`;
-            el.querySelector('input[name="buried"]').value = i;
+            el.querySelector('input[name="best"]').value = i;
           });
           renderTemplates();
         }
@@ -648,14 +648,14 @@ const selectorList = Object.entries(
         });
 
         // 印は1冊だけ。印の付いていない行に理由欄を出しても書く場所が無いので隠す
-        function syncBuriedFields() {
+        function syncBestFields() {
           for (const row of document.querySelectorAll(".book")) {
-            const on = row.querySelector('input[name="buried"]').checked;
-            row.querySelector(".buried-field").hidden = !on;
+            const on = row.querySelector('input[name="best"]').checked;
+            row.querySelector(".best-field").hidden = !on;
           }
         }
         $("books").addEventListener("change", (e) => {
-          if (e.target.name === "buried") syncBuriedFields();
+          if (e.target.name === "best") syncBestFields();
         });
 
         // 3冊が下限なので、最初から3冊置いておく
@@ -801,13 +801,13 @@ const selectorList = Object.entries(
             row.querySelector(".bpublisher").value = unTodo(b.publisher);
             row.querySelector(".byear").value = b.year ?? "";
             row.querySelector(".breason").value = unTodo(b.reason);
-            if (b.whyBuried) {
-              row.querySelector('input[name="buried"]').checked = true;
-              row.querySelector(".bburied").value = unTodo(b.whyBuried);
+            if (b.bestReason) {
+              row.querySelector('input[name="best"]').checked = true;
+              row.querySelector(".bbest").value = unTodo(b.bestReason);
             }
           }
           renumber();
-          syncBuriedFields();
+          syncBestFields();
           updateAllCounts();
 
           editing = {
@@ -837,14 +837,14 @@ const selectorList = Object.entries(
         // --- 保存 --------------------------------------------------------
         async function save(overwrite, force) {
           const status = $("status");
-          const buriedIndex = Number(
-            document.querySelector('input[name="buried"]:checked')?.value ?? -1,
+          const bestIndex = Number(
+            document.querySelector('input[name="best"]:checked')?.value ?? -1,
           );
 
           const books = [...document.querySelectorAll(".book")].map((row, i) => {
             const get = (cls) => row.querySelector(cls).value.trim();
             const warn = row.querySelector(".warn").textContent;
-            const buried = get(".bburied");
+            const best = get(".bbest");
             return {
               isbn: get(".isbn").replace(/[^\d]/g, ""),
               title: get(".btitle"),
@@ -855,12 +855,12 @@ const selectorList = Object.entries(
               // 空なら送らない。buildArticle が `TODO:` の枠を入れてくれる。
               // 空文字を送ると枠ごと消え、draft: false で min(1) に引っかかる
               reason: get(".breason") || undefined,
-              // whyBuried だけは事情が違う。**値が無いと項目ごと出力されない**
+              // bestReason だけは事情が違う。**値が無いと項目ごと出力されない**
               // ので、空のまま送ると「知る人ぞ知る本」の印そのものが消える
-              whyBuried:
-                i === buriedIndex
-                  ? buried ||
-                    "TODO: この本がなぜ知られていないのかを150〜300字で書く"
+              bestReason:
+                i === bestIndex
+                  ? best ||
+                    "TODO: この1冊をいちばんよかったとして選んだ理由を150〜300字で書く"
                   : undefined,
               _warn: warn.startsWith("要確認") ? warn : "",
             };
@@ -1058,7 +1058,7 @@ const selectorList = Object.entries(
       .counter.off {
         color: #b23b2e;
       }
-      .buried-field[hidden] {
+      .best-field[hidden] {
         display: none;
       }
       .isbn-row {
@@ -1162,7 +1162,7 @@ const selectorList = Object.entries(
       .book-head strong {
         font-size: 0.9rem;
       }
-      .buried {
+      .best {
         font-size: 0.8rem;
         color: #767676;
         margin-left: auto;
@@ -1170,7 +1170,7 @@ const selectorList = Object.entries(
         align-items: center;
         gap: 5px;
       }
-      .buried input {
+      .best input {
         width: auto;
       }
       .warn {

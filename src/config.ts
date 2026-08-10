@@ -23,8 +23,8 @@ export const SITE = {
   noteUrl: "https://note.com/genkaidaigakuin",
   /** 運営者の個人サイト */
   ownerSiteUrl: "https://rmatsuba.com",
-  /** 選者応募フォーム（外部サービス。未確定なので暫定） */
-  applyFormUrl: "",
+  /** 選者応募フォーム（Tally） */
+  applyFormUrl: "https://tally.so/r/eqG1RO",
   /** メール登録フォーム（外部サービス。未確定なので暫定） */
   newsletterActionUrl: "",
   /**

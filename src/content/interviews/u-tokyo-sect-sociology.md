@@ -19,8 +19,8 @@ books:
     isbn: "9784480064363"
     reason: |-
       TODO: この本を薦める理由を300〜600字で書く
-    whyBuried: |-
-      TODO: この本がなぜ知られていないのかを150〜300字で書く
+    bestReason: |-
+      TODO: この1冊をいちばんよかったとして選んだ理由を150〜300字で書く
   - title: "一神教とは何か"
     author: "小原 克博"
     publisher: "平凡社"

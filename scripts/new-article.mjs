@@ -412,31 +412,32 @@ async function main() {
   }
 
   // --- 知る人ぞ知る本（任意） ---
-  // 全冊に「知られていない理由」を必須にすると書ける記事が狭まりすぎるため、
+  // 全冊に「いちばんよかった理由」を必須にすると書ける記事が狭まりすぎるため、
   // **1冊だけ・任意**にしてある。印が付いた本は /hidden に集まる
   console.log(
     "\n■ 知る人ぞ知る本（任意・Enterでスキップ）\n" +
-      "  この中で「いちばん知られていない」と思う本があれば、番号を選んでください。\n" +
+      "  この中で「いちばんよかった」と思う本があれば、番号を選んでください。\n" +
+      "  迷う場合は、あまり知られていない本だと望ましいです（条件ではありません）。\n" +
       "  選ぶと /hidden（分野を横断した一覧）に載ります。判定は主観で構いません。",
   );
   for (const [i, b] of books.entries()) {
     console.log(`  ${i + 1}. ${b.title}`);
   }
 
-  const buriedAnswer = (await ask("  番号（無ければEnter）: ")).trim();
-  const buriedIndex = Number(buriedAnswer) - 1;
+  const bestAnswer = (await ask("  番号（無ければEnter）: ")).trim();
+  const bestIndex = Number(bestAnswer) - 1;
   if (
-    Number.isInteger(buriedIndex) &&
-    buriedIndex >= 0 &&
-    buriedIndex < books.length
+    Number.isInteger(bestIndex) &&
+    bestIndex >= 0 &&
+    bestIndex < books.length
   ) {
     console.log(
-      `\n  「${books[buriedIndex].title}」がなぜ知られていないのかを書きます。\n` +
-        "  絶版・専門書として刊行された・訳が古い・分野をまたぐので棚に置かれにくい など。\n" +
+      `\n  「${books[bestIndex].title}」をいちばんよかった1冊として選んだ理由を書きます。\n` +
+        "  この1冊を挙げた決め手。上の選書理由と重なっても構いません。\n" +
         "  ここは生成後のファイルで書いても構いません（TODO: のまま出力されます）。",
     );
-    books[buriedIndex].whyBuried =
-      "TODO: この本がなぜ知られていないのかを150〜300字で書く";
+    books[bestIndex].bestReason =
+      "TODO: この1冊をいちばんよかったとして選んだ理由を150〜300字で書く";
   }
 
   // --- 書き出し ---
