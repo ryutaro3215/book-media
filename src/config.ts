@@ -43,10 +43,25 @@ export const NAV = [
   { label: "このサイトについて", href: "/about" },
 ] as const;
 
+/**
+ * 投稿への導線（ヘッダーのボタン）。
+ *
+ * `/apply` はナビの並びに埋めるとただのリンクとして流れてしまい、
+ * **応募が主要な事業目標なのに気づかれない**。ナビとは別の枠で、
+ * ボタンとして常時出す。遷移先は Tally 直リンクではなく `/apply`
+ * とする。何を書くのか・掲載の判断はどうなるのかを読んでから
+ * フォームに進んでもらったほうが、応募の質が揃うため。
+ */
+export const APPLY_CTA = {
+  label: "おすすめを投稿する",
+  href: "/apply",
+} as const;
+
 /** フッターのリンク（design/SiteFooter.dc.html 準拠） */
 export const FOOTER_LINKS = [
   { label: "知る人ぞ知る本", href: "/hidden" },
   { label: "このサイトについて", href: "/about" },
+  { label: "選者として参加する", href: "/apply" },
   { label: "取材依頼・お問い合わせ", href: "/contact" },
   { label: "選者一覧", href: "/selectors" },
   { label: "プライバシーポリシー", href: "/privacy" },

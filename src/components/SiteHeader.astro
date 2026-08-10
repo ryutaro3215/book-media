@@ -13,8 +13,14 @@
  *
  * JS は開閉のためだけに数行だけ使う（`aria-expanded` と Escape 対応）。
  * 外部ライブラリは使わない。
+ *
+ * ## 切り替えを md から lg に上げた理由
+ * 「おすすめを投稿する」ボタンを足したことで、横並びの要素が
+ * ロゴ・ナビ4項目・検索・ボタンの4つになった。**768px では収まらず**、
+ * 検索欄が潰れるかボタンがはみ出す。タブレット幅は開閉パネル側に寄せ、
+ * パネルにはナビ・検索・投稿ボタンが全部入っているので機能は落ちない。
  */
-import { NAV, SITE } from "../config";
+import { APPLY_CTA, NAV, SITE } from "../config";
 ---
 
 <header
@@ -22,7 +28,7 @@ import { NAV, SITE } from "../config";
   data-site-header
 >
   <div
-    class="flex h-[68px] items-center justify-between gap-4 px-5 md:gap-8 md:px-7"
+    class="flex h-[68px] items-center justify-between gap-4 px-5 lg:gap-8 lg:px-7"
   >
     <a
       href="/"
@@ -32,7 +38,7 @@ import { NAV, SITE } from "../config";
     </a>
 
     {/* デスクトップ: ナビを横並びで出す */}
-    <nav class="hidden flex-auto items-center gap-[26px] md:flex">
+    <nav class="hidden flex-auto items-center gap-[26px] lg:flex">
       {
         NAV.map((item) => (
           <a
@@ -49,7 +55,7 @@ import { NAV, SITE } from "../config";
     <form
       action="/search"
       role="search"
-      class="hidden h-[38px] items-center gap-2 rounded-full border border-rule bg-canvas px-3.5 md:flex md:flex-[0_1_300px]"
+      class="hidden h-[38px] items-center gap-2 rounded-full border border-rule bg-canvas px-3.5 lg:flex lg:flex-[0_1_260px] xl:flex-[0_1_300px]"
     >
       <svg
         width="15"
@@ -74,10 +80,19 @@ import { NAV, SITE } from "../config";
       />
     </form>
 
+    {/* デスクトップ: 投稿への導線。ナビの並びには入れず、
+        ボタンとして独立させる（読む導線と書く導線を混ぜない） */}
+    <a
+      href={APPLY_CTA.href}
+      class="hidden flex-none rounded-full bg-accent px-4 py-2 text-sm font-medium whitespace-nowrap text-canvas no-underline hover:bg-accent-hover hover:text-canvas lg:inline-block"
+    >
+      {APPLY_CTA.label}
+    </a>
+
     {/* モバイル: アイコン2つをまとめて右端に寄せる。
         ヘッダーが justify-between なので、グループにしないと
         虫眼鏡がロゴとハンバーガーの中間に浮いてしまう */}
-    <div class="-mr-2 flex flex-none items-center md:hidden">
+    <div class="-mr-2 flex flex-none items-center lg:hidden">
       {/* 検索は虫眼鏡だけ出し、押すとヘッダー内に入力欄を展開する。
           常時入力欄を置くと狭い画面でプレースホルダが読めないため */}
       <button
@@ -149,7 +164,7 @@ import { NAV, SITE } from "../config";
   <div
     id="mobile-search"
     hidden
-    class="border-t border-rule bg-cover-placeholder px-5 py-3 shadow-[0_2px_6px_rgba(41,41,41,0.06)] md:hidden"
+    class="border-t border-rule bg-cover-placeholder px-5 py-3 shadow-[0_2px_6px_rgba(41,41,41,0.06)] lg:hidden"
   >
     <form
       action="/search"
@@ -189,7 +204,7 @@ import { NAV, SITE } from "../config";
   <div
     id="mobile-nav"
     hidden
-    class="border-t border-rule bg-cover-placeholder px-5 py-2 shadow-[0_2px_6px_rgba(41,41,41,0.06)] md:hidden"
+    class="border-t border-rule bg-cover-placeholder px-5 py-2 shadow-[0_2px_6px_rgba(41,41,41,0.06)] lg:hidden"
   >
     <nav class="flex flex-col">
       {
@@ -203,6 +218,16 @@ import { NAV, SITE } from "../config";
         ))
       }
     </nav>
+
+    {/* モバイル: 投稿への導線もパネルの中に置く。
+        ナビの最後にリンクとして並べると読む導線に埋もれるため、
+        区切ってボタンにする */}
+    <a
+      href={APPLY_CTA.href}
+      class="mt-3 mb-4 block rounded-full bg-accent px-4 py-3 text-center text-[15px] font-medium text-canvas no-underline hover:bg-accent-hover hover:text-canvas"
+    >
+      {APPLY_CTA.label}
+    </a>
   </div>
 </header>
 
@@ -272,7 +297,7 @@ import { NAV, SITE } from "../config";
   });
 
   // デスクトップ幅に戻ったら閉じる（パネルが開いたまま残らないように）
-  window.matchMedia("(min-width: 48rem)").addEventListener("change", (e) => {
+  window.matchMedia("(min-width: 64rem)").addEventListener("change", (e) => {
     if (!e.matches) return;
     setNavOpen(false);
     setSearchOpen(false);
