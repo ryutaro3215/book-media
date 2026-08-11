@@ -11,6 +11,12 @@ export const SITE = {
    * 経緯は .dev/business-plan.md の「サービス名」を参照。
    */
   name: "Skrinia",
+  /**
+   * 読み方。ラテン語由来で初見では読めないため、
+   * 名乗る場所（about の書き出しなど）では添える。
+   * ヘッダーのロゴには付けない（毎ページ出ると煩い）。
+   */
+  nameReading: "スクリニア",
   /** 本番の公開URL。OGPの絶対URL生成に使う */
   url: "https://book-media.pages.dev",
   description:
