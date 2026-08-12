@@ -8,6 +8,7 @@
  * サムネイルは渡されなかった場合、枠ごと描かない（書影の有無でレイアウトが崩れない）。
  */
 import type { Interview } from "../lib/collections";
+import ArticleThumbnail from "./ArticleThumbnail.astro";
 import {
   formatDate,
   selectorOf,
@@ -26,6 +27,15 @@ interface Props {
   showDate?: boolean;
   /** サムネイル画像のURL。未指定なら枠自体を描かない */
   thumbnailUrl?: string | null;
+  /**
+   * 書影を並べたサムネイルを出すか。
+   *
+   * `thumbnailUrl` は1枚の画像を貼るための口で、こちらはトップページの
+   * カードと同じ「その記事の本を並べた」サムネイルを行の左に置く。
+   * 本の記事なのに一覧に本が写っていない状態を解消するためのもの。
+   * 手動サムネイル（public/thumbnails/<slug>.jpg）があればそれが優先される。
+   */
+  showThumbnail?: boolean;
   /** 見出しのHTMLタグ。リストの文脈に合わせて変える */
   headingLevel?: "h2" | "h3" | "div";
   /** 追加クラス */
@@ -38,22 +48,30 @@ const {
   showSelector = true,
   showDate = true,
   thumbnailUrl = null,
+  showThumbnail = false,
   headingLevel = "h3",
   class: className = "",
 } = Astro.props;
 
 const Heading = headingLevel;
-const { title, topic, publishedAt } = entry.data;
+const { title, topic, publishedAt, slug, books } = entry.data;
 const selector = selectorOf(entry);
 ---
 
 <a
   href={toArticleHref(entry)}
   class:list={[
-    "flex items-start gap-5 border-t border-rule py-7 text-ink no-underline last:border-b hover:text-ink",
+    "group flex items-start gap-5 border-t border-rule py-7 text-ink no-underline last:border-b hover:text-ink",
     className,
   ]}
 >
+  {
+    showThumbnail && !thumbnailUrl && (
+      <div class="aspect-[236/150] w-[104px] flex-none overflow-hidden border border-rule transition-colors group-hover:border-brand sm:w-[152px]">
+        <ArticleThumbnail slug={slug} books={books} fluid />
+      </div>
+    )
+  }
   {
     thumbnailUrl && (
       <div class="h-[72px] w-24 flex-none overflow-hidden bg-cover-placeholder">

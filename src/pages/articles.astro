@@ -73,7 +73,7 @@ const description = `${SITE.name}の記事${articles.length}本の一覧。新�
           </p>
         ) : (
           articles.map((entry) => (
-            <ArticleListItem entry={entry} headingLevel="h2" />
+            <ArticleListItem entry={entry} headingLevel="h2" showThumbnail />
           ))
         )
       }

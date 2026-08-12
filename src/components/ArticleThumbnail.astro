@@ -41,9 +41,17 @@ interface Props {
   /** 枠の幅・高さ（px）。トップページのカードは 236×150 */
   width?: number;
   height?: number;
+  /**
+   * 枠のサイズを親に委ねる（幅・高さ 100%）。
+   *
+   * 記事一覧の行では、画面幅に応じてサムネイルの大きさを変えたい。
+   * px 固定のままだと狭い画面で本文を圧迫するため、
+   * 親側で `w-[…] sm:w-[…]` と決められるようにしてある。
+   */
+  fluid?: boolean;
 }
 
-const { slug, books, width = 236, height = 150 } = Astro.props;
+const { slug, books, width = 236, height = 150, fluid = false } = Astro.props;
 
 const manual = hasManualThumbnail(slug) ? resolveThumbnail(slug) : null;
 
@@ -64,7 +72,7 @@ for (let i = 0; i < covers.length; i += perRow || 1) {
 
 <div
   class="thumb bg-cover-placeholder"
-  style={`width:${width}px;height:${height}px`}
+  style={fluid ? "width:100%;height:100%" : `width:${width}px;height:${height}px`}
 >
   {
     manual ? (
@@ -125,7 +133,9 @@ for (let i = 0; i < covers.length; i += perRow || 1) {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 14px 10px 10px;
+    /* 枠の幅に対する比で取る。236px のとき従来の 14px / 10px と同じになり、
+       記事一覧の小さい枠では余白も一緒に縮む（px 固定だと余白だけが目立つ） */
+    padding: 6% 4% 4%;
     box-sizing: border-box;
   }
 
