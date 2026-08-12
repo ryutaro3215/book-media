@@ -12,6 +12,16 @@ import fs from "node:fs";
 import path from "node:path";
 import YAML from "yaml";
 
+/**
+ * 記事の置き場所。**ここ直下の `.md` だけ**が記事として扱われる
+ * （`listArticles` は再帰しない）。サイトのビルドも同じで、
+ * `src/content.config.ts` の glob がこのディレクトリを base にしている。
+ *
+ * 手を離れた記事は `src/content/tmp/` に移す。**同じ `src/content/` の下でも、
+ * このディレクトリの外にあれば /admin の一覧にもサイトにも出てこない。**
+ * `draft: true` と違い、書きかけの一覧からも消えるので、
+ * 当面さわらないものを寝かせるのに使う。戻すときはここへ移動するだけでよい。
+ */
 export const ARTICLES_DIR = path.join(process.cwd(), "src/content/interviews");
 
 /**
