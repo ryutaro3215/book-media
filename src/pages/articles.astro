@@ -1,0 +1,84 @@
+---
+/**
+ * 記事一覧（すべての記事）。
+ *
+ * トップの「新着の記事」は横スクロールのカード列で、**全記事をそこに流していた**。
+ * 記事が20本を超えたあたりから、奥に何本あるか分からないうえに、
+ * 「新着を知る」用途と「探す」用途のどちらにも中途半端になった。
+ * 探す側をこのページに分離し、トップは新着だけを見せる。
+ *
+ * 縦一列のリストにするのは、記事が何百本になっても破綻しないため。
+ * 行の体裁は分野別アーカイブ・選者ページと同じ ArticleListItem を使う。
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SEO from "../components/SEO.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import ArticleListItem from "../components/ArticleListItem.astro";
+import { SITE } from "../config";
+import {
+  getAllInterviews,
+  getTopicGroups,
+  toTopicHref,
+} from "../lib/collections";
+
+const articles = await getAllInterviews();
+const topics = await getTopicGroups();
+
+const title = `記事一覧 | ${SITE.name}`;
+const description = `${SITE.name}の記事${articles.length}本の一覧。新しい順に並べています。`;
+---
+
+<BaseLayout headSlot>
+  <SEO
+    slot="head"
+    title={title}
+    description={description}
+    canonical={Astro.url.pathname}
+  />
+  <SiteHeader />
+
+  <main class="mx-auto max-w-body px-5 pt-14 pb-24">
+    <div class="flex flex-wrap items-baseline gap-x-3.5 gap-y-2">
+      <h1 class="m-0 text-[clamp(26px,3.6vw,32px)] leading-[1.4] font-bold">
+        記事一覧
+      </h1>
+      <span class="text-sm text-muted">記事{articles.length}本</span>
+    </div>
+
+    {/* テーマで絞りたい人のための導線。ページ内フィルタではなく
+        テーマ別アーカイブへのリンクにしてある（JSを増やさず、
+        リンク先がそのまま検索エンジンに拾われる） */}
+    {
+      topics.length > 0 && (
+        <div class="mt-6 flex flex-wrap gap-3">
+          {topics.map((t) => (
+            <a
+              href={toTopicHref(t.name)}
+              class="rounded-full border border-rule px-4 py-[9px] text-sm text-ink no-underline hover:border-accent hover:text-accent"
+            >
+              {t.name}
+              <span class="ml-1.5 text-muted">{t.articles.length}</span>
+            </a>
+          ))}
+        </div>
+      )
+    }
+
+    <div class="mt-10">
+      {
+        articles.length === 0 ? (
+          <p class="m-0 text-[15px] leading-[1.9] text-muted">
+            最初の記事を準備しています。
+          </p>
+        ) : (
+          articles.map((entry) => (
+            <ArticleListItem entry={entry} headingLevel="h2" />
+          ))
+        )
+      }
+    </div>
+
+    <SiteFooter />
+  </main>
+</BaseLayout>

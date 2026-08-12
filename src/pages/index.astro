@@ -28,6 +28,16 @@ import {
 const articles = await getAllInterviews();
 const selectors = await getSelectorGroups();
 const topics = await getTopicGroups();
+
+/**
+ * トップに出す新着の本数。
+ *
+ * 以前は全記事をここに流していたが、記事が20本を超えると
+ * 横スクロールの奥に何本あるか分からず、探す用途にも新着を知る用途にも
+ * 中途半端になった。**探すのは /articles の役目**にして、ここは新着だけ出す。
+ */
+const LATEST_COUNT = 8;
+const latest = articles.slice(0, LATEST_COUNT);
 ---
 
 <BaseLayout headSlot>
@@ -59,6 +69,17 @@ const topics = await getTopicGroups();
         <div class="mb-6 flex items-center gap-3.5">
           <span class="h-[22px] w-1 flex-none bg-brand" aria-hidden="true"></span>
           <h2 class="m-0 text-[26px] leading-[1.5] font-bold">新着の記事</h2>
+          {/* 新着は8本まで。残りは記事一覧へ送る */}
+          {
+            articles.length > LATEST_COUNT && (
+              <a
+                href="/articles"
+                class="ml-auto flex-none text-[13px] whitespace-nowrap no-underline"
+              >
+                すべての記事を見る（{articles.length}本）→
+              </a>
+            )
+          }
         </div>
 
         {/* 記事0本のとき、見出しだけが残って空欄になるのを避ける。
@@ -73,7 +94,7 @@ const topics = await getTopicGroups();
 
         <div class="flex gap-6 overflow-x-auto pb-2">
           {
-            articles.map((entry) => (
+            latest.map((entry) => (
               <a
                 href={toArticleHref(entry)}
                 class="group flex w-[236px] flex-none flex-col gap-3 text-inherit no-underline hover:text-inherit"
@@ -112,15 +133,17 @@ const topics = await getTopicGroups();
                 テーマから探す
               </h2>
             </div>
-            {/* グリッドではなく横スクロールの列にする。
-                グリッドだと画面幅に応じてカードが伸び縮みし、
-                「新着の記事」「選者から探す」と挙動が揃わない。
-                固定幅にすることで、どの画面幅でもカードの大きさが変わらない */}
-            <div class="flex gap-6 overflow-x-auto pb-2">
+            {/* 折り返すグリッドにする。
+                以前は「新着の記事」と挙動を揃えるために横スクロールにしていたが、
+                **テーマは数が限られていて全部見えることのほうが価値が高い**。
+                横スクロールだと奥に何テーマあるか分からず、
+                記事数の偏り（どこに厚みがあるか）も読み取れなかった。
+                新着だけは「続きがある」ことを示す横スクロールのままにする */}
+            <div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
               {topics.map((t) => (
                 <a
                   href={toTopicHref(t.name)}
-                  class="flex w-[220px] flex-none flex-col gap-2 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
+                  class="flex h-full flex-col gap-2 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
                 >
                   <span class="text-base font-bold">{t.name}</span>
                   <span class="text-[13px] text-muted">
@@ -143,11 +166,11 @@ const topics = await getTopicGroups();
                 選者から探す
               </h2>
             </div>
-            <div class="flex gap-6 overflow-x-auto pb-2">
+            <div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
               {selectors.map((s) => (
                 <a
                   href={toSelectorHref(s.id)}
-                  class="flex w-[220px] flex-none flex-col gap-3 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
+                  class="flex h-full flex-col gap-3 border border-rule p-5 text-inherit no-underline hover:border-brand hover:text-inherit"
                 >
                   <SelectorAvatar id={s.id} name={s.selector.name} size={48} />
                   <div class="text-base font-bold">{s.selector.name}</div>
