@@ -399,6 +399,11 @@
     "source": "googlebooks",
     "at": "2026-08-06"
   },
+  "9784140910221": {
+    "url": "https://books.google.com/books/content?id=QfHlAQAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-12"
+  },
   "9784150124113": {
     "url": "https://books.google.com/books/content?id=8mrYzwEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",
@@ -709,6 +714,11 @@
     "source": "googlebooks",
     "at": "2026-08-06"
   },
+  "9784621045930": {
+    "url": "https://books.google.com/books/content?id=UQp_QgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-12"
+  },
   "9784622041061": {
     "url": "https://books.google.com/books/content?id=PeSRAAAAIAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",
@@ -899,6 +909,11 @@
     "source": "googlebooks",
     "at": "2026-08-06"
   },
+  "9784797341379": {
+    "url": "https://books.google.com/books/content?id=PBxFBdU5vK4C&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-12"
+  },
   "9784798918693": {
     "url": "https://books.google.com/books/content?id=fkcp0AEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",
@@ -979,6 +994,11 @@
     "source": "googlebooks",
     "at": "2026-08-06"
   },
+  "9784903342641": {
+    "url": "https://cover.openbd.jp/9784903342641.jpg",
+    "source": "openbd",
+    "at": "2026-08-12"
+  },
   "9784905158790": {
     "url": "https://cover.openbd.jp/9784905158790.jpg",
     "source": "openbd",
@@ -993,5 +1013,15 @@
     "url": "https://cover.openbd.jp/9784910024028.jpg",
     "source": "openbd",
     "at": "2026-08-06"
+  },
+  "9784924523142": {
+    "url": "https://cover.openbd.jp/9784924523142.jpg",
+    "source": "openbd",
+    "at": "2026-08-12"
+  },
+  "9784924523289": {
+    "url": "https://cover.openbd.jp/9784924523289.jpg",
+    "source": "openbd",
+    "at": "2026-08-12"
   }
 }
