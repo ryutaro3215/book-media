@@ -3,7 +3,7 @@ title: "明治大学経営学部が推薦する、ビジネスの本質と「働
 seoTitle: "明治大学推薦。もしドラから里山資本主義まで、経営と社会を相対化する5冊"
 slug: "meiji-u-business-management"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: false
+draft: true
 publishedAt: 2026-08-06
 updatedAt: 2026-08-08
 description: "明治大学の経営学部がおすすめする本の紹介。実務の目線から"

@@ -3,7 +3,7 @@ title: "一橋大学の先生がおすすめする「法と経済学」の境界
 seoTitle: "『法と経済学』。アダム・スミスから社会選択理論まで5選"
 slug: "yuhikaku-law-and-economics"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: false
+draft: true
 publishedAt: 2026-08-06
 updatedAt: 2026-08-10
 description: "一橋大学の先生らが紹介する、法律から経済学まで垣根を超えて理解するためにおすすめの本たちを紹介する。"
