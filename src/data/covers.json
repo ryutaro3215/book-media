@@ -79,6 +79,11 @@
     "source": "fallback",
     "at": "2026-08-12"
   },
+  "9784003420959": {
+    "url": "https://books.google.com/books/content?id=1m2XOwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "source": "googlebooks",
+    "at": "2026-08-12"
+  },
   "9784003900031": {
     "url": "https://books.google.com/books/content?id=DtjbzQEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "source": "googlebooks",

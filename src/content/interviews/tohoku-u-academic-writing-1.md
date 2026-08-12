@@ -3,7 +3,7 @@ title: "東北大学が薦める、レポート・論文の書き方の本（前
 seoTitle: "東北大学　レポート・論文の書き方　おすすめの本"
 slug: "tohoku-u-academic-writing-1"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: true
+draft: false
 publishedAt: 2026-08-12
 updatedAt: 2026-08-12
 description: "東北大学が学生向けに公開している論文作法のおすすめリスト19冊から、前編として10冊を紹介する。"
