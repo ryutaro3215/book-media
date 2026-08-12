@@ -3,7 +3,7 @@ title: "東北大学が薦める、大学で学ぶ力を身につける本9冊"
 seoTitle: "東北大学　大学での学び方・スタディスキルズ　おすすめの本"
 slug: "tohoku-u-university-learning"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: true
+draft: false
 publishedAt: 2026-08-12
 updatedAt: 2026-08-12
 description: "東北大学附属図書館が学生向けに公開しているブックリストから、大学での学び方そのものを身につけるための9冊を紹介する。"

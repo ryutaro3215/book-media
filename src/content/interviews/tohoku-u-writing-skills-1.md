@@ -3,7 +3,7 @@ title: "東北大学が薦める、文章の書き方の本（前編）"
 seoTitle: "東北大学　文章の書き方　おすすめの本"
 slug: "tohoku-u-writing-skills-1"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: true
+draft: false
 publishedAt: 2026-08-12
 updatedAt: 2026-08-12
 description: "東北大学附属図書館が学生向けに公開している文章の書き方のブックリスト22冊から、前編として11冊を紹介する。"
