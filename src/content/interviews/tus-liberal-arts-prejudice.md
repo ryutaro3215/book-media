@@ -3,7 +3,7 @@ title: "東京理科大学教養教育研究院の教授陣が、専門外であ
 seoTitle: "東京理科大教員が推薦。差別の哲学からずるい言葉まで疑う5冊"
 slug: "tus-liberal-arts-prejudice"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: false 
+draft: true
 publishedAt: 2026-08-06
 updatedAt: 2026-08-08
 description: "東京理科大学の教員が選んだ、差別について考えるための5冊"

@@ -3,7 +3,7 @@ title: "大阪大学人間科学研究科の教員が「私の一冊」として
 seoTitle: "大阪大学人間科学部教員の『私の一冊』。ミルグラム服従実験から心理学まで5選"
 slug: "osaka-u-human-sciences-mind"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: false 
+draft: true
 publishedAt: 2026-08-06
 updatedAt: 2026-08-08
 description: "大阪大学の人間科学科の教員がおすすめする本を紹介。"

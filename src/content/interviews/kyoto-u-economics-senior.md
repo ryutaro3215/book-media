@@ -3,7 +3,7 @@ title: "京都大学経済学部の先輩たちが熱く推す、資本主義社
 seoTitle: "京大経済学部生が後輩に選んだおすすめ本。ミクロの力からプラットフォーム戦略まで5選"
 slug: "kyoto-u-economics-senior"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: false 
+draft: true
 publishedAt: 2026-08-06
 updatedAt: 2026-08-10
 description: "京都大学の経済学部生が、後輩におすすめしたい経済学・社会学に関する本をまとめたもの。"

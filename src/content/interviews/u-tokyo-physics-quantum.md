@@ -3,7 +3,7 @@ title: "東大物理の歩き方。驚きを科学する、極微の量子から
 seoTitle: "東大物理の最前線。小林研介教授らが薦める、素粒子から物性物理まで物理学を歩く5冊"
 slug: "u-tokyo-physics-quantum"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: false 
+draft: true
 publishedAt: 2026-08-06
 updatedAt: 2026-08-10
 description: "東大がおすすめする現代の物理学について学ぶ時に使える本の紹介。"

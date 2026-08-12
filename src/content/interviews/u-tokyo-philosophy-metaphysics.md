@@ -3,7 +3,7 @@ title: "東大教師が新入生にすすめる、自己を疑い思考の深淵
 seoTitle: "東大教師推薦の哲学入門。自己と他者、西洋と東洋の知性を鍛え直す5冊"
 slug: "u-tokyo-philosophy-metaphysics"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: false
+draft: true
 publishedAt: 2026-08-06
 updatedAt: 2026-08-08
 description: "東京大学が新入生に薦める本を一部抜粋して紹介。"
