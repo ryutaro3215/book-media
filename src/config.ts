@@ -43,6 +43,7 @@ export const SITE = {
 
 /** グローバルナビゲーション（design/SiteHeader.dc.html 準拠） */
 export const NAV = [
+  { label: "記事一覧", href: "/articles" },
   { label: "知る人ぞ知る本", href: "/hidden" },
   { label: "ジャンル一覧", href: "/topics" },
   { label: "選者一覧", href: "/selectors" },

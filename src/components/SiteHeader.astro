@@ -28,7 +28,7 @@ import { APPLY_CTA, NAV, SITE } from "../config";
   data-site-header
 >
   <div
-    class="flex h-[68px] items-center justify-between gap-4 px-5 lg:gap-8 lg:px-7"
+    class="flex h-[68px] items-center justify-between gap-4 px-5 lg:gap-5 lg:px-7 xl:gap-8"
   >
     <a
       href="/"
@@ -37,13 +37,15 @@ import { APPLY_CTA, NAV, SITE } from "../config";
       {SITE.name}<span class="text-brand">.</span>
     </a>
 
-    {/* デスクトップ: ナビを横並びで出す */}
-    <nav class="hidden flex-auto items-center gap-[26px] lg:flex">
+    {/* デスクトップ: ナビを横並びで出す。
+        「記事一覧」を足して5項目になり、1024px では 26px の間隔だと
+        検索欄と投稿ボタンを押し出す。lg では詰めて、xl で元の間隔に戻す */}
+    <nav class="hidden flex-auto items-center gap-[18px] lg:flex xl:gap-[26px]">
       {
         NAV.map((item) => (
           <a
             href={item.href}
-            class="border-b-2 border-transparent py-1 text-sm font-medium text-ink no-underline hover:border-brand hover:text-brand"
+            class="border-b-2 border-transparent py-1 text-sm font-medium whitespace-nowrap text-ink no-underline hover:border-brand hover:text-brand"
           >
             {item.label}
           </a>
@@ -55,7 +57,7 @@ import { APPLY_CTA, NAV, SITE } from "../config";
     <form
       action="/search"
       role="search"
-      class="hidden h-[38px] items-center gap-2 rounded-full border border-rule bg-canvas px-3.5 lg:flex lg:flex-[0_1_260px] xl:flex-[0_1_300px]"
+      class="hidden h-[38px] items-center gap-2 rounded-full border border-rule bg-canvas px-3.5 lg:flex lg:flex-[0_1_190px] xl:flex-[0_1_300px]"
     >
       <svg
         width="15"
