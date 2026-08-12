@@ -34,7 +34,7 @@ export function yamlString(value) {
 
 /**
  * 複数行になりうる本文をブロックスカラー（`|-`）で出す。
- * 選書理由は300〜600字あり、1行に押し込むと編集できなくなる。
+ * 概要・選書理由は300〜600字あり、1行に押し込むと編集できなくなる。
  */
 export function block(text, indent) {
   const pad = " ".repeat(indent);
@@ -104,7 +104,7 @@ export function buildArticle(data) {
     lines.push(`    year: ${Number(b.year) || new Date().getFullYear()}`);
     lines.push(`    isbn: ${yamlString(b.isbn)}`);
     lines.push(
-      `    reason: ${block(b.reason || "TODO: この本を薦める理由を300〜600字で書く", 6)}`,
+      `    reason: ${block(b.reason || "TODO: この本の概要と薦める理由を300〜600字で書く", 6)}`,
     );
     if (b.bestReason) {
       lines.push(`    bestReason: ${block(b.bestReason, 6)}`);

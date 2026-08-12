@@ -65,13 +65,46 @@ function cleanOpenBdAuthor(raw) {
     .trim();
 }
 
+/**
+ * 内容紹介は「概要・選書理由」欄の下書きに使う。
+ * openBD も Google Books も HTML タグ混じりで返すので、素のテキストに落とす。
+ */
+function cleanDescription(raw) {
+  return String(raw ?? "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div)>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * openBD の内容紹介は onix.CollateralDetail.TextContent にある。
+ * TextType は 03（内容紹介）と 04（目次）が混ざるので **03 だけ**を採る。
+ * 目次を選書理由欄に流し込んでも書く材料にならない。
+ */
+function openBdDescription(record) {
+  const list = record?.onix?.CollateralDetail?.TextContent;
+  if (!Array.isArray(list)) return "";
+  const item =
+    list.find((t) => t?.TextType === "03") ??
+    list.find((t) => t?.TextType === "02");
+  return cleanDescription(item?.Text);
+}
+
 async function fetchOpenBd(isbn) {
   try {
     const res = await fetch(`https://api.openbd.jp/v1/get?isbn=${isbn}`, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     if (!res.ok) return null;
-    const s = (await res.json())?.[0]?.summary;
+    const record = (await res.json())?.[0];
+    const s = record?.summary;
     if (!s?.title) return null;
     return {
       title: String(s.title).trim(),
@@ -80,6 +113,7 @@ async function fetchOpenBd(isbn) {
       authorRaw: String(s.author ?? "").trim(),
       publisher: String(s.publisher ?? "").trim(),
       year: parseYear(s.pubdate),
+      description: openBdDescription(record),
     };
   } catch {
     return null;
@@ -104,6 +138,7 @@ async function fetchGoogleBooks(isbn) {
       translator: (v.authors ?? [])[1] ?? "",
       publisher: String(v.publisher ?? "").trim(),
       year: parseYear(v.publishedDate),
+      description: cleanDescription(v.description),
     };
   } catch {
     return null;
@@ -135,6 +170,8 @@ async function fetchBook(isbn) {
     translator: g?.translator || "",
     publisher: o?.publisher || g?.publisher || "",
     year: o?.year ?? g?.year ?? "",
+    // 内容紹介。日本語書籍は openBD のほうが具体的なので先に見る
+    description: o?.description || g?.description || "",
     // 確認画面で「どちらが何を返したか」を見せるための生データ
     raw: { openbd: o, googlebooks: g },
   };
@@ -353,7 +390,7 @@ async function main() {
   // --- 書籍 ---
   console.log(
     `\n■ 書籍を${bookCount}冊登録します。ISBN13 を順に入れてください（ハイフン可）。\n` +
-      "  書誌は自動取得し、確認と選書理由は生成後のファイルで書きます。\n",
+      "  書誌と内容紹介は自動取得し、確認と選書理由の加筆は生成後のファイルで書きます。\n",
   );
 
   const books = [];
@@ -407,7 +444,11 @@ async function main() {
       publisher: info.publisher || "TODO: 出版社",
       year: info.year || 0,
       isbn,
-      reason: "TODO: この本を薦める理由を300〜600字で書く",
+      // 取れた内容紹介を下書きとして置く。**そのままでは公開しない前提**で、
+      // 何の本かを書き写す手間だけを省く。取れなければ TODO のまま
+      reason: info.description
+        ? `${info.description}\n\nTODO: 上の概要を確かめたうえで、この本を薦める理由を書く（あわせて300〜600字）`
+        : "TODO: この本の概要と薦める理由を300〜600字で書く",
     });
   }
 
@@ -433,7 +474,7 @@ async function main() {
   ) {
     console.log(
       `\n  「${books[bestIndex].title}」をいちばんよかった1冊として選んだ理由を書きます。\n` +
-        "  この1冊を挙げた決め手。上の選書理由と重なっても構いません。\n" +
+        "  この1冊を挙げた決め手。上の概要・選書理由と重なっても構いません。\n" +
         "  ここは生成後のファイルで書いても構いません（TODO: のまま出力されます）。",
     );
     books[bestIndex].bestReason =
@@ -480,7 +521,7 @@ async function main() {
   }
   console.log("次にやること:");
   console.log(
-    "  1. ファイルをエディタで開き、書誌の確認・選書理由・導入文を書く",
+    "  1. ファイルをエディタで開き、書誌の確認・概要・選書理由・導入文を書く",
   );
   console.log(
     "     TODO: の箇所がすべて対象。draft: true のあいだはビルドが通る",
