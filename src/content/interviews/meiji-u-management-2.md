@@ -3,7 +3,7 @@ title: "明治大学経営学部が薦める、学部生のための本（後編
 seoTitle: "明治大学経営学部　おすすめの本　経営・会計・公共経営（後編）"
 slug: "meiji-u-management-2"
 # 書き上がったら false にする。そこで初めて未記入（TODO:）が検出される
-draft: true
+draft: false
 publishedAt: 2026-08-12
 updatedAt: 2026-08-12
 description: "明治大学経営学部が学部生向けに薦める本のリストから、後編として10冊を紹介する。経営・会計・公共経営・一般教育の4分野にわたる。"
