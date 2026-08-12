@@ -69,17 +69,6 @@ const latest = articles.slice(0, LATEST_COUNT);
         <div class="mb-6 flex items-center gap-3.5">
           <span class="h-[22px] w-1 flex-none bg-brand" aria-hidden="true"></span>
           <h2 class="m-0 text-[26px] leading-[1.5] font-bold">新着の記事</h2>
-          {/* 新着は8本まで。残りは記事一覧へ送る */}
-          {
-            articles.length > LATEST_COUNT && (
-              <a
-                href="/articles"
-                class="ml-auto flex-none text-[13px] whitespace-nowrap no-underline"
-              >
-                すべての記事を見る（{articles.length}本）→
-              </a>
-            )
-          }
         </div>
 
         {/* 記事0本のとき、見出しだけが残って空欄になるのを避ける。
@@ -121,6 +110,20 @@ const latest = articles.slice(0, LATEST_COUNT);
             ))
           }
         </div>
+
+        {/* 新着は8本まで。残りは記事一覧へ送る。
+            見出しの右に置いていたときは、カード列に目が行って気づかれなかった。
+            スクロールし終えた位置＝「続きが欲しくなる位置」に置く */}
+        {
+          articles.length > LATEST_COUNT && (
+            <a
+              href="/articles"
+              class="mt-6 inline-flex items-center gap-1.5 border border-rule px-4 py-2.5 text-sm text-ink no-underline hover:border-brand hover:text-brand"
+            >
+              すべての記事を見る（{articles.length}本）→
+            </a>
+          )
+        }
       </section>
 
       {/* テーマから探す */}
