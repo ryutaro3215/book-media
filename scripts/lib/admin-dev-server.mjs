@@ -116,6 +116,39 @@ function cleanOpenBdTitle(raw) {
 }
 
 /**
+ * 内容紹介（description）の整形。
+ * openBD は HTML タグ混じり、Google Books は `<p>` や `<br>` を含めて返す。
+ * 記事の「概要・選書理由」欄にそのまま入る文字なので、素のテキストに落とす。
+ */
+function cleanDescription(raw) {
+  return String(raw ?? "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div)>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * openBD の内容紹介は onix.CollateralDetail.TextContent にある。
+ * TextType は 03（内容紹介）と 04（目次）が混ざるので、**03 だけ**を採る。
+ * 目次を選書理由欄に流し込んでも書く材料にならない。
+ */
+function openBdDescription(record) {
+  const list = record?.onix?.CollateralDetail?.TextContent;
+  if (!Array.isArray(list)) return "";
+  const item =
+    list.find((t) => t?.TextType === "03") ??
+    list.find((t) => t?.TextType === "02");
+  return cleanDescription(item?.Text);
+}
+
+/**
  * 取得結果は3状態で返す。
  *
  *   found       値が取れた
@@ -137,7 +170,8 @@ async function fetchOpenBd(isbn) {
     });
     if (res.status === 429 || res.status >= 500) return unavailable();
     if (!res.ok) return { status: "none" };
-    const s = (await res.json())?.[0]?.summary;
+    const record = (await res.json())?.[0];
+    const s = record?.summary;
     if (!s?.title) return { status: "none" };
     return {
       status: "found",
@@ -147,6 +181,7 @@ async function fetchOpenBd(isbn) {
         author: cleanOpenBdAuthor(s.author),
         publisher: String(s.publisher ?? "").trim(),
         year: parseYear(s.pubdate),
+        description: openBdDescription(record),
       },
     };
   } catch {
@@ -176,6 +211,7 @@ async function fetchGoogleBooks(isbn) {
         translator: authors[1] ?? "",
         publisher: String(v.publisher ?? "").trim(),
         year: parseYear(v.publishedDate),
+        description: cleanDescription(v.description),
       },
     };
   } catch {
@@ -251,6 +287,9 @@ async function lookupIsbn(isbn) {
       ? ""
       : o?.publisher || g?.publisher || "",
     year: o?.year ?? g?.year ?? "",
+    // 内容紹介。日本語書籍は openBD のほうが具体的なので先に見る。
+    // 画面側では「概要・選書理由」欄が**空のときだけ**入れる（書いた文を消さない）
+    description: o?.description || g?.description || "",
     warnings,
     degraded,
   };

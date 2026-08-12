@@ -9,12 +9,18 @@ import {
   TOPIC_NAMES,
 } from "./lib/topics";
 
-/** CLI が書き込むプレースホルダかどうか */
+/**
+ * CLI が書き込むプレースホルダかどうか。
+ *
+ * 概要・選書理由には、APIから取れた内容紹介を先頭に置いたうえで
+ * 「TODO: …理由を書く」を続ける。**先頭だけを見ると素通りする**ので、
+ * 行頭の TODO: をどこにあっても拾う。
+ */
 function isPlaceholder(value: string): boolean {
-  return value.trimStart().startsWith("TODO:");
+  return /(^|\n)\s*TODO:/.test(value);
 }
 
-/** 1冊分の書誌情報と選書理由。 */
+/** 1冊分の書誌情報と、概要・選書理由。 */
 const bookSchema = z.object({
   title: z.string().min(1),
   author: z.string().min(1),
@@ -23,7 +29,7 @@ const bookSchema = z.object({
   year: z.number().int(),
   /** ハイフンなしの13桁のみ。`978-4-…` 形式はビルドエラーにする */
   isbn: z.string().regex(/^\d{13}$/, "isbn は13桁の数字のみ（ハイフン不可）"),
-  /** 選書理由。draft のあいだは `TODO: …` のままでよい */
+  /** 概要・選書理由。draft のあいだは `TODO: …` のままでよい */
   reason: z.string().min(1),
   /**
    * **この1冊を「いちばんよかった」として選んだ理由**。
@@ -203,7 +209,7 @@ const interviews = defineCollection({
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["books", i, "reason"],
-            message: `${i + 1}冊目の選書理由が未記入です（TODO: のまま）`,
+            message: `${i + 1}冊目の概要・選書理由が未記入です（TODO: のまま）`,
           });
         }
         if (book.bestReason && isPlaceholder(book.bestReason)) {

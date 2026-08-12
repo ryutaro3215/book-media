@@ -11,7 +11,7 @@
  * どちらも「画面がある」だけで解けるので、frontmatter の入力だけを画面にした。
  *
  * ## 長文もここで書く（段階2）
- * description / 選書理由 / いちばんよかった1冊の理由 / 本文を、この画面で書けるようにした。
+ * description / 概要・選書理由 / いちばんよかった1冊の理由 / 本文を、この画面で書けるようにした。
  * 既存の記事を開いて直せるので、書きかけのまま閉じてよい。
  *
  * **導入文とまとめは1つの入力欄**にしてある。記事ページは frontmatter の外の
@@ -432,15 +432,18 @@ const selectorList = Object.entries(
               </div>
             </div>
             <label class="field">
-              <span>選書理由</span>
+              <span>概要・選書理由</span>
               <textarea class="breason" rows="6" data-count="300,600"></textarea>
-              <small>なぜこの本を薦めるのか。<b class="counter"></b></small>
+              <small>
+                どんな本か（ISBNの「取得」で内容紹介が入ります）と、なぜこの本を薦めるのか。
+                <b class="counter"></b>
+              </small>
             </label>
             <label class="field best-field" hidden>
               <span>この1冊を選んだ理由</span>
               <textarea class="bbest" rows="4" data-count="150,300"></textarea>
               <small>
-                この1冊を挙げた決め手。上の選書理由と重なっても構いません。
+                この1冊を挙げた決め手。上の概要・選書理由と重なっても構いません。
                 <b class="counter"></b>
               </small>
             </label>
@@ -635,6 +638,13 @@ const selectorList = Object.entries(
                 if (data.publisher)
                   row.querySelector(".bpublisher").value = data.publisher;
                 if (data.year) row.querySelector(".byear").value = data.year;
+                // 内容紹介は「概要・選書理由」欄が**空のときだけ**入れる。
+                // 書きかけの理由を取得ボタンで消さないため
+                const reason = row.querySelector(".breason");
+                if (data.description && reason.value.trim() === "") {
+                  reason.value = data.description;
+                  reason.dispatchEvent(new Event("input", { bubbles: true }));
+                }
                 warn.textContent = data.warnings.length
                   ? `要確認: ${data.warnings.join(" / ")}`
                   : "取得しました。現物と照らして確認してください";
