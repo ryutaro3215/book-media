@@ -36,7 +36,7 @@
  *   npm run sync:covers -- --force   記録済みも引き直す
  * この2つのコマンドを叩いたときだけ外部APIに触れる。
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 export type CoverSource = "local" | "openbd" | "googlebooks" | "fallback";
@@ -127,16 +127,43 @@ type RegistryEntry = { url: string | null; source: CoverSource; at: string };
  * 監視対象から外す（`astro.config.mjs` の `server.watch.ignored`）だけでは
  * 止まらなかった。**モジュールグラフに載せないのが確実。**
  *
- * ビルドでは1回読むだけ。dev では `/admin` が書いた直後の値を
- * `/admin` 側が自分で返すので（`admin-dev-server.mjs`）、
- * ここが古いままでも画面の表示は合う。
+ * ビルドでは実質1回読むだけ。dev では**ファイルの更新時刻を見て読み直す**
+ * （下記）。モジュールグラフに載せない代わりに、HMR も効かないため。
  */
 const REGISTRY_FILE = path.resolve(process.cwd(), "src/data/covers.json");
 
 let registryCache: Record<string, RegistryEntry> | null = null;
+/** キャッシュを作ったときの covers.json の更新時刻 */
+let registryMtimeMs = -1;
 
+/**
+ * 記録を読む。**更新時刻が変わっていたら読み直す。**
+ *
+ * ## 単純なメモ化だと dev で壊れる
+ * 以前は一度読んだら二度と読み直さなかった。すると、
+ * **`/admin` で「取得」を押して書影が引けているのに、記事ページには出ない。**
+ * dev サーバーを起動したあとに記録された本が、
+ * **サーバーを再起動するまで一律フォールバック表示**になっていた。
+ * 新しく作っている記事ほど全冊これに当たるので、
+ * 「APIからは取れているのに1冊も出ない」という見え方をする。
+ *
+ * `/admin` の画面だけは admin-dev-server が自分の書いた値を返すため正しく見え、
+ * **記事ページとの食い違いが原因を分かりにくくしていた。**
+ *
+ * ## mtime で見る理由
+ * 毎回 JSON をパースし直すと、記事1本で数十冊ぶん繰り返すことになる。
+ * `statSync` は安く、**書影が増えるのは記録が書き換わったときだけ**なので、
+ * 更新時刻の比較で十分。ビルドでは誰も書き換えないので実質1回しか読まない。
+ */
 function loadRegistry(): Record<string, RegistryEntry> {
-  if (registryCache) return registryCache;
+  let mtimeMs = -1;
+  try {
+    mtimeMs = statSync(REGISTRY_FILE).mtimeMs;
+  } catch {
+    // ファイルが無い。下の readFileSync も失敗するので {} になる
+  }
+  if (registryCache && mtimeMs === registryMtimeMs) return registryCache;
+
   let loaded: Record<string, RegistryEntry>;
   try {
     loaded = JSON.parse(readFileSync(REGISTRY_FILE, "utf8"));
@@ -145,6 +172,7 @@ function loadRegistry(): Record<string, RegistryEntry> {
     loaded = {};
   }
   registryCache = loaded;
+  registryMtimeMs = mtimeMs;
   return loaded;
 }
 
