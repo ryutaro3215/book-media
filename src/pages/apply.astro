@@ -3,6 +3,16 @@ import DocumentLayout from "../layouts/DocumentLayout.astro";
 import { SITE } from "../config";
 
 const applyFormUrl: string = SITE.applyFormUrl;
+
+/**
+ * 応募ボタンの見た目。ページ先頭と末尾の2箇所で使うため定数にしてある。
+ *
+ * **先頭にも置く理由**: DM から来た人は本文を読む前に応募するか決めており、
+ * 末尾のボタンだけだと「読み切らないと応募できない」導線になる。
+ * 先に押せる場所を出し、判断材料（掲載の基準など）は下に置く。
+ */
+const buttonClass =
+  "inline-block rounded-sm bg-accent px-6 py-3 text-[15px] font-medium text-canvas no-underline hover:bg-accent-hover hover:text-canvas";
 ---
 
 <DocumentLayout
@@ -10,6 +20,32 @@ const applyFormUrl: string = SITE.applyFormUrl;
   documentTitle={`選者として参加する | ${SITE.name}`}
   description="ご自身の詳しい領域から3冊以上の本を選んでくださる方を募集しています。"
 >
+  {
+    applyFormUrl && (
+      <section class="mb-14">
+        <p>
+          ご自身の詳しい領域から3冊以上の本を選び、その理由を書いてくださる方を募集しています。
+          <strong>肩書き・ご所属は問いません。</strong>お名前も本名でなくて構いません。
+        </p>
+        <p>
+          <a
+            href={applyFormUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class={buttonClass}
+          >
+            応募フォームへ
+          </a>
+        </p>
+        <p class="text-[15px] text-muted">
+          入力は5〜10分ほどです。掲載は基本的にさせていただく方針で、
+          公開前に必ず原稿をご確認いただきます。
+          以下は、応募いただく内容と掲載の判断についての詳しい説明です。
+        </p>
+      </section>
+    )
+  }
+
   <section>
     <h2>募集していること</h2>
     <p>
@@ -50,7 +86,15 @@ const applyFormUrl: string = SITE.applyFormUrl;
       <li>ご所属（<strong>任意</strong>。大学・研究機関・企業・書店など）</li>
       <li>専門分野</li>
       <li>Xアカウント（<strong>任意</strong>。ご記入いただいた場合のみ記事からリンクします）</li>
-      <li>その領域に詳しい理由（研究・仕事・発信・読書歴など。形式は問いません）</li>
+      <li>
+        アイコン画像（<strong>任意</strong>。記事と選者ページに表示されます。
+        顔写真でなくてもイラストやアバターで構いません。正方形に切り抜かれるため
+        200×200px 以上を推奨します。ご提供がない場合は、お名前の頭文字を丸く表示します）
+      </li>
+      <li>
+        その本を薦められる背景を一言（研究・仕事・発信・読書歴など。形式は問いません。
+        うまく書けない場合は、こちらで下書きしてご確認いただきます）
+      </li>
       <li>選書のテーマ（分野の一覧からお選びいただきます）</li>
       <li>
         推薦したい本（3冊以上。<strong>書名と著者だけで結構です</strong>。
@@ -109,7 +153,7 @@ const applyFormUrl: string = SITE.applyFormUrl;
             href={applyFormUrl}
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block rounded-sm bg-accent px-6 py-3 text-[15px] font-medium text-canvas no-underline hover:bg-accent-hover hover:text-canvas"
+            class={buttonClass}
           >
             応募フォームへ
           </a>
