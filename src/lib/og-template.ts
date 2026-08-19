@@ -81,7 +81,9 @@ async function getFonts() {
 }
 
 export type OgImageInput = {
-  /** 選者名。画像内で最も大きい要素 */
+  /** 記事タイトル。画像内で最も大きい要素 */
+  title: string;
+  /** 選者名。タイトルの下に添える */
   selectorName: string;
   /** 分野名 */
   topic: string;
@@ -89,6 +91,12 @@ export type OgImageInput = {
   bookTitles: string[];
   /** サイト名 */
   siteName: string;
+  /**
+   * 先頭の書影（base64 data URI）。satori はリモートURLを取得できないため、
+   * 呼び出し側（[...slug].png.ts）で事前にバイト列化して渡す。
+   * 取得できなかった場合は null（そのときは書影枠を描かない）。
+   */
+  coverImage: string | null;
 };
 
 /**
@@ -109,13 +117,17 @@ function formatBookLine(titles: string[]): string {
   return rest > 0 ? `${head} ほか${rest}冊` : head;
 }
 
-/** 選者名の長さに応じて字送りを落とす（4文字なら100px、長い名前でも溢れさせない） */
-function selectorFontSize(name: string): number {
-  if (name.length <= 5) return 100;
-  if (name.length <= 7) return 88;
-  if (name.length <= 10) return 72;
-  return 60;
+/** タイトルの長さに応じて字送りを落とす（短ければ大きく、長くても溢れさせない） */
+function titleFontSize(title: string): number {
+  if (title.length <= 16) return 56;
+  if (title.length <= 24) return 48;
+  if (title.length <= 32) return 40;
+  return 34;
 }
+
+/** 書影の枠寸法。BookCover.astro の152×228と同じ縦横比を保つ */
+const COVER_WIDTH = 168;
+const COVER_HEIGHT = 252;
 
 /** satori に渡すノード木（JSXを使わずオブジェクトで組む） */
 function template(input: OgImageInput) {
@@ -126,6 +138,92 @@ function template(input: OgImageInput) {
 
   const metaText = (text: string) =>
     el("span", { style: { display: "flex" }, children: text });
+
+  const textColumn = el("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      flex: 1,
+      minWidth: 0,
+      // 書影があるときだけ右に余白を空ける
+      paddingRight: input.coverImage ? 48 : 0,
+    },
+    children: [
+      // 1) 分野名 ／ N冊
+      el("div", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 18,
+          fontSize: 26,
+          fontWeight: 500,
+          color: COLOR.muted,
+          letterSpacing: "0.04em",
+          marginBottom: 22,
+        },
+        children: [
+          metaText(input.topic),
+          el("div", {
+            style: {
+              display: "flex",
+              width: 1,
+              height: 20,
+              backgroundColor: COLOR.rule,
+            },
+          }),
+          metaText(`${input.bookTitles.length}冊`),
+        ],
+      }),
+      // 2) 記事タイトル（最大要素）
+      el("div", {
+        style: {
+          display: "flex",
+          fontSize: titleFontSize(input.title),
+          fontWeight: 900,
+          lineHeight: 1.4,
+          letterSpacing: "-0.02em",
+          marginBottom: 28,
+        },
+        children: input.title,
+      }),
+      // 3) 選者名（タイトルの主語なので添える）
+      el("div", {
+        style: {
+          display: "flex",
+          fontSize: 26,
+          fontWeight: 500,
+          color: COLOR.muted,
+          marginBottom: 20,
+        },
+        children: `選: ${input.selectorName}`,
+      }),
+      // 4) 書名（2点 + ほかN冊）
+      el("div", {
+        style: {
+          display: "flex",
+          fontSize: 26,
+          fontWeight: 400,
+          color: COLOR.muted,
+          lineHeight: 1.5,
+        },
+        children: formatBookLine(input.bookTitles),
+      }),
+    ],
+  });
+
+  const cover = input.coverImage
+    ? el("img", {
+        src: input.coverImage,
+        width: COVER_WIDTH,
+        height: COVER_HEIGHT,
+        style: {
+          display: "flex",
+          flex: "0 0 auto",
+          objectFit: "cover",
+          boxShadow: "0 2px 8px rgba(41,41,41,0.18)",
+        },
+      })
+    : null;
 
   return el("div", {
     style: {
@@ -141,59 +239,14 @@ function template(input: OgImageInput) {
     },
     children: [
       el("div", {
-        style: { display: "flex", flexDirection: "column" },
-        children: [
-          // 1) 分野名 ／ N冊
-          el("div", {
-            style: {
-              display: "flex",
-              alignItems: "center",
-              gap: 18,
-              fontSize: 30,
-              fontWeight: 500,
-              color: COLOR.muted,
-              letterSpacing: "0.04em",
-              marginBottom: 24,
-            },
-            children: [
-              metaText(input.topic),
-              el("div", {
-                style: {
-                  display: "flex",
-                  width: 1,
-                  height: 22,
-                  backgroundColor: COLOR.rule,
-                },
-              }),
-              metaText(`${input.bookTitles.length}冊`),
-            ],
-          }),
-          // 2) 選者名（最大要素）
-          el("div", {
-            style: {
-              display: "flex",
-              fontSize: selectorFontSize(input.selectorName),
-              fontWeight: 900,
-              lineHeight: 1.15,
-              letterSpacing: "-0.02em",
-              marginBottom: 32,
-            },
-            children: input.selectorName,
-          }),
-          // 3) 書名（2点 + ほかN冊）
-          el("div", {
-            style: {
-              display: "flex",
-              fontSize: 30,
-              fontWeight: 400,
-              color: COLOR.muted,
-              lineHeight: 1.5,
-            },
-            children: formatBookLine(input.bookTitles),
-          }),
-        ],
+        style: {
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "flex-start",
+        },
+        children: cover ? [textColumn, cover] : [textColumn],
       }),
-      // 4) サイト名（小さく）
+      // 5) サイト名（小さく）
       el("div", {
         style: {
           display: "flex",
