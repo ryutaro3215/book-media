@@ -93,7 +93,14 @@ export function getSelector(id: SelectorId): Selector {
  * 頭文字は人ごとに変わるので、一覧での識別性は頭文字の方が高い。
  */
 const DEFAULT_AVATAR_BASENAME = "_default";
-const AVATAR_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"] as const;
+/**
+ * 顔写真として置ける拡張子。
+ *
+ * **`/admin/selectors` の画像アップロードもこの配列を読む**
+ * （`scripts/lib/admin-dev-server.mjs` が ssrLoadModule で取る）。
+ * 書き写すと、片方だけ増えたときに「置けるのに表示されない」が起きる。
+ */
+export const AVATAR_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"] as const;
 
 const SELECTORS_DIR = path.resolve(process.cwd(), "public/selectors");
 

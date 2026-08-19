@@ -39,11 +39,21 @@ export default defineConfig({
          *
          * `public/covers/` も同じ。`/admin` から書影を置くとリロードが起きる。
          *
+         * **`src/data/selectors.json` と `public/selectors/` も同じ理由で外す。**
+         * `/admin/selectors` は保存のたびにこの2つへ書くので、外さないと
+         * 「保存した瞬間に画面がリロードされ、続けて直そうとしていた入力が消える」。
+         * 書影のときと同じ壊れ方をする。
+         *
          * **失うもの:** エディタやFinderから `public/covers/` に画像を置いても
          * 自動では反映されなくなる。ブラウザを手で再読み込みすれば出る
          * （`findLocalCover` はメモ化の外にあるため、再描画されれば拾う）。
          */
-        ignored: ["**/src/data/covers.json", "**/public/covers/**"],
+        ignored: [
+          "**/src/data/covers.json",
+          "**/public/covers/**",
+          "**/src/data/selectors.json",
+          "**/public/selectors/**",
+        ],
       },
     },
   },

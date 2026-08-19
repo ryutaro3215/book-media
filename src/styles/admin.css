@@ -1,0 +1,266 @@
+/*
+ * /admin と /admin/selectors の共通スタイル（ローカル専用画面）。
+ *
+ * 2画面に分かれたときに片方だけ見た目が変わると、同じ道具に見えなくなる。
+ * どちらのページも <style> を持たず、ここだけを読む。
+ */
+:root {
+  color-scheme: light;
+}
+body {
+  margin: 0;
+  background: #f5f4f1;
+  color: #292929;
+  font-family: system-ui, sans-serif;
+  line-height: 1.7;
+}
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 20px 120px;
+}
+.head h1 {
+  font-size: 1.6rem;
+  margin: 0 0 8px;
+}
+.note {
+  color: #767676;
+  font-size: 0.85rem;
+  margin: 4px 0;
+}
+.card {
+  background: #fff;
+  border: 1px solid #e5e3de;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+.card h2 {
+  font-size: 1rem;
+  margin: 0 0 14px;
+}
+.row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+/* .field を先に置く。逆順だと詳細度の高い .row > .field が先に来て、
+   linter が「効かない可能性がある」と警告する */
+.field {
+  display: block;
+  margin-bottom: 14px;
+}
+.row > .field {
+  flex: 1 1 240px;
+}
+.field > span {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.field em {
+  color: #b23b2e;
+  font-style: normal;
+  font-size: 0.75rem;
+}
+.field small {
+  display: block;
+  color: #767676;
+  font-size: 0.75rem;
+  margin-top: 3px;
+}
+.field small.bad {
+  color: #b23b2e;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid #d7d4cd;
+  border-radius: 5px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #1f6f5c;
+  outline-offset: 1px;
+}
+textarea {
+  resize: vertical;
+  min-height: 5em;
+  line-height: 1.8;
+}
+/* 目安から外れていることだけ伝える。保存は妨げない */
+.counter {
+  font-weight: 600;
+}
+.counter.off {
+  color: #b23b2e;
+}
+.best-field[hidden] {
+  display: none;
+}
+.isbn-row {
+  display: flex;
+  gap: 6px;
+}
+.isbn-row .isbn {
+  flex: 1;
+}
+/* 書影は「出るか出ないか」が一目で分かればよい。原寸は要らない */
+.cover-panel {
+  display: flex;
+  gap: 12px;
+  margin: 10px 0;
+}
+.cover-preview {
+  flex: 0 0 84px;
+  height: 118px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #d7d4cd;
+  background: #fff;
+  color: #8b867d;
+  font-size: 11px;
+  text-align: center;
+}
+/* 自前画像かどうかは判断が変わる情報なので、枠の見た目でも分かるようにする */
+.cover-preview.is-local {
+  border: 2px solid #1f6f5c;
+}
+.cover-preview img {
+  max-width: 100%;
+  max-height: 100%;
+}
+.cover-side {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+.cover-state {
+  margin: 0 0 6px;
+}
+.cover-upload[hidden] {
+  display: none;
+}
+.cover-file {
+  max-width: 100%;
+}
+.cover-result {
+  margin: 6px 0 0;
+  color: #1f6f5c;
+}
+/* 警告であって関門ではない。読める大きさで置き、操作は妨げない */
+.cover-legal {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-left: 3px solid #b23b2e;
+  background: #fdf5f3;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.templates,
+.tag-results,
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin: 6px 0;
+}
+.chip {
+  border: 1px solid #d7d4cd;
+  background: #fff;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.chip:hover {
+  border-color: #1f6f5c;
+}
+.chip.on {
+  background: #1f6f5c;
+  border-color: #1f6f5c;
+  color: #fff;
+}
+.book {
+  border: 1px solid #e5e3de;
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.book-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.book-head strong {
+  font-size: 0.9rem;
+}
+.best {
+  font-size: 0.8rem;
+  color: #767676;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.best input {
+  width: auto;
+}
+.warn {
+  font-size: 0.78rem;
+  color: #8a5a00;
+  margin: 4px 0 0;
+  min-height: 1em;
+}
+button.ghost {
+  border: 1px solid #d7d4cd;
+  background: #fff;
+  border-radius: 5px;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+button.ghost.small {
+  padding: 3px 10px;
+  font-size: 0.78rem;
+}
+button.primary {
+  background: #1f6f5c;
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: 12px 28px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.actions {
+  position: sticky;
+  bottom: 0;
+  background: #f5f4f1;
+  padding: 16px 0;
+  border-top: 1px solid #e5e3de;
+}
+.status {
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+}
+.status.ok {
+  color: #1f6f5c;
+}
+.status.bad {
+  color: #b23b2e;
+}

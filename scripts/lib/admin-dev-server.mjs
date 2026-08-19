@@ -6,6 +6,9 @@
  *   POST /api/article.json       記事を1本読む（編集するため）
  *   POST /api/save-article.json  記事ファイルを書き出す（新規・上書きの両方）
  *   POST /api/upload-cover.json  自前の書影を public/covers/ に置く
+ *   POST /api/selectors.json     選者マスタを丸ごと読む
+ *   POST /api/save-selector.json 選者を登録・編集する
+ *   POST /api/upload-avatar.json 顔写真を public/selectors/ に置く
  *
  * ## なぜ Astro の API ルートではなく Vite のミドルウェアなのか
  * このサイトは静的出力なので、`src/pages/api/` に置いたルートは
@@ -50,6 +53,14 @@ import {
 } from "./article-file.mjs";
 import { hasLocalCover, lookupAndRemember } from "./cover-lookup.mjs";
 import { loadEnv } from "./prompt.mjs";
+import {
+  AVATARS_DIR,
+  buildSelector,
+  readSelectors,
+  selectorWarnings,
+  validateSelector,
+  writeSelectors,
+} from "./selector-file.mjs";
 
 const TIMEOUT_MS = 8000;
 const ROOT = process.cwd();
@@ -580,6 +591,135 @@ function saveArticle(data) {
   };
 }
 
+/* ------------------------------------------------------------------ *
+ * 選者マスタ
+ * ------------------------------------------------------------------ */
+
+/**
+ * 選者を登録・編集する。
+ *
+ * **ID は編集できない。** 変えると `/selectors/<id>/` が変わって
+ * 公開済みのリンクが切れるうえ、記事側の `selector:` が宙に浮いてビルドが落ちる
+ * （CLI 側にも同じ制約がある）。画面では読み取り専用にしてあるが、
+ * 口としても `editing` のときは既存IDでなければ弾く。
+ *
+ * 記事の保存と違って mtime の突き合わせはしない。選者マスタは1ファイルに
+ * 全員が入っているため、**書くたびに読み直して該当IDだけ差し替える**。
+ * こうしておくと、別の選者を編集している最中に他方を保存しても消えない。
+ */
+function saveSelector(data) {
+  const selectors = readSelectors();
+  const existingIds = Object.keys(selectors);
+  const id = String(data.id ?? "")
+    .trim()
+    .toLowerCase();
+  const editing = Boolean(data.editing);
+  const selector = buildSelector(data);
+
+  // 新規で既存IDを書こうとした場合もここで落ちる（validateSelector が弾く）。
+  // 上書きの確認は出さない。**登録済みの選者を丸ごと置き換える操作**であり、
+  // 直したいなら一覧から選んで編集に入るのが正しい道筋だから
+  const errors = validateSelector({ id, selector, existingIds, editing });
+  if (errors.length > 0) return { status: 400, body: { errors } };
+
+  selectors[id] = selector;
+  const filePath = writeSelectors(selectors);
+
+  return {
+    status: 200,
+    body: {
+      ok: true,
+      id,
+      selector,
+      path: path.relative(ROOT, filePath),
+      warnings: selectorWarnings(selector),
+    },
+  };
+}
+
+/**
+ * 顔写真を `public/selectors/<ID>.<ext>` に置く。
+ *
+ * ファイル名を**選者IDに揃える**。応募フォームから届く画像は
+ * `IMG_1234.jpeg` のような名前で、そのまま置くと数が増えたときに
+ * どれが誰か分からなくなる（`docs/apply-form.md` でも改名する運用にしている）。
+ *
+ * 画像は変換もリサイズもしない。書影と同じで、加工した版を配る筋合いがない
+ * （表示側が `object-fit: cover` で正方形に切り抜く）。
+ */
+async function uploadAvatar(server, body) {
+  const { AVATAR_EXTENSIONS } = await server.ssrLoadModule(
+    "/src/lib/selectors.ts",
+  );
+
+  const id = String(body.id ?? "")
+    .trim()
+    .toLowerCase();
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) {
+    return { status: 400, body: { error: "先に選者IDを入れてください" } };
+  }
+
+  const ext = String(body.filename ?? "")
+    .toLowerCase()
+    .match(/\.[a-z0-9]+$/)?.[0];
+  if (!ext || !AVATAR_EXTENSIONS.includes(ext)) {
+    return {
+      status: 400,
+      body: { error: `拡張子は ${AVATAR_EXTENSIONS.join(" / ")} のみです` },
+    };
+  }
+
+  let buf;
+  try {
+    buf = Buffer.from(String(body.data ?? ""), "base64");
+  } catch {
+    buf = Buffer.alloc(0);
+  }
+  if (buf.length === 0)
+    return { status: 400, body: { error: "ファイルが空です" } };
+  if (buf.length > MAX_IMAGE_BYTES) {
+    return {
+      status: 400,
+      body: {
+        error: `ファイルが大きすぎます（${Math.round(buf.length / 1024)}KB / 上限 ${MAX_IMAGE_BYTES / 1024 / 1024}MB）`,
+      },
+    };
+  }
+
+  const actual = sniffImage(buf);
+  if (!actual)
+    return { status: 400, body: { error: "画像ファイルではありません" } };
+  if (actual !== EXTENSION_FORMAT[ext]) {
+    return {
+      status: 400,
+      body: { error: `中身は ${actual} です。${ext} ではありません` },
+    };
+  }
+
+  // 拡張子違いの同名ファイルが残ると、`avatar` に書いていないほうが
+  // ディレクトリに居座る。書影と同じく「1人につき1ファイル」に揃える
+  fs.mkdirSync(AVATARS_DIR, { recursive: true });
+  const filename = `${id}${ext}`;
+  fs.writeFileSync(path.join(AVATARS_DIR, filename), buf);
+  const replaced = AVATAR_EXTENSIONS.map((e) => `${id}${e}`).filter(
+    (name) => name !== filename && fs.existsSync(path.join(AVATARS_DIR, name)),
+  );
+  for (const name of replaced) fs.rmSync(path.join(AVATARS_DIR, name));
+
+  return {
+    status: 200,
+    body: {
+      ok: true,
+      // そのまま selectors.json の avatar に入る値。画面が自前で組み立てると
+      // 「置けたのに出ない」が起きる
+      avatar: filename,
+      url: `/selectors/${filename}`,
+      path: `public/selectors/${filename}`,
+      replaced,
+    },
+  };
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let raw = "";
@@ -662,6 +802,20 @@ export function adminDevServer() {
 
           if (url === "/api/save-article.json") {
             const { status, body: out } = saveArticle(body);
+            return send(status, out);
+          }
+
+          if (url === "/api/selectors.json") {
+            return send(200, { selectors: readSelectors() });
+          }
+
+          if (url === "/api/save-selector.json") {
+            const { status, body: out } = saveSelector(body);
+            return send(status, out);
+          }
+
+          if (url === "/api/upload-avatar.json") {
+            const { status, body: out } = await uploadAvatar(server, body);
             return send(status, out);
           }
 

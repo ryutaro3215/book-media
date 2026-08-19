@@ -39,7 +39,7 @@ npm run preview  # ビルド結果を確認
 npm run verify   # push する前にこれ。lint → 型チェック → ビルドを通す
 npm run check:links  # 内部リンクが実在するページを指しているか検査する
 
-npm run new:selector                     # 選者をマスタに登録・編集する（対話式）
+npm run new:selector                     # 選者をマスタに登録・編集する（対話式。画面は /admin/selectors）
 npm run new:article                      # 記事を作る（対話式・/admin が使えないとき）
 npm run check:isbn -- 9784150504106 …    # ISBNの書誌が取れるか実測する
 npm run sync:covers                      # 書影URLを引いて src/data/covers.json に記録する
@@ -372,6 +372,24 @@ draft: false にして公開
 
 ### 選者の登録・編集
 
+**画面（推奨）**
+
+```bash
+npm run dev        # → http://localhost:4321/admin/selectors
+```
+
+一覧から選ぶと内容を読み込み、直して保存できる。**記事投稿アプリ（`/admin`）と同じく
+ローカル専用**で、ビルド後に `dist` から消える。CLI より画面を勧める理由は3つ。
+
+- **略歴と「詳しい理由」は長文**なのに、ターミナルでは改行も書き直しもできない
+  （README 冒頭でも「ターミナルで長文は書かない」と決めている）
+- **顔写真をその場で置ける。** ファイルを選ぶと `public/selectors/<ID>.<拡張子>` に
+  保存し、`avatar` に名前を入れる。**表示も同時に確かめられる**
+  （置き場所とファイル名を間違えると、保存できるのに画像だけ出ない）
+- 打ち間違えても戻れる
+
+**CLI**
+
 ```bash
 npm run new:selector
 ```
@@ -379,6 +397,9 @@ npm run new:selector
 新規登録と、既存選者の編集ができる。**所属や略歴が変わったらここから直せば全記事に反映される。**
 記事作成（`npm run new:article`）の途中でも新規登録できるが、選者はマスタなので
 **記事を書く前に単独で登録しておける。**
+
+どちらから登録しても結果は同じ（保存する形と検証は
+`scripts/lib/selector-file.mjs` の1箇所にまとめてある）。
 
 > **IDは変更できない。** 変えるとURL（`/selectors/<id>/`）が変わり、公開済みのリンクが切れる。
 
@@ -865,6 +886,9 @@ Xがカード画像を強くキャッシュしているため。**Card Validator
 ```json
 { "yamada-taro": { "avatar": "yamada-taro.jpg", "...": "" } }
 ```
+
+**`/admin/selectors` から置けば、この2つ（ファイルの配置と `avatar` の記入）は
+まとめて行われる。** 手で置く場合だけ、上の形を自分で書く。
 
 **必須にしていない。** 研究者は写真の提供を渋る場合があり、必須にすると
 取材のたびに交渉が発生する。

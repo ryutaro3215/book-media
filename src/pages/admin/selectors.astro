@@ -1,0 +1,525 @@
+---
+/**
+ * 選者マスタの登録・編集（**ローカル専用**）。
+ *
+ *   npm run dev  →  http://localhost:4321/admin/selectors
+ *
+ * ## なぜ CLI と別に画面を作るか
+ * `npm run new:selector` には運用してみて3つ問題があった。
+ *   - **略歴と「詳しい理由」が長文**なのに、ターミナルの1行入力で書かされる。
+ *     改行できず、書き直しもできない（README でも「ターミナルで長文は書かない」と決めている）
+ *   - **顔写真は自分でファイルを置いてから、ファイル名を打つ**必要がある。
+ *     置き場所と名前を間違えると、保存はできるのに画像だけ出ない
+ *   - 一度進むと戻れない。打ち間違えたら最初からやり直しになる
+ * どれも「画面がある」だけで解ける。記事投稿アプリ（/admin）と同じ考え方。
+ *
+ * ## 本番に出さない
+ *   1. 開発時以外は中身を描画しない（下の `import.meta.env.DEV`）
+ *   2. ビルド後に scripts/strip-admin.mjs が dist/admin を丸ごと消す
+ * 書き込み口を持つ画面なので、片方が壊れても残るようにしてある。
+ */
+import selectors from "../../data/selectors.json";
+import "../../styles/admin.css";
+
+const isDev = import.meta.env.DEV;
+
+type Selector = {
+  name: string;
+  reading?: string;
+  affiliation?: string;
+  bio: string;
+  credentials: string;
+  avatar?: string;
+  links?: { x?: string; site?: string };
+};
+
+/** 初期表示ぶん。保存のたびに /api/selectors.json で読み直す */
+const initial = selectors as Record<string, Selector>;
+---
+
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>選者を登録する — ローカル専用</title>
+  </head>
+  <body>
+    {
+      !isDev ? (
+        <p>この画面は開発時のみ使えます。</p>
+      ) : (
+        <main class="wrap">
+          <header class="head">
+            <h1>選者を登録する</h1>
+            <p class="note">
+              ローカル専用の画面です。ここで保存すると
+              <code>src/data/selectors.json</code> に書かれ、
+              その選者を使っている<strong>全記事に反映されます</strong>。
+              記事を書くのは <a href="/admin">/admin</a> です。
+            </p>
+          </header>
+
+          <section class="card">
+            <h2>編集する選者</h2>
+            <label class="field">
+              <span>絞り込み</span>
+              <input
+                id="filter"
+                type="search"
+                placeholder="氏名・所属・ID で絞る"
+                autocomplete="off"
+              />
+              <small id="count" />
+            </label>
+            <div class="row">
+              <label class="field">
+                <span>登録済みの選者</span>
+                <select id="open" size="8">
+                  <option value="">新しく登録する</option>
+                </select>
+                <small>
+                  選ぶと内容を読み込みます。所属や略歴が変わったらここから直します
+                </small>
+              </label>
+              <div class="field">
+                <span>&nbsp;</span>
+                <button type="button" id="reload" class="ghost">
+                  一覧を読み直す
+                </button>
+              </div>
+            </div>
+            <p id="editing-note" class="note" />
+          </section>
+
+          <section class="card">
+            <h2>1. 誰か</h2>
+            <div class="row">
+              <label class="field">
+                <span>
+                  氏名 <em>必須</em>
+                </span>
+                <input id="name" type="text" placeholder="山田太郎" />
+                <small>本名でなくてよい。記事と選者ページに出ます</small>
+              </label>
+              <label class="field">
+                <span>ふりがな</span>
+                <input id="reading" type="text" placeholder="やまだ たろう" />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>
+                ID（URLになる） <em>必須</em>
+              </span>
+              <input
+                id="id"
+                type="text"
+                placeholder="yamada-taro"
+                autocomplete="off"
+              />
+              <small id="id-note">
+                半角小文字の英数とハイフン。<strong>あとから変更できません</strong>
+                （変えると /selectors/… のURLが変わり、公開済みのリンクが切れます）
+              </small>
+            </label>
+
+            <label class="field">
+              <span>所属</span>
+              <input
+                id="affiliation"
+                type="text"
+                placeholder="○○大学 経済学部 教授"
+              />
+              <small>
+                <strong>任意。</strong>
+                大学の教員だけを選者にするわけではないので必須にしていません。
+                空なら代わりに「詳しい理由」が出ます
+              </small>
+            </label>
+          </section>
+
+          <section class="card">
+            <h2>2. なぜこの人の推薦を読む価値があるのか</h2>
+            <label class="field">
+              <span>
+                略歴 <em>必須</em>
+              </span>
+              <textarea
+                id="bio"
+                rows="3"
+                data-count="30,120"
+                placeholder="どういう研究をしている人かを1〜2文で。"
+              />
+              <small>
+                何をしている人か。<b class="counter" />
+              </small>
+            </label>
+
+            <label class="field">
+              <span>
+                この人が詳しい理由 <em>必須</em>
+              </span>
+              <textarea
+                id="credentials"
+                rows="4"
+                data-count="40,200"
+                placeholder="〇〇について15年読み続けている。△△で書評を書いている"
+              />
+              <small>
+                <strong>肩書きや形式は問いません</strong>（研究・仕事・発信・読書歴）。
+                選者の知名度がゼロのうちは、読者にとってここが唯一の手がかりです。
+                <b class="counter" />
+              </small>
+            </label>
+            <p class="note">
+              本人が書けないときは<strong>こちらで下書きして、確認稿で承認をもらう</strong>
+              運用にしています（docs/outreach.md）。
+            </p>
+          </section>
+
+          <section class="card">
+            <h2>3. 顔写真</h2>
+            <div class="cover-panel">
+              <div id="avatar-preview" class="cover-preview avatar-preview">
+                未登録
+              </div>
+              <div class="cover-side">
+                <p class="cover-state" id="avatar-state">
+                  未登録のときは<strong>氏名の頭文字</strong>が円形に出ます（崩れません）。
+                </p>
+                <input
+                  id="avatar-file"
+                  class="cover-file"
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp"
+                />
+                <p class="note">
+                  選ぶと <code>public/selectors/&lt;ID&gt;.&lt;拡張子&gt;</code>
+                  に置き、ファイル名を自動で入れます。
+                  <strong>先にIDを入れてください。</strong>
+                  正方形に切り抜かれます（200×200px 以上を推奨）。
+                </p>
+                <p id="avatar-result" class="cover-result" />
+                <label class="field">
+                  <span>ファイル名</span>
+                  <input
+                    id="avatar"
+                    type="text"
+                    placeholder="yamada-taro.jpg"
+                    autocomplete="off"
+                  />
+                  <small>
+                    自分で public/selectors/ に置いた場合は、ここに名前を書きます
+                  </small>
+                </label>
+                <p class="cover-legal">
+                  本人に権利のある画像かを確認してから置いてください。
+                  応募フォーム経由の画像は、確認稿の段階で本人に確かめます。
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>4. リンク</h2>
+            <div class="row">
+              <label class="field">
+                <span>X のハンドル</span>
+                <input id="x" type="text" placeholder="yamada_t" autocomplete="off" />
+                <small>
+                  <strong>@ は付けません。</strong>
+                  URLを貼っても自動で剥がします
+                </small>
+              </label>
+              <label class="field">
+                <span>サイトURL</span>
+                <input
+                  id="site"
+                  type="url"
+                  placeholder="https://example.ac.jp/yamada"
+                  autocomplete="off"
+                />
+              </label>
+            </div>
+          </section>
+
+          <div class="actions">
+            <button type="button" id="save" class="primary">
+              保存する
+            </button>
+            <a class="ghost back" href="/admin">記事をつくる →</a>
+            <p id="status" class="status" />
+          </div>
+        </main>
+      )
+    }
+
+    <script
+      is:inline
+      define:vars={{ initial, enabled: isDev }}
+    >
+      if (enabled) {
+        const $ = (id) => document.getElementById(id);
+        const FIELDS = [
+          "id",
+          "name",
+          "reading",
+          "affiliation",
+          "bio",
+          "credentials",
+          "avatar",
+          "x",
+          "site",
+        ];
+
+        /** id → 選者。保存のたびにサーバーから読み直す */
+        let selectors = initial;
+        /** 編集中のID。空文字なら新規 */
+        let editingId = "";
+
+        const post = async (url, body) => {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(body ?? {}),
+          });
+          return { status: res.status, data: await res.json() };
+        };
+
+        const setStatus = (text, kind) => {
+          const el = $("status");
+          el.textContent = text;
+          el.className = `status${kind ? ` ${kind}` : ""}`;
+        };
+
+        /* --- 一覧 --------------------------------------------------- */
+
+        function renderList() {
+          const q = $("filter").value.trim().toLowerCase();
+          const entries = Object.entries(selectors).filter(([id, s]) => {
+            if (!q) return true;
+            return [id, s.name, s.affiliation ?? "", s.credentials ?? ""]
+              .join(" ")
+              .toLowerCase()
+              .includes(q);
+          });
+
+          const select = $("open");
+          const keep = select.value;
+          select.innerHTML = "";
+          const first = document.createElement("option");
+          first.value = "";
+          first.textContent = "＋ 新しく登録する";
+          select.append(first);
+
+          for (const [id, s] of entries.sort((a, b) =>
+            a[1].name.localeCompare(b[1].name, "ja"),
+          )) {
+            const opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = `${s.name}${s.affiliation ? `（${s.affiliation}）` : ""}  [${id}]`;
+            select.append(opt);
+          }
+          select.value = keep;
+          $("count").textContent = `${entries.length} / ${Object.keys(selectors).length} 人`;
+        }
+
+        async function reload() {
+          const { data } = await post("/api/selectors.json");
+          selectors = data.selectors ?? {};
+          renderList();
+        }
+
+        /* --- フォーム ----------------------------------------------- */
+
+        function fill(id) {
+          editingId = id;
+          const s = id ? selectors[id] : null;
+          $("id").value = id;
+          $("name").value = s?.name ?? "";
+          $("reading").value = s?.reading ?? "";
+          $("affiliation").value = s?.affiliation ?? "";
+          $("bio").value = s?.bio ?? "";
+          $("credentials").value = s?.credentials ?? "";
+          $("avatar").value = s?.avatar ?? "";
+          $("x").value = s?.links?.x ?? "";
+          $("site").value = s?.links?.site ?? "";
+
+          // IDは編集できない。読み取り専用にしたうえで、理由を出す
+          $("id").readOnly = Boolean(id);
+          $("editing-note").textContent = id
+            ? `${s.name} を編集しています（保存すると全記事に反映されます）。IDは変更できません`
+            : "新しい選者を登録します";
+          $("avatar-result").textContent = "";
+          setStatus("");
+          renderAvatar();
+          updateCounters();
+        }
+
+        /** 保存される形をそのまま画面に出す。頭文字のフォールバックも同じ見た目で確かめる */
+        function renderAvatar() {
+          const box = $("avatar-preview");
+          const file = $("avatar").value.trim();
+          if (file) {
+            box.innerHTML = "";
+            const img = document.createElement("img");
+            // 置いた直後でもキャッシュを避けて出す
+            img.src = `/selectors/${file}?t=${Date.now()}`;
+            img.alt = "";
+            img.addEventListener("error", () => {
+              box.textContent = "見つかりません";
+              box.classList.add("bad");
+            });
+            box.classList.remove("bad");
+            box.append(img);
+            $("avatar-state").innerHTML =
+              "この画像が記事と選者ページに出ます。<strong>正方形に切り抜かれます</strong>";
+            return;
+          }
+          const name = $("name").value.trim();
+          box.classList.remove("bad");
+          box.textContent = name ? name.slice(0, 1) : "未登録";
+          $("avatar-state").innerHTML =
+            "未登録のときは<strong>氏名の頭文字</strong>が円形に出ます（崩れません）。";
+        }
+
+        /** 目安の字数から外れていることだけ伝える。保存は妨げない（/admin と同じ） */
+        function updateCounters() {
+          for (const el of document.querySelectorAll("[data-count]")) {
+            const [min, max] = el.dataset.count.split(",");
+            const n = el.value.trim().length;
+            const counter = el.closest(".field")?.querySelector(".counter");
+            if (!counter) continue;
+            const lo = min ? Number(min) : 0;
+            const hi = max ? Number(max) : Infinity;
+            counter.textContent = `${n}字`;
+            counter.classList.toggle("off", n > 0 && (n < lo || n > hi));
+          }
+        }
+
+        /* --- 顔写真のアップロード ------------------------------------ */
+
+        async function uploadAvatar(file) {
+          const id = $("id").value.trim().toLowerCase();
+          if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) {
+            setStatus("先にID（半角小文字の英数とハイフン）を入れてください", "bad");
+            return;
+          }
+          const buf = await file.arrayBuffer();
+          let binary = "";
+          const bytes = new Uint8Array(buf);
+          for (let i = 0; i < bytes.length; i += 1) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          const { status, data } = await post("/api/upload-avatar.json", {
+            id,
+            filename: file.name,
+            data: btoa(binary),
+          });
+          if (status !== 200) {
+            setStatus(data.error ?? "画像を置けませんでした", "bad");
+            return;
+          }
+          $("avatar").value = data.avatar;
+          $("avatar-result").textContent =
+            `${data.path} に置きました` +
+            (data.replaced?.length > 0
+              ? `（${data.replaced.join(" / ")} を差し替え）`
+              : "");
+          renderAvatar();
+          setStatus("画像を置きました。まだ保存はしていません", "ok");
+        }
+
+        /* --- 保存 --------------------------------------------------- */
+
+        async function save() {
+          const payload = Object.fromEntries(
+            FIELDS.map((f) => [f, $(f).value.trim()]),
+          );
+          payload.editing = Boolean(editingId);
+
+          // 新規で既存のIDを書いていた場合も、サーバー側が検証で弾く
+          // （登録済みの選者を丸ごと置き換える操作なので、上書きの確認は出さない。
+          //   直したいときは一覧から選んで編集に入る）
+          const { status, data } = await post("/api/save-selector.json", payload);
+
+          if (status !== 200) {
+            setStatus((data.errors ?? [data.error]).join(" / "), "bad");
+            return;
+          }
+
+          await reload();
+          fill(data.id);
+          $("open").value = data.id;
+          const warn =
+            data.warnings?.length > 0 ? `　※ ${data.warnings.join(" / ")}` : "";
+          setStatus(`保存しました（${data.path}）  /selectors/${data.id}/${warn}`, "ok");
+        }
+
+        /* --- 起動 --------------------------------------------------- */
+
+        $("filter").addEventListener("input", renderList);
+        $("reload").addEventListener("click", reload);
+        $("open").addEventListener("change", (e) => fill(e.target.value));
+        $("name").addEventListener("input", renderAvatar);
+        $("avatar").addEventListener("input", renderAvatar);
+        $("save").addEventListener("click", save);
+        for (const el of document.querySelectorAll("[data-count]")) {
+          el.addEventListener("input", updateCounters);
+        }
+        $("avatar-file").addEventListener("change", (e) => {
+          const file = e.target.files?.[0];
+          if (file) uploadAvatar(file);
+          e.target.value = "";
+        });
+
+        // IDは氏名から下書きする。新規のときだけ、まだ触っていない場合に限る
+        $("name").addEventListener("input", () => {
+          if (editingId || $("id").dataset.touched) return;
+          $("id").value = $("name")
+            .value.trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+        });
+        $("id").addEventListener("input", () => {
+          $("id").dataset.touched = "1";
+        });
+
+        renderList();
+        fill("");
+      }
+    </script>
+
+    <style is:global>
+      /* 顔写真は正方形に切り抜かれる。枠もそう見せないと、
+         横長の写真を置いたときに「切れる」ことに気づけない */
+      .avatar-preview {
+        flex: 0 0 96px;
+        height: 96px;
+        border-radius: 50%;
+        overflow: hidden;
+        font-size: 24px;
+        font-weight: 600;
+        color: #767676;
+      }
+      .avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .avatar-preview.bad {
+        border-color: #b23b2e;
+        color: #b23b2e;
+        font-size: 11px;
+        font-weight: 400;
+      }
+      .actions .back {
+        margin-left: 12px;
+        text-decoration: none;
+        display: inline-block;
+      }
+    </style>
+  </body>
+</html>
