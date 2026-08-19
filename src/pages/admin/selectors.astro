@@ -27,7 +27,7 @@ type Selector = {
   name: string;
   reading?: string;
   affiliation?: string;
-  bio: string;
+  bio?: string;
   credentials: string;
   avatar?: string;
   links?: { x?: string; site?: string };
@@ -142,9 +142,7 @@ const initial = selectors as Record<string, Selector>;
           <section class="card">
             <h2>2. なぜこの人の推薦を読む価値があるのか</h2>
             <label class="field">
-              <span>
-                略歴 <em>必須</em>
-              </span>
+              <span>略歴</span>
               <textarea
                 id="bio"
                 rows="3"
@@ -152,7 +150,9 @@ const initial = selectors as Record<string, Selector>;
                 placeholder="どういう研究をしている人かを1〜2文で。"
               />
               <small>
-                何をしている人か。<b class="counter" />
+                何をしている人か。<strong>任意です</strong>
+                （書けることが無ければ空のままで構いません。空なら表示もされません）。
+                <b class="counter" />
               </small>
             </label>
 

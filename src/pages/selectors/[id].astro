@@ -108,9 +108,14 @@ const description = `${selector.name}${selector.affiliation ? `（${selector.aff
       </p>
     </section>
 
-    <p class="m-0 mb-14 text-[17px] leading-[1.9] text-pretty">
-      {selector.bio}
-    </p>
+    {/* 略歴は任意。空なら段落ごと出さない（下の記事一覧との余白だけが残るため） */}
+    {
+      selector.bio && (
+        <p class="m-0 mb-14 text-[17px] leading-[1.9] text-pretty">
+          {selector.bio}
+        </p>
+      )
+    }
 
     <section>
       <h2 class="m-0 mb-1 text-xs tracking-[0.1em] text-muted">

@@ -81,7 +81,12 @@ async function main() {
       `  所属（任意）${current.affiliation ? `（現在: ${current.affiliation}）` : ""}: `,
     )
   ).trim();
-  const bio = await askRequired("  略歴", current.bio);
+  // 略歴は任意（空のままにできる）。Enter で現在の値を保つ
+  const bio = (
+    await ask(
+      `  略歴（任意）${current.bio ? `（現在: ${current.bio}）` : ""}: `,
+    )
+  ).trim();
   const credentials = await askRequired(
     "  この人が詳しい理由",
     current.credentials,
@@ -103,6 +108,7 @@ async function main() {
   ).trim();
 
   const nextReading = reading || current.reading;
+  const nextBio = bio || current.bio;
   const nextAvatar = avatar || current.avatar;
   const nextX = x || current.links?.x;
   const nextSite = site || current.links?.site;
@@ -111,7 +117,7 @@ async function main() {
     name,
     ...(nextReading ? { reading: nextReading } : {}),
     ...(affiliation ? { affiliation } : {}),
-    bio,
+    ...(nextBio ? { bio: nextBio } : {}),
     credentials,
     ...(nextAvatar ? { avatar: nextAvatar } : {}),
     ...(nextX || nextSite

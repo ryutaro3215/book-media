@@ -60,6 +60,7 @@ export function buildSelector(input) {
 
   const reading = trim(input.reading);
   const affiliation = trim(input.affiliation);
+  const bio = trim(input.bio);
   const avatar = trim(input.avatar);
   // Xのハンドルは `@` を付けない（`src/data/selectors.json` の links.x）。
   // 貼り付けたURLごと入れられることもあるので、そこまで剥がす
@@ -73,7 +74,7 @@ export function buildSelector(input) {
     name: trim(input.name),
     ...(reading ? { reading } : {}),
     ...(affiliation ? { affiliation } : {}),
-    bio: trim(input.bio),
+    ...(bio ? { bio } : {}),
     credentials: trim(input.credentials),
     ...(avatar ? { avatar } : {}),
     ...(x || site
@@ -102,9 +103,12 @@ export function validateSelector({ id, selector, existingIds, editing }) {
   }
 
   if (!selector.name) errors.push("氏名が未入力です");
-  if (!selector.bio) errors.push("略歴が未入力です");
-  // 空だと「知らない人のおすすめリスト」になる。必須にしている理由は
-  // README「credentials を必須にしている理由」を参照
+  // 略歴（bio）は必須にしない。何をしている人かを言えない選者はいるが、
+  // 「何に詳しいか」なら誰でも書ける。読者に必要なのは後者で、
+  // 必須にすると肩書きの無い人に無理やり経歴を書かせることになる
+  //
+  // 空だと「知らない人のおすすめリスト」になる。credentials を必須にしている
+  // 理由は README「credentials を必須にしている理由」を参照
   if (!selector.credentials) {
     errors.push("「この人が詳しい理由」が未入力です");
   }
