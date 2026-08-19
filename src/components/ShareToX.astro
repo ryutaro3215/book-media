@@ -17,6 +17,15 @@
  * **主語が選者名になっている**。差別化の中核が「選者の実名と専門性」である以上、
  * 共有文から選者名が消えないことが重要。
  * ハッシュタグは入れない（サービス名が未確定であり、無関係なタグは共有者に嫌われる）。
+ *
+ * ## 共有URLに `ref=x` を付ける理由
+ * Xはog:imageを含むカード情報をURL単位で長期キャッシュする。カード生成ツール
+ * （Card Validator）は既に廃止されており、こちら側からキャッシュを明示的に
+ * 破棄する手段が無い。OGP画像のテンプレートを直しても、**過去に一度でも
+ * Xにクロールされたことがあるページは、古い見た目のまま固定される。**
+ * クエリを1つ付けておけば、記事ごとの初回シェア時点で「Xにとって未知のURL」
+ * になり、その時点のOGP画像で新規にキャッシュされる。canonical/og:urlは
+ * クエリなしのままなので、SEO上の重複扱いにはならない。
  */
 import { SITE } from "../config";
 
@@ -38,11 +47,13 @@ const {
 } = Astro.props;
 
 // 相対パスのまま共有すると共有先で壊れるため、必ず絶対URLにする
-const url = new URL(path, SITE.url).href;
+const url = new URL(path, SITE.url);
+// Xのカードキャッシュを迂回するためのクエリ（上のコメント参照）
+url.searchParams.set("ref", "x");
 
 const intent = new URL("https://x.com/intent/post");
 intent.searchParams.set("text", title);
-intent.searchParams.set("url", url);
+intent.searchParams.set("url", url.href);
 ---
 
 <a
