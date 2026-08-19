@@ -1,11 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
+import { ogImagePath } from "./og-template";
 
 /**
  * 記事サムネイルの解決。
  *
  *   1. public/thumbnails/<slug>.jpg|.jpeg|.png|.webp があればそれを使う
- *   2. なければ、その記事の OGP 画像 /og/<slug>.png を流用する
+ *   2. なければ、その記事の OGP 画像（ogImagePath）を流用する
  *
  * 2 があるので「サムネイルを用意しないと見た目が崩れる」状態にはならない。
  * 記事を出すたびに画像制作が発生すると、記事を出し切ること自体の障害になるため、
@@ -20,7 +21,7 @@ export function resolveThumbnail(slug: string): string {
       return `/thumbnails/${slug}${ext}`;
     }
   }
-  return `/og/${slug}.png`;
+  return ogImagePath(slug);
 }
 
 /**

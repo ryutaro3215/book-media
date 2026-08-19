@@ -8,7 +8,7 @@ import { SITE } from "../../config";
 import { getAllInterviews, selectorOf } from "../../lib/collections";
 import { resolveCover } from "../../lib/cover";
 import { fetchCoverAsDataUri } from "../../lib/og-cover";
-import { renderOgImage } from "../../lib/og-template";
+import { OG_TEMPLATE_VERSION, renderOgImage } from "../../lib/og-template";
 
 export const prerender = true;
 
@@ -20,7 +20,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
       const firstBook = entry.data.books[0];
       const cover = firstBook ? await resolveCover(firstBook.isbn) : null;
       return {
-        params: { slug: entry.data.slug },
+        // URLに版数を含める（og-template.ts の OG_TEMPLATE_VERSION 参照）。
+        // 見た目を変えるたびにURLごと変わるので、Xの古いキャッシュを踏まない
+        params: { slug: `${entry.data.slug}-${OG_TEMPLATE_VERSION}` },
         props: {
           title: entry.data.title,
           selectorName: selectorOf(entry).name,
