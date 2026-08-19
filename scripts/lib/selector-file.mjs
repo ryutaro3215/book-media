@@ -60,6 +60,7 @@ export function buildSelector(input) {
 
   const reading = trim(input.reading);
   const affiliation = trim(input.affiliation);
+  const expertise = trim(input.expertise);
   const bio = trim(input.bio);
   const avatar = trim(input.avatar);
   // Xのハンドルは `@` を付けない（`src/data/selectors.json` の links.x）。
@@ -74,6 +75,7 @@ export function buildSelector(input) {
     name: trim(input.name),
     ...(reading ? { reading } : {}),
     ...(affiliation ? { affiliation } : {}),
+    ...(expertise ? { expertise } : {}),
     ...(bio ? { bio } : {}),
     credentials: trim(input.credentials),
     ...(avatar ? { avatar } : {}),

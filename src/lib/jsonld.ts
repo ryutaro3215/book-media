@@ -22,6 +22,7 @@ export type JsonLdBook = {
 export type JsonLdSelector = {
   name: string;
   affiliation?: string;
+  expertise?: string;
   bio?: string;
   links?: { x?: string; site?: string };
 };
@@ -69,6 +70,9 @@ function personNode(selector: JsonLdSelector) {
           },
         }
       : {}),
+    // 専門・関心領域は knowsAbout（Person の「詳しい主題」）に載せる。
+    // description（略歴）とは別物なので、片方が空でももう片方は出す
+    ...(selector.expertise ? { knowsAbout: selector.expertise } : {}),
     ...(selector.bio ? { description: selector.bio } : {}),
     ...(sameAs.length > 0 ? { sameAs } : {}),
   };

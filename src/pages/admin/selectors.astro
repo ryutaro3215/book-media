@@ -27,6 +27,7 @@ type Selector = {
   name: string;
   reading?: string;
   affiliation?: string;
+  expertise?: string;
   bio?: string;
   credentials: string;
   avatar?: string;
@@ -140,7 +141,24 @@ const initial = selectors as Record<string, Selector>;
           </section>
 
           <section class="card">
-            <h2>2. なぜこの人の推薦を読む価値があるのか</h2>
+            <h2>2. 専門・関心領域</h2>
+            <label class="field">
+              <span>専門・関心領域</span>
+              <input
+                id="expertise"
+                type="text"
+                placeholder="経営学（組織論）／近世哲学"
+              />
+              <small>
+                <strong>どの領域の人か</strong>を一行で。応募フォームで最初に伺っている項目です。
+                記事の分野（topic）と違って<strong>語彙は決まっていません</strong>。
+                ご本人の言葉のまま入れてください
+              </small>
+            </label>
+          </section>
+
+          <section class="card">
+            <h2>3. なぜこの人の推薦を読む価値があるのか</h2>
             <label class="field">
               <span>略歴</span>
               <textarea
@@ -179,7 +197,7 @@ const initial = selectors as Record<string, Selector>;
           </section>
 
           <section class="card">
-            <h2>3. 顔写真</h2>
+            <h2>4. 顔写真</h2>
             <div class="cover-panel">
               <div id="avatar-preview" class="cover-preview avatar-preview">
                 未登録
@@ -222,7 +240,7 @@ const initial = selectors as Record<string, Selector>;
           </section>
 
           <section class="card">
-            <h2>4. リンク</h2>
+            <h2>5. リンク</h2>
             <div class="row">
               <label class="field">
                 <span>X のハンドル</span>
@@ -266,6 +284,7 @@ const initial = selectors as Record<string, Selector>;
           "name",
           "reading",
           "affiliation",
+          "expertise",
           "bio",
           "credentials",
           "avatar",
@@ -340,6 +359,7 @@ const initial = selectors as Record<string, Selector>;
           $("name").value = s?.name ?? "";
           $("reading").value = s?.reading ?? "";
           $("affiliation").value = s?.affiliation ?? "";
+          $("expertise").value = s?.expertise ?? "";
           $("bio").value = s?.bio ?? "";
           $("credentials").value = s?.credentials ?? "";
           $("avatar").value = s?.avatar ?? "";

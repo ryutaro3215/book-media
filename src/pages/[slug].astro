@@ -185,6 +185,12 @@ const others = (await getAllInterviews())
       <SelectorAvatar id={data.selector} name={selector.name} size={64} />
       <div class="flex min-w-0 flex-auto flex-col gap-2">
         <div class="text-base font-bold">{selector.name}</div>
+        {/* 専門・関心領域。氏名のすぐ下に置く（誰かの次に効く情報は「どの領域の人か」） */}
+        {selector.expertise && (
+          <div class="text-sm leading-[1.8] text-muted">
+            {selector.expertise}
+          </div>
+        )}
         {/* 略歴は任意。空のまま出すと詰まった行間だけが残る */}
         {selector.bio && (
           <div class="text-sm leading-[1.8] text-muted">{selector.bio}</div>
