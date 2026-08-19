@@ -131,6 +131,11 @@ export async function promptSelector(existingIds = []) {
   const reading = (await ask("  ふりがな（任意）: ")).trim();
   // 所属は任意。誰であるかの根拠は「詳しい理由」が担う
   const affiliation = (await ask("  所属（任意）: ")).trim();
+  // 専門・関心領域。応募フォームで最初に聞いている項目にあたる。
+  // 記事の topic と違って語彙は閉じない（本人の言葉で書いてもらう）
+  const expertise = (
+    await ask("  専門・関心領域（例: 経営学（組織論）／近世哲学。任意）: ")
+  ).trim();
   // 略歴も任意。経歴として書けることが無い選者はいるが、
   // 「何に詳しいか」なら誰でも書ける（下の credentials が必須）
   const bio = (await ask("  略歴（何をしている人か、1〜2文。任意）: ")).trim();
@@ -161,6 +166,7 @@ export async function promptSelector(existingIds = []) {
     name,
     ...(reading ? { reading } : {}),
     ...(affiliation ? { affiliation } : {}),
+    ...(expertise ? { expertise } : {}),
     ...(bio ? { bio } : {}),
     credentials,
     ...(avatar ? { avatar } : {}),

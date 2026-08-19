@@ -96,6 +96,21 @@ const description = `${selector.name}${selector.affiliation ? `（${selector.aff
       }
     </header>
 
+    {/* 専門・関心領域。本人の言葉で「どの領域の人か」を示す一行。
+        ヘッダーの所属／記事の分野とは別で、選者自身の自己申告にあたる */}
+    {
+      selector.expertise && (
+        <section class="mb-6">
+          <h2 class="m-0 mb-1 text-xs tracking-[0.1em] text-muted">
+            専門・関心領域
+          </h2>
+          <p class="m-0 text-[15px] leading-[1.9] text-ink text-pretty">
+            {selector.expertise}
+          </p>
+        </section>
+      )
+    }
+
     {/* この人が詳しい理由。この媒体の信頼の根拠なので本文より先に置く */}
     <section class="mb-10 border-y border-rule py-6">
       <h2

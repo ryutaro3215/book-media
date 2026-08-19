@@ -81,6 +81,11 @@ async function main() {
       `  所属（任意）${current.affiliation ? `（現在: ${current.affiliation}）` : ""}: `,
     )
   ).trim();
+  const expertise = (
+    await ask(
+      `  専門・関心領域（任意）${current.expertise ? `（現在: ${current.expertise}）` : ""}: `,
+    )
+  ).trim();
   // 略歴は任意（空のままにできる）。Enter で現在の値を保つ
   const bio = (
     await ask(
@@ -108,6 +113,7 @@ async function main() {
   ).trim();
 
   const nextReading = reading || current.reading;
+  const nextExpertise = expertise || current.expertise;
   const nextBio = bio || current.bio;
   const nextAvatar = avatar || current.avatar;
   const nextX = x || current.links?.x;
@@ -117,6 +123,7 @@ async function main() {
     name,
     ...(nextReading ? { reading: nextReading } : {}),
     ...(affiliation ? { affiliation } : {}),
+    ...(nextExpertise ? { expertise: nextExpertise } : {}),
     ...(nextBio ? { bio: nextBio } : {}),
     credentials,
     ...(nextAvatar ? { avatar: nextAvatar } : {}),

@@ -12,6 +12,7 @@ import BookCard from "../components/BookCard.astro";
 import NewsletterForm from "../components/NewsletterForm.astro";
 import SelectorAvatar from "../components/SelectorAvatar.astro";
 import ShareToX from "../components/ShareToX.astro";
+import { SITE } from "../config";
 import { articleJsonLd } from "../lib/jsonld";
 import { toTagHref } from "../lib/tags";
 import {
@@ -102,6 +103,25 @@ const others = (await getAllInterviews())
 
   <SiteHeader />
 
+  {/* 校正稿であることの明示。**下書きのときだけ出る**（本番には下書き自体が出ない）。
+      PDFにして選者へ送る前提の記事ページなので、紙面にも「まだ公開していない」
+      と書いておく。これが無いと、受け取った側は公開済みだと思って読む */}
+  {
+    data.draft && (
+      <div class="mx-auto mt-8 max-w-body px-5">
+        <div
+          class="draft-notice border border-accent px-5 py-4 text-[13px] leading-[1.8]"
+        >
+          <strong>確認用の校正稿です。まだ公開していません。</strong>
+          <br />
+          お名前・ご所属の表記、選書理由の文面をご確認ください。直したいところが
+          ありましたら <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
+          までお知らせください。ご了承をいただいてから公開します。
+        </div>
+      </div>
+    )
+  }
+
   <header class="mx-auto max-w-body px-5 pt-[72px]">
     <div class="mb-5 flex items-center gap-3 text-[13px] text-muted">
       <a href={toTopicHref(data.topic)} class="text-muted hover:text-ink">
@@ -185,6 +205,12 @@ const others = (await getAllInterviews())
       <SelectorAvatar id={data.selector} name={selector.name} size={64} />
       <div class="flex min-w-0 flex-auto flex-col gap-2">
         <div class="text-base font-bold">{selector.name}</div>
+        {/* 専門・関心領域。氏名のすぐ下に置く（誰かの次に効く情報は「どの領域の人か」） */}
+        {selector.expertise && (
+          <div class="text-sm leading-[1.8] text-muted">
+            {selector.expertise}
+          </div>
+        )}
         {/* 略歴は任意。空のまま出すと詰まった行間だけが残る */}
         {selector.bio && (
           <div class="text-sm leading-[1.8] text-muted">{selector.bio}</div>
@@ -242,19 +268,19 @@ const others = (await getAllInterviews())
       選者も記事を最後まで読んでから共有するため、ここで読者・選者の
       両方に届く。プロフィール欄には既に「Xでフォローする」があり、
       同種のリンクを並べると散らかる */}
-  <section class="mx-auto mt-12 max-w-body px-5">
+  <section class="mx-auto mt-12 max-w-body px-5" data-print-hide>
     <ShareToX title={data.title} path={href} label="この記事をXで共有する" />
   </section>
 
   {/* メール登録 */}
-  <section class="mx-auto mt-12 max-w-body px-5">
+  <section class="mx-auto mt-12 max-w-body px-5" data-print-hide>
     <NewsletterForm />
   </section>
 
   {/* ほかの記事 */}
   {
     others.length > 0 && (
-      <section class="mx-auto mt-16 max-w-body px-5">
+      <section class="mx-auto mt-16 max-w-body px-5" data-print-hide>
         <h2 class="m-0 mb-1 text-xs font-normal tracking-[0.1em] text-muted">
           ほかの記事
         </h2>
