@@ -10,5 +10,15 @@
       "x": "dokugaku_zin",
       "site": "https://rmatsuba.com"
     }
+  },
+  "educans": {
+    "name": "EDUCANS",
+    "affiliation": "高校教師",
+    "expertise": "教育科学、進化教育学",
+    "credentials": "教育とは何か、という大きな問いを立てて学んできました。教育科学は「どうすれば教育効果が高まるのか？」に焦点を当てますが、ダーウィンの進化理論は「なぜ、それが効果をもたらすようにデザインされたのか？」という究極要因にアプローチできます。それらを組み合わせることで、教育の本質に迫ることができます。",
+    "avatar": "educans.jpeg",
+    "links": {
+      "x": "Darwinian204"
+    }
   }
 }
