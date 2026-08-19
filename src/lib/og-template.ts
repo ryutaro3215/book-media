@@ -18,6 +18,22 @@ import satori from "satori";
 export const OG_WIDTH = 1200;
 export const OG_HEIGHT = 630;
 
+/**
+ * 記事OGP画像のテンプレート版数。**見た目を変えたら必ず上げる。**
+ *
+ * XはOGP画像をURL単位で長期キャッシュし、公式のキャッシュ更新ツールも
+ * 廃止されている。画像URL（/og/<slug>-<version>.png）にこの版数を埋め込み、
+ * テンプレートを変えるたびにURLごと変えることで、Xの古いキャッシュを
+ * 見に行かせない。`src/pages/og/[...slug].png.ts` と
+ * `src/pages/[slug].astro` の両方がこの値からURLを組み立てる。
+ */
+export const OG_TEMPLATE_VERSION = "v2";
+
+/** 記事OGP画像のパス（サイトルート相対）。版数を含む一箇所にまとめる */
+export function ogImagePath(slug: string): string {
+  return `/og/${slug}-${OG_TEMPLATE_VERSION}.png`;
+}
+
 /** global.css の @theme と同値 */
 const COLOR = {
   canvas: "#FFFFFF",

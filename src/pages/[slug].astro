@@ -14,6 +14,7 @@ import SelectorAvatar from "../components/SelectorAvatar.astro";
 import ShareToX from "../components/ShareToX.astro";
 import { SITE } from "../config";
 import { articleJsonLd } from "../lib/jsonld";
+import { ogImagePath } from "../lib/og-template";
 import { toTagHref } from "../lib/tags";
 import {
   getAllInterviews,
@@ -45,7 +46,7 @@ const { Content } = await render(entry);
 const xUrl = toXProfileUrl(selector.links?.x);
 const xLabel = toXHandleLabel(selector.links?.x);
 
-const ogImage = `/og/${entry.id}.png`;
+const ogImage = ogImagePath(entry.id);
 const href = toArticleHref(entry);
 
 const jsonLd = articleJsonLd({
