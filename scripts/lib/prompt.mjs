@@ -131,7 +131,9 @@ export async function promptSelector(existingIds = []) {
   const reading = (await ask("  ふりがな（任意）: ")).trim();
   // 所属は任意。誰であるかの根拠は「詳しい理由」が担う
   const affiliation = (await ask("  所属（任意）: ")).trim();
-  const bio = await askRequired("  略歴（何をしている人か、1〜2文）");
+  // 略歴も任意。経歴として書けることが無い選者はいるが、
+  // 「何に詳しいか」なら誰でも書ける（下の credentials が必須）
+  const bio = (await ask("  略歴（何をしている人か、1〜2文。任意）: ")).trim();
 
   console.log(
     "\n  ■ この人が詳しい理由\n" +
@@ -159,7 +161,7 @@ export async function promptSelector(existingIds = []) {
     name,
     ...(reading ? { reading } : {}),
     ...(affiliation ? { affiliation } : {}),
-    bio,
+    ...(bio ? { bio } : {}),
     credentials,
     ...(avatar ? { avatar } : {}),
     ...(x || site

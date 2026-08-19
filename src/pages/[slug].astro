@@ -185,7 +185,10 @@ const others = (await getAllInterviews())
       <SelectorAvatar id={data.selector} name={selector.name} size={64} />
       <div class="flex min-w-0 flex-auto flex-col gap-2">
         <div class="text-base font-bold">{selector.name}</div>
-        <div class="text-sm leading-[1.8] text-muted">{selector.bio}</div>
+        {/* 略歴は任意。空のまま出すと詰まった行間だけが残る */}
+        {selector.bio && (
+          <div class="text-sm leading-[1.8] text-muted">{selector.bio}</div>
+        )}
         <div class="text-sm leading-[1.8] text-muted">
           {selector.credentials}
         </div>
